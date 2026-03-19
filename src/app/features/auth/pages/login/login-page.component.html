@@ -1,0 +1,66 @@
+<main class="login-page">
+  <section class="login-content">
+    <article class="login-panel">
+      <header class="brand">
+        <object
+          data="/assets/service-logo-official.svg"
+          type="image/svg+xml"
+          aria-label="Logo Service"
+        ></object>
+      </header>
+
+      <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <h1>Seja bem vindo(a)!</h1>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt
+          ut labore et dolore magna aliqua.
+        </p>
+
+        <label for="email">Email</label>
+        <div class="input-wrap" [class.invalid]="isFieldInvalid('email')">
+          <i class="bi bi-person" aria-hidden="true"></i>
+          <input
+            id="email"
+            type="email"
+            placeholder="mail@email.com"
+            formControlName="email"
+            autocomplete="email"
+          />
+        </div>
+
+        <label for="password">Senha</label>
+        <div class="input-wrap" [class.invalid]="isFieldInvalid('password')">
+          <i class="bi bi-lock" aria-hidden="true"></i>
+          <input
+            id="password"
+            type="password"
+            placeholder="*****"
+            formControlName="password"
+            autocomplete="current-password"
+          />
+        </div>
+
+        <a class="forgot-link" href="#" aria-label="Esqueceu sua senha">Esqueceu a senha? <b>Clique aqui!</b></a>
+
+        <button type="submit" [disabled]="isSubmitting() || !loginForm.valid">
+          @if (isSubmitting()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            ENTRANDO
+          } @else {
+            ENTRAR
+          }
+        </button>
+      </form>
+    </article>
+
+    <figure class="illustration-panel">
+      <img src="/assets/login-illustration.svg" alt="Ilustração de pessoas e engrenagens" />
+    </figure>
+  </section>
+
+  <footer class="login-footer">
+    <a href="#">TERMOS DE USO</a>
+    <a href="#">POLÍTICAS DE PRIVACIDADE</a>
+    <a href="#">CONTATO</a>
+  </footer>
+</main>

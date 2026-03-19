@@ -1,0 +1,23 @@
+<div class="error-state">
+  <div class="error-state-icon">
+    <i class="bi bi-exclamation-triangle"></i>
+  </div>
+  <h3 class="error-state-title">{{ title() || 'Ops! Algo deu errado' }}</h3>
+  <p class="error-state-description">
+    {{ description() || 'Ocorreu um erro ao carregar os dados. Tente novamente.' }}
+  </p>
+  <button
+    class="btn btn-primary mt-3"
+    (click)="onRetry()"
+    [disabled]="isLoading()"
+  >
+    <span *ngIf="isLoading()">
+      <span class="spinner-border spinner-border-sm me-2"></span>
+      Carregando...
+    </span>
+    <span *ngIf="!isLoading()">
+      <i class="bi bi-arrow-clockwise me-2"></i>
+      Tentar Novamente
+    </span>
+  </button>
+</div>

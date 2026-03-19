@@ -1,0 +1,22 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+.dashboard-clean {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 0.75rem;
+  color: var(--color-primary);
+}
+
+p {
+  color: var(--color-text-secondary);
+}

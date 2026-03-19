@@ -1,0 +1,32 @@
+<main class="app-main">
+  <router-outlet />
+</main>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" *ngIf="toastService.getToasts().length">
+  @for(toast of toastService.getToasts(); track toast.id) {
+    <div
+      class="toast show fade-in"
+      [ngClass]="'toast-' + toast.type"
+      role="alert"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <div class="toast-header">
+        <strong class="me-auto">
+          <i [ngClass]="getToastIcon(toast.type)" class="me-2"></i>
+          {{ getToastTitle(toast.type) }}
+        </strong>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="toast"
+          aria-label="Fechar"
+          (click)="toastService.remove(toast.id)"
+        ></button>
+      </div>
+      <div class="toast-body">
+        {{ toast.message }}
+      </div>
+    </div>
+  }
+</div>

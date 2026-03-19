@@ -1,0 +1,23 @@
+<div class="skeleton-container" [ngClass]="'skeleton-' + (variant() || 'card')">
+  @switch(variant()) {
+    @case('card') {
+      <div class="skeleton skeleton-card"></div>
+    }
+    @case('list') {
+      @for(item of skeletonItems; track $index) {
+        <div class="skeleton skeleton-list-item"></div>
+      }
+    }
+    @case('table') {
+      <div class="skeleton skeleton-table">
+        @for(row of skeletonItems; track $index) {
+          <div class="skeleton-table-row">
+            @for(col of [1, 2, 3, 4]; track col) {
+              <div class="skeleton skeleton-table-cell"></div>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

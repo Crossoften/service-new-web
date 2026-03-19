@@ -1,0 +1,14 @@
+<div class="empty-state">
+  <div class="empty-state-icon">
+    <i [class]="'bi ' + (icon() || 'bi-inbox')"></i>
+  </div>
+  <h3 class="empty-state-title">{{ title() || 'Nenhum dado encontrado' }}</h3>
+  <p class="empty-state-description">
+    {{ description() || 'Não há registros para exibir no momento.' }}
+  </p>
+  @if (actionLabel()) {
+    <button class="btn btn-primary mt-3" (click)="onAction()">
+      {{ actionLabel() }}
+    </button>
+  }
+</div>
