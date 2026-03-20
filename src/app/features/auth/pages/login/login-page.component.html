@@ -40,7 +40,7 @@
           />
         </div>
 
-        <a class="forgot-link" href="#" aria-label="Esqueceu sua senha">Esqueceu a senha? <b>Clique aqui!</b></a>
+        <a class="forgot-link" routerLink="/auth/forgot-password" aria-label="Esqueceu sua senha">Esqueceu a senha? <b>Clique aqui!</b></a>
 
         <button type="submit" [disabled]="isSubmitting() || !loginForm.valid">
           @if (isSubmitting()) {
