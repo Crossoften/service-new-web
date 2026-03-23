@@ -16,6 +16,14 @@ export const AUTH_ROUTES: Routes = [
     data: { title: 'Esqueceu sua Senha' },
   },
   {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./pages/reset-password/reset-password-page.component').then(
+        (m) => m.ResetPasswordPageComponent
+      ),
+    data: { title: 'Redefinir Senha' },
+  },
+  {
     path: '',
     redirectTo: 'login',
     pathMatch: 'full',

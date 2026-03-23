@@ -1,8 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { ToastService } from '@core/services/toast.service';
+
+// Bootstrap JS é carregado como script global via angular.json
+declare const bootstrap: { Modal: new (el: HTMLElement, opts?: object) => { show(): void; hide(): void } };
 
 @Component({
   selector: 'app-forgot-password-page',
@@ -12,18 +14,22 @@ import { ToastService } from '@core/services/toast.service';
   styleUrls: ['./forgot-password-page.component.scss'],
 })
 export class ForgotPasswordPageComponent {
+  @ViewChild('emailSentModalRef') emailSentModalRef!: ElementRef<HTMLElement>;
+
   forgotPasswordForm!: FormGroup;
   isSubmitting = signal(false);
+  sentEmail = signal('');
 
-  testCredentials = {
+  readonly testCredentials = {
     email: 'demo@service.com',
     code: '123456',
   };
 
+  private modalInstance: { show(): void; hide(): void } | null = null;
+
   constructor(
     private fb: FormBuilder,
-    private router: Router,
-    private toastService: ToastService
+    private router: Router
   ) {
     this.initForm();
   }
@@ -41,6 +47,7 @@ export class ForgotPasswordPageComponent {
 
   onSubmit(): void {
     if (!this.forgotPasswordForm.valid) {
+      this.forgotPasswordForm.markAllAsTouched();
       return;
     }
 
@@ -48,11 +55,18 @@ export class ForgotPasswordPageComponent {
 
     setTimeout(() => {
       this.isSubmitting.set(false);
-      this.toastService.showSuccess(
-        `Código enviado para ${this.forgotPasswordForm.get('email')?.value}\nTeste: ${this.testCredentials.code}`
-      );
-      this.router.navigate(['/auth/login']);
+      this.sentEmail.set(this.forgotPasswordForm.get('email')?.value ?? '');
+      this.modalInstance = new bootstrap.Modal(this.emailSentModalRef.nativeElement, {
+        backdrop: 'static',
+        keyboard: false,
+      });
+      this.modalInstance.show();
     }, 1500);
+  }
+
+  confirmAndNavigate(): void {
+    this.modalInstance?.hide();
+    this.router.navigate(['/auth/reset-password']);
   }
 
   goBack(): void {
