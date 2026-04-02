@@ -24,6 +24,22 @@ export const AUTH_ROUTES: Routes = [
     data: { title: 'Redefinir Senha' },
   },
   {
+    path: 'terms-of-use',
+    loadComponent: () =>
+      import('./pages/terms-of-use/terms-of-use-page.component').then(
+        (m) => m.TermsOfUsePageComponent
+      ),
+    data: { title: 'Termos de Uso' },
+  },
+  {
+    path: 'privacy-policy',
+    loadComponent: () =>
+      import('./pages/privacy-policy/privacy-policy-page.component').then(
+        (m) => m.PrivacyPolicyPageComponent
+      ),
+    data: { title: 'Políticas de Privacidade' },
+  },
+  {
     path: '',
     redirectTo: 'login',
     pathMatch: 'full',

@@ -1,0 +1,36 @@
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <object
+      data="/assets/service-logo-official.svg"
+      type="image/svg+xml"
+      aria-label="Service Logo"
+      class="sidebar-logo"
+    ></object>
+  </div>
+
+  <nav class="sidebar-nav" aria-label="Navegação principal">
+    <ul>
+      @for (item of navItems; track item.route) {
+        <li>
+          <a
+            class="nav-item"
+            href="#"
+            [class.active]="isActive(item.route)"
+            (click)="onNavClick(item, $event)"
+            [attr.aria-current]="isActive(item.route) ? 'page' : null"
+          >
+            <i [class]="'bi ' + item.icon" aria-hidden="true"></i>
+            <span>{{ item.label }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="nav-item logout-btn" type="button" (click)="logout()">
+      <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+      <span>SAIR</span>
+    </button>
+  </div>
+</aside>
