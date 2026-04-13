@@ -1,0 +1,158 @@
+<div class="app-shell">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="page-wrapper">
+
+      <p class="breadcrumb-label">SERVIÇOS</p>
+      <h1 class="page-title">Serviços</h1>
+
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="bi bi-search search-icon" aria-hidden="true"></i>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar"
+            [formControl]="searchControl"
+            aria-label="Buscar serviços"
+          />
+        </div>
+        <button class="btn-icon" type="button" aria-label="Filtrar">
+          <i class="bi bi-funnel" aria-hidden="true"></i>
+        </button>
+        <span class="toolbar-spacer"></span>
+        <button class="btn-toggle-view" type="button" (click)="goToSuppliers()" title="Ver Fornecedores">
+          <i class="bi bi-building" aria-hidden="true"></i>
+          Fornecedores
+        </button>
+      </div>
+
+      @if (isLoading()) {
+        <app-loading-skeleton [variant]="'table'" [count]="10"></app-loading-skeleton>
+      } @else if (!services().length) {
+        <app-empty-state
+          [title]="'Nenhum serviço encontrado'"
+          [description]="'Tente ajustar a busca ou cadastre um novo serviço.'"
+          [icon]="'bi-grid'"
+        ></app-empty-state>
+      } @else {
+        <div class="table-wrapper">
+          <table class="services-table" aria-label="Lista de serviços">
+            <thead>
+              <tr>
+                <th scope="col">
+                  Serviço
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col">
+                  Categoria
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col">
+                  Prestador
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col">
+                  Valor
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col">
+                  Avaliação
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col">
+                  Status
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col" class="col-actions" aria-label="Ações"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (service of services(); track service.id) {
+                <tr class="clickable-row" (click)="navigateToDetail(service.id)" tabindex="0" (keydown.enter)="navigateToDetail(service.id)">
+                  <td class="td-name">{{ service.name }}</td>
+                  <td>{{ service.category }}</td>
+                  <td>{{ service.provider }}</td>
+                  <td>{{ formatPrice(service.price) }}</td>
+                  <td>
+                    <div class="rating">
+                      <span class="rating-item likes">
+                        <i class="bi bi-hand-thumbs-up-fill" aria-hidden="true"></i>
+                        {{ service.likes }}
+                      </span>
+                      <span class="rating-item dislikes">
+                        <i class="bi bi-hand-thumbs-down-fill" aria-hidden="true"></i>
+                        {{ service.dislikes }}
+                      </span>
+                      <span class="rating-item negotiations">
+                        <i class="bi bi-bag-fill" aria-hidden="true"></i>
+                        {{ service.negotiations }}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      class="status-badge"
+                      [class.active]="service.status === 'active'"
+                      [class.inactive]="service.status === 'inactive'"
+                    >
+                      {{ service.status === 'active' ? 'Ativo' : 'Desativado' }}
+                    </span>
+                  </td>
+                  <td class="col-actions">
+                    <div ngbDropdown placement="bottom-end" class="actions-dropdown">
+                      <button
+                        class="btn-actions"
+                        type="button"
+                        ngbDropdownToggle
+                        [attr.aria-label]="'Ações para ' + service.name"
+                      >
+                        <i class="bi bi-three-dots" aria-hidden="true"></i>
+                      </button>
+                      <div ngbDropdownMenu>
+                        <button ngbDropdownItem type="button">
+                          <i class="bi bi-eye me-2" aria-hidden="true"></i>
+                          Ver detalhes
+                        </button>
+                        <button ngbDropdownItem type="button">
+                          <i class="bi bi-pencil me-2" aria-hidden="true"></i>
+                          Editar
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <span class="pagination-info">{{ paginationInfo() }}</span>
+          <div class="pagination-controls">
+            <button
+              class="btn-page"
+              type="button"
+              [disabled]="currentPage() === 1"
+              (click)="onPageChange(currentPage() - 1)"
+              aria-label="Página anterior"
+            >
+              <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </button>
+            <button
+              class="btn-page"
+              type="button"
+              [disabled]="currentPage() >= totalPages()"
+              (click)="onPageChange(currentPage() + 1)"
+              aria-label="Próxima página"
+            >
+              <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      }
+
+    </div>
+  </main>
+</div>

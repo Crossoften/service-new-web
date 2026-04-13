@@ -23,10 +23,11 @@ export class SidebarComponent {
 
   readonly navItems: NavItem[] = [
     { label: 'DASHBOARD',   icon: 'bi-speedometer2',    route: '/dashboard', implemented: true  },
-    { label: 'USUÁRIOS',    icon: 'bi-people',          route: '/users',     implemented: false },
-    { label: 'SERVIÇOS',    icon: 'bi-grid',            route: '/services',  implemented: false },
-    { label: 'FINANCEIRO',  icon: 'bi-graph-up',        route: '/finance',   implemented: false },
-    { label: 'CONFIGURAÇÃO',icon: 'bi-gear',            route: '/settings',  implemented: false },
+    { label: 'PARCEIROS',   icon: 'bi-building',        route: '/suppliers', implemented: true  },
+    { label: 'USUÁRIOS',    icon: 'bi-people',          route: '/users',     implemented: true  },
+    { label: 'SERVIÇOS',    icon: 'bi-grid',            route: '/services',  implemented: true  },
+    { label: 'FINANCEIRO',  icon: 'bi-graph-up',        route: '/finance',   implemented: true  },
+    { label: 'CONFIGURAÇÃO',icon: 'bi-gear',            route: '/settings',  implemented: true  },
   ];
 
   isActive(route: string): boolean {

@@ -1,0 +1,129 @@
+<div class="app-shell">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="page-wrapper">
+
+      <p class="breadcrumb-label">SERVIÇOS</p>
+      <h1 class="page-title">Serviços</h1>
+
+      @if (isLoading()) {
+        <app-loading-skeleton [variant]="'card'" [count]="1"></app-loading-skeleton>
+      } @else if (service()) {
+        <div class="detail-card">
+
+          <!-- Service Info Header -->
+          <div class="service-header">
+            <div class="service-icon-wrap">
+              <i class="bi bi-grid-fill" aria-hidden="true"></i>
+            </div>
+            <div class="service-meta">
+              <h2 class="service-name">{{ service()!.name }}</h2>
+              <div class="service-tags">
+                <span class="tag tag-category">{{ service()!.category }}</span>
+                <span class="tag tag-provider">
+                  <i class="bi bi-person-fill" aria-hidden="true"></i>
+                  {{ service()!.provider }}
+                </span>
+                <span class="tag tag-price">{{ formatCurrency(service()!.price) }}</span>
+              </div>
+            </div>
+            <div class="service-ratings">
+              <div class="rating-chip likes">
+                <i class="bi bi-hand-thumbs-up-fill" aria-hidden="true"></i>
+                {{ service()!.likes }}
+              </div>
+              <div class="rating-chip dislikes">
+                <i class="bi bi-hand-thumbs-down-fill" aria-hidden="true"></i>
+                {{ service()!.dislikes }}
+              </div>
+              <div class="rating-chip negotiations">
+                <i class="bi bi-bag-fill" aria-hidden="true"></i>
+                {{ service()!.negotiations }}
+              </div>
+            </div>
+            <span
+              class="status-badge"
+              [class.active]="service()!.status === 'active'"
+              [class.inactive]="service()!.status === 'inactive'"
+            >
+              {{ service()!.status === 'active' ? 'Ativo' : 'Desativado' }}
+            </span>
+          </div>
+
+          <hr class="divider" />
+
+          <!-- Bookings Table -->
+          <div class="bookings-section">
+            <div class="section-header">
+              <h3 class="section-title">Agendamentos</h3>
+              <span class="booking-count">{{ totalBookings() }} no total</span>
+            </div>
+
+            <div class="table-wrapper">
+              <table class="bookings-table" aria-label="Agendamentos do serviço">
+                <thead>
+                  <tr>
+                    <th scope="col">
+                      Data
+                      <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                    </th>
+                    <th scope="col">
+                      Cliente
+                      <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                    </th>
+                    <th scope="col">
+                      Valor
+                      <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                    </th>
+                    <th scope="col">
+                      Avaliação
+                      <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (booking of bookings(); track booking.id) {
+                    <tr>
+                      <td>{{ formatDate(booking.date) }}</td>
+                      <td class="td-client">{{ booking.client }}</td>
+                      <td class="td-value">{{ formatCurrency(booking.value) }}</td>
+                      <td>
+                        <span class="stars" [attr.aria-label]="booking.rating + ' estrelas'">
+                          {{ renderStars(booking.rating) }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <div class="pagination-bar">
+              <span class="pagination-info">{{ paginationInfo }}</span>
+              <div class="pagination-controls">
+                <button class="btn-page" type="button" [disabled]="currentPage() === 1" (click)="currentPage.set(currentPage() - 1)" aria-label="Anterior">
+                  <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                </button>
+                <button class="btn-page" type="button" [disabled]="currentPage() >= totalPages" (click)="currentPage.set(currentPage() + 1)" aria-label="Próxima">
+                  <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" (click)="onCancel()" [disabled]="isSaving()">CANCELAR</button>
+            <button type="button" class="btn-save" (click)="onSave()" [disabled]="isSaving()">
+              @if (isSaving()) { <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span> }
+              SALVAR
+            </button>
+          </div>
+
+        </div>
+      }
+
+    </div>
+  </main>
+</div>

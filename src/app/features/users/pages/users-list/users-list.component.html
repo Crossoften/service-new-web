@@ -1,0 +1,149 @@
+<div class="app-shell">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="page-wrapper">
+
+      <p class="breadcrumb-label">USUÁRIOS</p>
+      <h1 class="page-title">Usuários</h1>
+
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="bi bi-search search-icon" aria-hidden="true"></i>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar"
+            [formControl]="searchControl"
+            aria-label="Buscar usuários"
+          />
+        </div>
+        <button class="btn-icon" type="button" aria-label="Filtrar">
+          <i class="bi bi-funnel" aria-hidden="true"></i>
+        </button>
+        <span class="toolbar-spacer"></span>
+        <button class="btn-toggle-view" type="button" (click)="goToInfluencers()" title="Ver Influencers">
+          <i class="bi bi-star" aria-hidden="true"></i>
+          Influencers
+        </button>
+      </div>
+
+      @if (isLoading()) {
+        <app-loading-skeleton [variant]="'table'" [count]="10"></app-loading-skeleton>
+      } @else if (!users().length) {
+        <app-empty-state
+          [title]="'Nenhum usuário encontrado'"
+          [description]="'Tente ajustar a busca ou adicione um novo usuário.'"
+          [icon]="'bi-people'"
+        ></app-empty-state>
+      } @else {
+        <div class="table-wrapper">
+          <table class="users-table" aria-label="Lista de usuários">
+            <thead>
+              <tr>
+                <th scope="col">
+                  Nome
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col">
+                  Email
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col">
+                  Telefone
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col">
+                  Serviços abertos
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col">
+                  Status
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col" class="col-actions" aria-label="Ações"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of users(); track user.id) {
+                <tr
+                  class="clickable-row"
+                  tabindex="0"
+                  role="button"
+                  (click)="navigateToDetail(user.id)"
+                  (keydown.enter)="navigateToDetail(user.id)"
+                  (keydown.space)="navigateToDetail(user.id); $event.preventDefault()"
+                  [attr.aria-label]="'Abrir detalhes de ' + user.name"
+                >
+                  <td>{{ user.name }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>{{ user.phone }}</td>
+                  <td>{{ user.openServices }}</td>
+                  <td>
+                    <span
+                      class="status-badge"
+                      [class.active]="user.status === 'active'"
+                      [class.inactive]="user.status === 'inactive'"
+                    >
+                      {{ user.status === 'active' ? 'Ativo' : 'Desativado' }}
+                    </span>
+                  </td>
+                  <td class="col-actions" (click)="$event.stopPropagation()">
+                    <div ngbDropdown placement="bottom-end" class="actions-dropdown">
+                      <button
+                        class="btn-actions"
+                        type="button"
+                        ngbDropdownToggle
+                        (click)="$event.stopPropagation()"
+                        (keydown.enter)="$event.stopPropagation()"
+                        (keydown.space)="$event.stopPropagation()"
+                        [attr.aria-label]="'Ações para ' + user.name"
+                      >
+                        <i class="bi bi-three-dots" aria-hidden="true"></i>
+                      </button>
+                      <div ngbDropdownMenu>
+                        <button
+                          ngbDropdownItem
+                          type="button"
+                          (click)="navigateToDetail(user.id)"
+                        >
+                          <i class="bi bi-eye me-2" aria-hidden="true"></i>
+                          Ver detalhes
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <span class="pagination-info">{{ paginationInfo() }}</span>
+          <div class="pagination-controls">
+            <button
+              class="btn-page"
+              type="button"
+              [disabled]="currentPage() === 1"
+              (click)="onPageChange(currentPage() - 1)"
+              aria-label="Página anterior"
+            >
+              <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </button>
+            <button
+              class="btn-page"
+              type="button"
+              [disabled]="currentPage() >= totalPages()"
+              (click)="onPageChange(currentPage() + 1)"
+              aria-label="Próxima página"
+            >
+              <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      }
+
+    </div>
+  </main>
+</div>

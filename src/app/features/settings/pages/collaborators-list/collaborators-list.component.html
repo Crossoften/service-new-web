@@ -1,0 +1,123 @@
+<div class="app-shell">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="page-wrapper">
+
+      <p class="breadcrumb-label">CONFIGURAÇÕES</p>
+      <h1 class="page-title">Configurações</h1>
+
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="bi bi-search search-icon" aria-hidden="true"></i>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar"
+            [formControl]="searchControl"
+            aria-label="Buscar colaboradores"
+          />
+        </div>
+        <button class="btn-icon" type="button" aria-label="Filtrar">
+          <i class="bi bi-funnel" aria-hidden="true"></i>
+        </button>
+        <span class="toolbar-spacer"></span>
+        <button class="btn-add" type="button" (click)="addCollaborator()">
+          <i class="bi bi-plus-lg" aria-hidden="true"></i>
+          ADICIONAR COLABORADOR
+        </button>
+      </div>
+
+      @if (isLoading()) {
+        <app-loading-skeleton [variant]="'table'" [count]="10"></app-loading-skeleton>
+      } @else if (!collaborators().length) {
+        <app-empty-state
+          [title]="'Nenhum colaborador encontrado'"
+          [description]="'Adicione um colaborador para começar.'"
+          [icon]="'bi-person-badge'"
+        ></app-empty-state>
+      } @else {
+        <div class="table-wrapper">
+          <table class="collab-table" aria-label="Lista de colaboradores">
+            <thead>
+              <tr>
+                <th scope="col">Cód.</th>
+                <th scope="col">
+                  Nome
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col">
+                  Email
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col">
+                  Acesso
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col">
+                  Status
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col" class="col-actions" aria-label="Ações"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (col of collaborators(); track col.id) {
+                <tr>
+                  <td class="td-cod">{{ col.cod }}</td>
+                  <td class="td-name">{{ col.name }}</td>
+                  <td>{{ col.email }}</td>
+                  <td>
+                    <span class="role-badge" [class.master]="col.role === 'Admin Master'">
+                      {{ col.role }}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      class="status-badge"
+                      [class.active]="col.status === 'active'"
+                      [class.inactive]="col.status === 'inactive'"
+                    >
+                      {{ col.status === 'active' ? 'Ativo' : 'Desativado' }}
+                    </span>
+                  </td>
+                  <td class="col-actions">
+                    <div ngbDropdown placement="bottom-end" class="actions-dropdown">
+                      <button
+                        class="btn-actions"
+                        type="button"
+                        ngbDropdownToggle
+                        [attr.aria-label]="'Ações para ' + col.name"
+                      >
+                        <i class="bi bi-three-dots" aria-hidden="true"></i>
+                      </button>
+                      <div ngbDropdownMenu>
+                        <button ngbDropdownItem type="button" (click)="editCollaborator(col.id)">
+                          <i class="bi bi-pencil me-2" aria-hidden="true"></i>
+                          Editar
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <span class="pagination-info">{{ paginationInfo() }}</span>
+          <div class="pagination-controls">
+            <button class="btn-page" type="button" [disabled]="currentPage() === 1" (click)="onPageChange(currentPage() - 1)" aria-label="Anterior">
+              <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </button>
+            <button class="btn-page" type="button" [disabled]="currentPage() >= totalPages()" (click)="onPageChange(currentPage() + 1)" aria-label="Próxima">
+              <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      }
+
+    </div>
+  </main>
+</div>

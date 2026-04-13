@@ -43,3 +43,8 @@ yarn-error.log*
 
 # OS
 Thumbs.db
+/.agent
+/.agents
+/.claude
+/.github
+*.json

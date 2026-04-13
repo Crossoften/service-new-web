@@ -1,0 +1,219 @@
+<div class="app-shell">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="page-wrapper">
+
+      <p class="breadcrumb-label">CONFIGURAÇÃO</p>
+      <h1 class="page-title">Configuração</h1>
+
+      <!-- Perfil do Negócio -->
+      <div class="settings-card">
+        <div class="card-header">
+          <div class="card-header-icon">
+            <i class="bi bi-building" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h2 class="card-title">Perfil do Negócio</h2>
+            <p class="card-description">Informações da empresa exibidas na plataforma.</p>
+          </div>
+        </div>
+
+        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="settings-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="companyName">Nome da Empresa</label>
+              <input
+                id="companyName"
+                type="text"
+                class="form-control"
+                formControlName="companyName"
+                placeholder="Nome da empresa"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="cnpj">CNPJ</label>
+              <input
+                id="cnpj"
+                type="text"
+                class="form-control"
+                formControlName="cnpj"
+                placeholder="00.000.000/0000-00"
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="email">E-mail</label>
+              <input
+                id="email"
+                type="email"
+                class="form-control"
+                formControlName="email"
+                placeholder="contato@empresa.com"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="phone">Telefone</label>
+              <input
+                id="phone"
+                type="text"
+                class="form-control"
+                formControlName="phone"
+                placeholder="00 9 0000-0000"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="address">Endereço</label>
+            <input
+              id="address"
+              type="text"
+              class="form-control"
+              formControlName="address"
+              placeholder="Rua, número – Cidade, Estado"
+            />
+          </div>
+          <div class="card-footer">
+            <button type="submit" class="btn-save" [disabled]="savingProfile() || profileForm.invalid">
+              @if (savingProfile()) {
+                <span class="spinner" aria-hidden="true"></span>
+                Salvando...
+              } @else {
+                Salvar perfil
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Notificações -->
+      <div class="settings-card">
+        <div class="card-header">
+          <div class="card-header-icon">
+            <i class="bi bi-bell" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h2 class="card-title">Notificações</h2>
+            <p class="card-description">Escolha como deseja receber alertas da plataforma.</p>
+          </div>
+        </div>
+
+        <form [formGroup]="notificationsForm" (ngSubmit)="saveNotifications()" class="settings-form">
+          <div class="notification-group">
+            <p class="notification-group-title">Por E-mail</p>
+            <label class="toggle-row">
+              <span class="toggle-label">Novo serviço cadastrado</span>
+              <input type="checkbox" class="toggle-input" formControlName="emailNewService" />
+              <span class="toggle-slider"></span>
+            </label>
+            <label class="toggle-row">
+              <span class="toggle-label">Pagamento recebido</span>
+              <input type="checkbox" class="toggle-input" formControlName="emailPayment" />
+              <span class="toggle-slider"></span>
+            </label>
+            <label class="toggle-row">
+              <span class="toggle-label">Novo parceiro</span>
+              <input type="checkbox" class="toggle-input" formControlName="emailPartner" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="notification-group">
+            <p class="notification-group-title">Push</p>
+            <label class="toggle-row">
+              <span class="toggle-label">Novo serviço cadastrado</span>
+              <input type="checkbox" class="toggle-input" formControlName="pushNewService" />
+              <span class="toggle-slider"></span>
+            </label>
+            <label class="toggle-row">
+              <span class="toggle-label">Pagamento recebido</span>
+              <input type="checkbox" class="toggle-input" formControlName="pushPayment" />
+              <span class="toggle-slider"></span>
+            </label>
+            <label class="toggle-row">
+              <span class="toggle-label">Novo parceiro</span>
+              <input type="checkbox" class="toggle-input" formControlName="pushPartner" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="card-footer">
+            <button type="submit" class="btn-save" [disabled]="savingNotifications()">
+              @if (savingNotifications()) {
+                <span class="spinner" aria-hidden="true"></span>
+                Salvando...
+              } @else {
+                Salvar notificações
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Sistema -->
+      <div class="settings-card">
+        <div class="card-header">
+          <div class="card-header-icon">
+            <i class="bi bi-gear" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h2 class="card-title">Sistema</h2>
+            <p class="card-description">Parâmetros gerais de funcionamento da plataforma.</p>
+          </div>
+        </div>
+
+        <form [formGroup]="systemForm" (ngSubmit)="saveSystem()" class="settings-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="defaultCommission">Comissão padrão (%)</label>
+              <input
+                id="defaultCommission"
+                type="number"
+                class="form-control"
+                formControlName="defaultCommission"
+                min="0"
+                max="100"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="currency">Moeda</label>
+              <select id="currency" class="form-control" formControlName="currency">
+                <option value="BRL">BRL – Real Brasileiro</option>
+                <option value="USD">USD – Dólar Americano</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="timezone">Fuso Horário</label>
+              <select id="timezone" class="form-control" formControlName="timezone">
+                <option value="America/Sao_Paulo">América/São_Paulo (GMT-3)</option>
+                <option value="America/Manaus">América/Manaus (GMT-4)</option>
+                <option value="America/Belem">América/Belém (GMT-3)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="language">Idioma</label>
+              <select id="language" class="form-control" formControlName="language">
+                <option value="pt-BR">Português (Brasil)</option>
+                <option value="en-US">English (US)</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button type="submit" class="btn-save" [disabled]="savingSystem() || systemForm.invalid">
+              @if (savingSystem()) {
+                <span class="spinner" aria-hidden="true"></span>
+                Salvando...
+              } @else {
+                Salvar sistema
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </main>
+</div>

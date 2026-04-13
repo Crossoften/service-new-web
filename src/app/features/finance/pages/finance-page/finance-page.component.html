@@ -1,0 +1,246 @@
+<div class="app-shell">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="page-wrapper">
+
+      <p class="breadcrumb-label">FINANCEIRO</p>
+      <h1 class="page-title">Financeiro</h1>
+
+      <!-- Action Buttons -->
+      <div class="action-bar">
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="bi bi-search search-icon" aria-hidden="true"></i>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Buscar"
+              [formControl]="searchControl"
+              aria-label="Buscar"
+            />
+          </div>
+          <button class="btn-icon" type="button" aria-label="Filtrar">
+            <i class="bi bi-funnel" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="modal-buttons">
+          <button class="btn-modal" type="button" (click)="openRatesModal(ratesModalTpl)">
+            <i class="bi bi-percent" aria-hidden="true"></i>
+            Porcentagem Fornecedores
+          </button>
+          <button class="btn-modal" type="button" (click)="openCommissionsModal(commissionsModalTpl)">
+            <i class="bi bi-people-fill" aria-hidden="true"></i>
+            Comissão de Parceiros
+          </button>
+          <button class="btn-modal" type="button" (click)="openParamsModal(paramsModalTpl)">
+            <i class="bi bi-journal-text" aria-hidden="true"></i>
+            Parâmetros Assinatura
+          </button>
+        </div>
+      </div>
+
+      <!-- Entries Table -->
+      @if (isLoading()) {
+        <app-loading-skeleton [variant]="'table'" [count]="10"></app-loading-skeleton>
+      } @else if (!entries().length) {
+        <app-empty-state
+          [title]="'Nenhum registro encontrado'"
+          [description]="'Tente ajustar a busca ou o período selecionado.'"
+          [icon]="'bi-graph-up'"
+        ></app-empty-state>
+      } @else {
+        <div class="table-wrapper">
+          <table class="finance-table" aria-label="Registros financeiros">
+            <thead>
+              <tr>
+                <th scope="col">Serviço <i class="bi bi-arrow-down-short sort-icon"></i></th>
+                <th scope="col">Categoria <i class="bi bi-arrow-down-short sort-icon"></i></th>
+                <th scope="col">Valor <i class="bi bi-arrow-down-short sort-icon"></i></th>
+                <th scope="col">Valor Plataforma <i class="bi bi-arrow-down-short sort-icon"></i></th>
+                <th scope="col">Avaliação <i class="bi bi-arrow-down-short sort-icon"></i></th>
+                <th scope="col">Status <i class="bi bi-arrow-down-short sort-icon"></i></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of entries(); track entry.id) {
+                <tr>
+                  <td class="td-service">{{ entry.service }}</td>
+                  <td>
+                    <span class="category-chip">{{ entry.category }}</span>
+                  </td>
+                  <td class="td-value">{{ formatCurrency(entry.value) }}</td>
+                  <td class="td-platform">{{ formatCurrency(entry.platformValue) }}</td>
+                  <td>
+                    <span class="stars" [attr.aria-label]="entry.rating + ' estrelas'">
+                      {{ renderStars(entry.rating) }}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      class="status-badge"
+                      [class.active]="entry.status === 'active'"
+                      [class.inactive]="entry.status === 'inactive'"
+                    >
+                      {{ entry.status === 'active' ? 'Ativo' : 'Desativado' }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <span class="pagination-info">{{ paginationInfo() }}</span>
+          <div class="pagination-controls">
+            <button class="btn-page" type="button" [disabled]="currentPage() === 1" (click)="onPageChange(currentPage() - 1)" aria-label="Anterior">
+              <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </button>
+            <button class="btn-page" type="button" [disabled]="currentPage() >= totalPages()" (click)="onPageChange(currentPage() + 1)" aria-label="Próxima">
+              <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      }
+
+    </div>
+  </main>
+</div>
+
+<!-- ── Modal: Porcentagem Fornecedores ──────────────────────────────────── -->
+<ng-template #ratesModalTpl let-modal>
+  <div class="modal-card">
+    <div class="modal-card-header">
+      <h4 class="modal-title">Porcentagem Fornecedores</h4>
+      <button class="modal-close" type="button" (click)="dismissModal()" aria-label="Fechar">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="modal-card-body" [formGroup]="ratesForm">
+      <table class="modal-table" formArrayName="rates">
+        <thead>
+          <tr>
+            <th>Categoria <i class="bi bi-arrow-down-short sort-icon"></i></th>
+            <th>Porcentagem <i class="bi bi-arrow-down-short sort-icon"></i></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ctrl of ratesArray.controls; track $index) {
+            <tr [formGroupName]="$index">
+              <td>{{ ctrl.get('category')?.value }}</td>
+              <td>
+                <div class="pct-input-wrap">
+                  <input type="number" class="pct-input" formControlName="percentage" min="0" max="100" />
+                  <span class="pct-sign">%</span>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <div class="modal-pagination-info">{{ ratesArray.length }} de {{ ratesArray.length }} itens</div>
+    </div>
+
+    <div class="modal-card-footer">
+      <button class="btn-cancel" type="button" (click)="dismissModal()">CANCELAR</button>
+      <button class="btn-save" type="button" [disabled]="isSavingModal()" (click)="saveRates()">
+        @if (isSavingModal()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+        SALVAR
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<!-- ── Modal: Comissão Parceiros ─────────────────────────────────────────── -->
+<ng-template #commissionsModalTpl let-modal>
+  <div class="modal-card">
+    <div class="modal-card-header">
+      <h4 class="modal-title">Comissão Parceiros</h4>
+      <button class="modal-close" type="button" (click)="dismissModal()" aria-label="Fechar">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="modal-card-body" [formGroup]="commissionsForm">
+      <table class="modal-table" formArrayName="commissions">
+        <thead>
+          <tr>
+            <th>Nome Parceiros <i class="bi bi-arrow-down-short sort-icon"></i></th>
+            <th>Porcentagem <i class="bi bi-arrow-down-short sort-icon"></i></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ctrl of commissionsArray.controls; track $index) {
+            <tr [formGroupName]="$index">
+              <td>{{ ctrl.get('name')?.value }}</td>
+              <td>
+                <div class="pct-input-wrap">
+                  <input type="number" class="pct-input" formControlName="percentage" min="0" max="100" />
+                  <span class="pct-sign">%</span>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <div class="modal-pagination-info">{{ commissionsArray.length }} de {{ commissionsArray.length }} itens</div>
+    </div>
+
+    <div class="modal-card-footer">
+      <button class="btn-cancel" type="button" (click)="dismissModal()">CANCELAR</button>
+      <button class="btn-save" type="button" [disabled]="isSavingModal()" (click)="saveCommissions()">
+        @if (isSavingModal()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+        SALVAR
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<!-- ── Modal: Parâmetros Assinatura ──────────────────────────────────────── -->
+<ng-template #paramsModalTpl let-modal>
+  <div class="modal-card">
+    <div class="modal-card-header">
+      <h4 class="modal-title">Parâmetros Assinatura</h4>
+      <button class="modal-close" type="button" (click)="dismissModal()" aria-label="Fechar">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="modal-card-body" [formGroup]="paramsForm">
+      <table class="modal-table" formArrayName="params">
+        <thead>
+          <tr>
+            <th>Plano <i class="bi bi-arrow-down-short sort-icon"></i></th>
+            <th>Ação <i class="bi bi-arrow-down-short sort-icon"></i></th>
+            <th>Valor <i class="bi bi-arrow-down-short sort-icon"></i></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ctrl of paramsArray.controls; track $index) {
+            <tr [formGroupName]="$index">
+              <td class="td-bold">{{ ctrl.get('plan')?.value }}</td>
+              <td>{{ ctrl.get('action')?.value }}</td>
+              <td>
+                <div class="currency-input-wrap">
+                  <span class="currency-sign">R$</span>
+                  <input type="number" class="currency-input" formControlName="value" min="0" step="0.01" />
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <div class="modal-pagination-info">{{ paramsArray.length }} de {{ paramsArray.length }} itens</div>
+    </div>
+
+    <div class="modal-card-footer">
+      <button class="btn-cancel" type="button" (click)="dismissModal()">CANCELAR</button>
+      <button class="btn-save" type="button" [disabled]="isSavingModal()" (click)="saveParams()">
+        @if (isSavingModal()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+        SALVAR
+      </button>
+    </div>
+  </div>
+</ng-template>

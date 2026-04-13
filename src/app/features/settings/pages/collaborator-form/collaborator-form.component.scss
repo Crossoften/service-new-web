@@ -1,0 +1,137 @@
+:host { display: block; height: 100vh; overflow: hidden; }
+
+.app-shell { display: flex; height: 100%; background: #f5f6fa; }
+
+.main-content {
+  flex: 1; min-width: 0; height: 100%;
+  display: flex; flex-direction: column; overflow-y: auto;
+}
+
+.page-wrapper {
+  flex: 1; display: flex; flex-direction: column; padding: 2rem 2.5rem;
+}
+
+.breadcrumb-label {
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em;
+  color: #888; margin: 0 0 0.25rem; text-transform: uppercase;
+}
+
+.page-title {
+  font-size: 1.75rem; font-weight: 700; color: #111; margin: 0 0 1.5rem;
+}
+
+.form-card {
+  background: #fff; border-radius: 1.25rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  padding: 2rem 2.5rem 2.5rem;
+  max-width: 720px;
+}
+
+.form-row-3 {
+  display: grid;
+  grid-template-columns: 100px 1fr 140px;
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.section-label {
+  font-size: 0.72rem; font-weight: 700; color: #888;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.form-group {
+  display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.25rem;
+}
+
+.form-label { font-size: 0.8rem; font-weight: 600; color: #222; }
+
+.input-icon-wrap { position: relative; }
+
+.input-icon {
+  position: absolute; left: 0.75rem; top: 50%;
+  transform: translateY(-50%); color: #8308d2;
+  font-size: 1rem; pointer-events: none;
+}
+
+.form-control {
+  padding: 0.5rem 0.875rem; border: 1px solid #e0e0e0; border-radius: 0.5rem;
+  font-size: 0.875rem; color: #111; background: #fff;
+  transition: border-color 0.15s;
+
+  &:focus { outline: none; border-color: #8308d2; box-shadow: 0 0 0 3px rgba(131,8,210,0.08); }
+  &.is-invalid { border-color: #dc3545; }
+  &--icon { padding-left: 2.2rem; }
+  &--select { cursor: pointer; appearance: auto; }
+}
+
+.invalid-feedback { font-size: 0.75rem; color: #dc3545; }
+
+// Modules
+.modules-grid {
+  display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem;
+  padding: 1rem 1.25rem;
+  background: #faf5ff; border-radius: 0.875rem;
+  border: 1px solid rgba(131,8,210,0.1);
+  margin-bottom: 1.5rem;
+}
+
+.module-toggle {
+  display: flex; align-items: center; gap: 0.6rem;
+}
+
+.module-name {
+  font-size: 0.82rem; font-weight: 600; color: #333; min-width: 80px;
+}
+
+.toggle {
+  display: inline-flex; align-items: center; cursor: pointer; user-select: none;
+
+  input[type='checkbox'] {
+    display: none;
+    &:checked + .toggle-track {
+      background: #8308d2;
+      &::after { transform: translateX(18px); }
+    }
+  }
+}
+
+.toggle-track {
+  position: relative; width: 40px; height: 22px;
+  border-radius: 100px; background: #ccc; transition: background 0.2s;
+
+  &::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 16px; height: 16px; border-radius: 50%; background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: transform 0.2s;
+  }
+}
+
+.form-actions {
+  display: flex; justify-content: flex-end; gap: 1rem;
+}
+
+.btn-cancel, .btn-save {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0.6rem 2.5rem; border-radius: 0.5rem;
+  font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em;
+  cursor: pointer; transition: background 0.15s, color 0.15s;
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.btn-cancel {
+  background: transparent; border: 1.5px solid #8308d2; color: #8308d2;
+  &:hover:not(:disabled) { background: rgba(131,8,210,0.06); }
+}
+
+.btn-save {
+  background: #8308d2; border: 1.5px solid #8308d2; color: #fff;
+  &:hover:not(:disabled) { background: #6906a8; }
+}

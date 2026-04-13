@@ -1,0 +1,144 @@
+<div class="app-shell">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="page-wrapper">
+
+      <p class="breadcrumb-label">USUÁRIOS</p>
+      <h1 class="page-title">Influencers</h1>
+
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="bi bi-search search-icon" aria-hidden="true"></i>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar"
+            [formControl]="searchControl"
+            aria-label="Buscar influencers"
+          />
+        </div>
+        <button class="btn-icon" type="button" aria-label="Filtrar">
+          <i class="bi bi-funnel" aria-hidden="true"></i>
+        </button>
+        <span class="toolbar-spacer"></span>
+        <button class="btn-toggle-view" type="button" (click)="goToUsers()" title="Ver Usuários">
+          <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
+          Usuários
+        </button>
+      </div>
+
+      @if (isLoading()) {
+        <app-loading-skeleton [variant]="'table'" [count]="10"></app-loading-skeleton>
+      } @else if (!influencers().length) {
+        <app-empty-state
+          [title]="'Nenhum influencer encontrado'"
+          [description]="'Tente ajustar a busca ou verifique os filtros.'"
+          [icon]="'bi-star'"
+        ></app-empty-state>
+      } @else {
+        <div class="table-wrapper">
+          <table class="data-table" aria-label="Lista de influencers">
+            <thead>
+              <tr>
+                <th scope="col">
+                  Nome
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col">
+                  Email
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col">
+                  Telefone
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col">
+                  Rating
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col">
+                  Comentários
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col">
+                  Status
+                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
+                </th>
+                <th scope="col" class="col-actions" aria-label="Ações"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (inf of influencers(); track inf.id) {
+                <tr class="clickable-row" (click)="navigateToDetail(inf.id)" tabindex="0" (keydown.enter)="navigateToDetail(inf.id)">
+                  <td class="td-name">{{ inf.name }}</td>
+                  <td>{{ inf.email }}</td>
+                  <td>{{ inf.phone }}</td>
+                  <td>
+                    <span class="rating-value">
+                      <i class="bi bi-hand-thumbs-up-fill" aria-hidden="true"></i>
+                      {{ inf.rating }}
+                    </span>
+                  </td>
+                  <td>{{ inf.comments }}</td>
+                  <td>
+                    <span
+                      class="status-badge"
+                      [class.active]="inf.status === 'active'"
+                      [class.inactive]="inf.status === 'inactive'"
+                    >
+                      {{ inf.status === 'active' ? 'Ativo' : 'Desativado' }}
+                    </span>
+                  </td>
+                  <td class="col-actions" (click)="$event.stopPropagation()">
+                    <div ngbDropdown placement="bottom-end" class="actions-dropdown">
+                      <button
+                        class="btn-actions"
+                        type="button"
+                        ngbDropdownToggle
+                        [attr.aria-label]="'Ações para ' + inf.name"
+                      >
+                        <i class="bi bi-three-dots" aria-hidden="true"></i>
+                      </button>
+                      <div ngbDropdownMenu>
+                        <button ngbDropdownItem type="button" (click)="navigateToDetail(inf.id)">
+                          <i class="bi bi-eye me-2" aria-hidden="true"></i>
+                          Ver detalhes
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <span class="pagination-info">{{ paginationInfo() }}</span>
+          <div class="pagination-controls">
+            <button
+              class="btn-page"
+              type="button"
+              [disabled]="currentPage() === 1"
+              (click)="onPageChange(currentPage() - 1)"
+              aria-label="Página anterior"
+            >
+              <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </button>
+            <button
+              class="btn-page"
+              type="button"
+              [disabled]="currentPage() >= totalPages()"
+              (click)="onPageChange(currentPage() + 1)"
+              aria-label="Próxima página"
+            >
+              <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      }
+
+    </div>
+  </main>
+</div>
