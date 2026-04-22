@@ -11,10 +11,18 @@
 
       <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <h1>Seja bem vindo(a)!</h1>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt
-          ut labore et dolore magna aliqua.
-        </p>
+        <p>Acesse com suas credenciais reais para consumir o backend documentado.</p>
+
+        <div class="status-chip" [class.up]="apiStatusState() === 'up'" [class.down]="apiStatusState() === 'down'">
+          <i
+            class="bi"
+            [class.bi-check-circle-fill]="apiStatusState() === 'up'"
+            [class.bi-exclamation-octagon-fill]="apiStatusState() === 'down'"
+            [class.bi-arrow-repeat]="apiStatusState() === 'pending'"
+            aria-hidden="true"
+          ></i>
+          <span>{{ apiStatusMessage() }}</span>
+        </div>
 
         <label for="email">Email</label>
         <div class="input-wrap" [class.invalid]="isFieldInvalid('email')">
@@ -40,7 +48,13 @@
           />
         </div>
 
-        <a class="forgot-link" routerLink="/auth/forgot-password" aria-label="Esqueceu sua senha">Esqueceu a senha? <b>Clique aqui!</b></a>
+        <a
+          class="forgot-link"
+          routerLink="/auth/forgot-password"
+          aria-label="Esqueceu sua senha"
+        >
+          Esqueceu a senha? <b>Clique aqui!</b>
+        </a>
 
         <button type="submit" [disabled]="isSubmitting() || !loginForm.valid">
           @if (isSubmitting()) {
@@ -54,13 +68,13 @@
     </article>
 
     <figure class="illustration-panel">
-      <img src="/assets/login-illustration.svg" alt="Ilustração de pessoas e engrenagens" />
+      <img src="/assets/login-illustration.svg" alt="Ilustracao de pessoas e engrenagens" />
     </figure>
   </section>
 
   <footer class="login-footer">
     <a routerLink="/auth/terms-of-use"><strong>TERMOS DE USO</strong></a>
-    <a routerLink="/auth/privacy-policy"><strong>POLÍTICAS DE PRIVACIDADE</strong></a>
-    <a href="mailto:contato@service.com"><strong>CONTATO</strong></a>
+    <a routerLink="/auth/privacy-policy"><strong>POLITICAS DE PRIVACIDADE</strong></a>
+    <a routerLink="/auth/contact"><strong>CONTATO</strong></a>
   </footer>
 </main>

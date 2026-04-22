@@ -3,28 +3,82 @@
 
   <main class="main-content">
     <div class="page-wrapper">
+      @if (isLoading()) {
+        <app-loading-skeleton [variant]="'card'" [count]="4"></app-loading-skeleton>
+      } @else {
+        <div
+          class="dashboard-status"
+          [class.up]="healthState() === 'up'"
+          [class.down]="healthState() === 'down'"
+        >
+          <i
+            class="bi"
+            [class.bi-check-circle-fill]="healthState() === 'up'"
+            [class.bi-exclamation-octagon-fill]="healthState() === 'down'"
+            aria-hidden="true"
+          ></i>
+          <span>{{ healthMessage() }}</span>
+        </div>
 
-      <div class="stats-grid">
-        @for (stat of stats; track stat.label) {
-          <div class="stat-card">
-            <div class="stat-icon">
-              <i [class]="'bi ' + stat.icon" aria-hidden="true"></i>
-            </div>
-            <div class="stat-body">
-              <span class="stat-value">{{ stat.value }}</span>
-              <span class="stat-label">{{ stat.label }}</span>
+        <section class="stats-grid" aria-label="Resumo do dashboard">
+          @for (card of metricCards(); track card.label) {
+            <article class="stat-card" [class.unavailable]="card.unavailable">
+              <div class="stat-icon">
+                <i [class]="'bi ' + card.icon" aria-hidden="true"></i>
+              </div>
+
+              <div class="stat-copy">
+                <strong class="stat-value">{{ card.value }}</strong>
+                <span class="stat-label">{{ card.label }}</span>
+                @if (card.unavailable) {
+                  <span class="stat-note">Endpoint ausente</span>
+                }
+              </div>
+            </article>
+          }
+        </section>
+
+        <section class="chart-card" aria-label="Grafico do dashboard">
+          <div class="chart-header">
+            <h2>Usuarios</h2>
+
+            <div class="chart-legend" aria-label="Legenda do grafico">
+              <span class="legend-item users">
+                <i class="legend-dot" aria-hidden="true"></i>
+                Usuarios
+              </span>
+              <span class="legend-item services">
+                <i class="legend-dot" aria-hidden="true"></i>
+                Servicos
+              </span>
             </div>
           </div>
-        }
-      </div>
 
-      <div class="chart-card">
-        <h3 class="chart-title">Usuários</h3>
-        <div class="chart-wrap">
-          <canvas #chartCanvas aria-label="Gráfico de Usuários e Serviços"></canvas>
-        </div>
-      </div>
+          <div class="chart-wrap">
+            <canvas #chartCanvas aria-label="Grafico mensal de usuarios e servicos"></canvas>
+          </div>
+        </section>
 
+        <section class="gaps-card">
+          <div class="gap-column">
+            <h3>Endpoints existentes usados no dashboard</h3>
+            <ul>
+              @for (endpoint of existingDashboardSources(); track endpoint) {
+                <li>{{ endpoint }}</li>
+              }
+            </ul>
+          </div>
+
+          <div class="gap-column">
+            <h3>Endpoints faltantes para reproduzir o exemplo</h3>
+            <ul>
+              @for (endpoint of missingEndpoints(); track endpoint) {
+                <li>{{ endpoint }}</li>
+              }
+            </ul>
+          </div>
+        </section>
+      }
     </div>
   </main>
 </div>

@@ -1,0 +1,133 @@
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-shell {
+  display: flex;
+  height: 100%;
+  background: #f5f6fa;
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.page-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 2.5rem;
+}
+
+.breadcrumb-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #888;
+  margin: 0 0 0.25rem;
+  text-transform: uppercase;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 1.5rem;
+}
+
+.notice-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.25rem;
+  align-items: flex-start;
+  max-width: 760px;
+  padding: 1.75rem;
+  background: #fff;
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+}
+
+.notice-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 1rem;
+  background: rgba(131, 8, 210, 0.1);
+  color: #8308d2;
+  font-size: 1.5rem;
+}
+
+.notice-content h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.notice-content p {
+  margin: 0 0 0.85rem;
+  color: #5f5f5f;
+  line-height: 1.6;
+}
+
+.endpoint-list {
+  margin: 1.25rem 0 1.5rem;
+  padding: 1rem 1.1rem;
+  border-radius: 1rem;
+  background: #f7f1ff;
+}
+
+.endpoint-list h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #4c1180;
+}
+
+.endpoint-list ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: #5f5f5f;
+}
+
+.endpoint-list li + li {
+  margin-top: 0.45rem;
+}
+
+.action-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.7rem 1.25rem;
+  border-radius: 0.75rem;
+  background: #8308d2;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.action-link:hover {
+  background: #6906a8;
+}
+
+@media (max-width: 768px) {
+  .page-wrapper {
+    padding: 1.5rem 1rem;
+  }
+
+  .notice-card {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
+import { AuthApiService } from '@features/auth/services/auth-api.service';
 import { ToastService } from '@core/services/toast.service';
 
 interface NavItem {
@@ -20,14 +21,14 @@ interface NavItem {
 export class SidebarComponent {
   readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
+  private readonly authApiService = inject(AuthApiService);
 
   readonly navItems: NavItem[] = [
-    { label: 'DASHBOARD',   icon: 'bi-speedometer2',    route: '/dashboard', implemented: true  },
-    { label: 'PARCEIROS',   icon: 'bi-building',        route: '/suppliers', implemented: true  },
-    { label: 'USUÁRIOS',    icon: 'bi-people',          route: '/users',     implemented: true  },
-    { label: 'SERVIÇOS',    icon: 'bi-grid',            route: '/services',  implemented: true  },
-    { label: 'FINANCEIRO',  icon: 'bi-graph-up',        route: '/finance',   implemented: true  },
-    { label: 'CONFIGURAÇÃO',icon: 'bi-gear',            route: '/settings',  implemented: true  },
+    { label: 'DASHBOARD', icon: 'bi-display', route: '/dashboard', implemented: true },
+    { label: 'USUARIOS', icon: 'bi-briefcase', route: '/users', implemented: true },
+    { label: 'SERVICOS', icon: 'bi-grid', route: '/services', implemented: true },
+    { label: 'FINANCEIRO', icon: 'bi-graph-up', route: '/finance', implemented: true },
+    { label: 'CONFIGURACAO', icon: 'bi-gear', route: '/settings', implemented: true },
   ];
 
   isActive(route: string): boolean {
@@ -37,13 +38,15 @@ export class SidebarComponent {
   onNavClick(item: NavItem, event: MouseEvent): void {
     event.preventDefault();
     if (!item.implemented) {
-      this.toastService.showInfo('Este módulo está em desenvolvimento.');
+      this.toastService.showInfo('Este modulo esta em desenvolvimento.');
       return;
     }
+
     this.router.navigate([item.route]);
   }
 
   logout(): void {
+    this.authApiService.logout();
     this.router.navigate(['/auth/login']);
   }
 }

@@ -1,12 +1,14 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, throwError } from 'rxjs';
-import { ToastService } from '../services/toast.service';
 import { Router } from '@angular/router';
+import { catchError, throwError } from 'rxjs';
+import { SessionService } from '../services/session.service';
+import { ToastService } from '../services/toast.service';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const toastService = inject(ToastService);
   const router = inject(Router);
+  const sessionService = inject(SessionService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
@@ -14,15 +16,16 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
       switch (error.status) {
         case 0:
-          toastService.showError('Erro de conexão. Verifique sua internet.');
+          toastService.showError('Erro de conexao. Verifique sua internet.');
           break;
 
         case 400:
-          toastService.showError(`Requisição inválida: ${errorMessage}`);
+          toastService.showError(`Requisicao invalida: ${errorMessage}`);
           break;
 
         case 401:
-          toastService.showError('Sessão expirada. Faça login novamente.');
+          sessionService.clearSession();
+          toastService.showError('Sessao expirada. Faca login novamente.');
           router.navigate(['/auth/login']);
           break;
 
@@ -31,7 +34,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           break;
 
         case 404:
-          toastService.showError('Recurso não encontrado.');
+          toastService.showError('Recurso nao encontrado.');
           break;
 
         case 500:

@@ -1,14 +1,26 @@
-import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ToastService } from '@core/services/toast.service';
+import { AuthApiService } from '../../services/auth-api.service';
 
 function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password');
-  const confirm = control.get('confirmPassword');
-  if (!password || !confirm) return null;
-  return password.value === confirm.value ? null : { passwordMismatch: true };
+  const confirmPassword = control.get('confirmPassword');
+
+  if (!password || !confirmPassword) {
+    return null;
+  }
+
+  return password.value === confirmPassword.value ? null : { passwordMismatch: true };
 }
 
 @Component({
@@ -19,31 +31,20 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
   styleUrls: ['./reset-password-page.component.scss'],
 })
 export class ResetPasswordPageComponent {
-  resetForm!: FormGroup;
-  isSubmitting = signal(false);
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
+  private readonly authApiService = inject(AuthApiService);
 
-  readonly testCredentials = {
-    token: '123456',
-  };
-
-  constructor(
-    private fb: FormBuilder,
-    private router: Router,
-    private toastService: ToastService
-  ) {
-    this.initForm();
-  }
-
-  private initForm(): void {
-    this.resetForm = this.fb.group(
-      {
-        token: ['', [Validators.required, Validators.minLength(4)]],
-        password: ['', [Validators.required, Validators.minLength(6)]],
-        confirmPassword: ['', [Validators.required]],
-      },
-      { validators: passwordMatchValidator }
-    );
-  }
+  readonly isSubmitting = signal(false);
+  readonly resetForm: FormGroup = this.fb.group(
+    {
+      code: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(4)]],
+      password: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(8)]],
+      confirmPassword: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(8)]],
+    },
+    { validators: passwordMatchValidator }
+  );
 
   isFieldInvalid(fieldName: string): boolean {
     const field = this.resetForm.get(fieldName);
@@ -58,16 +59,28 @@ export class ResetPasswordPageComponent {
 
   onSubmit(): void {
     this.resetForm.markAllAsTouched();
-    if (!this.resetForm.valid) {
+
+    if (this.resetForm.invalid) {
       return;
     }
 
     this.isSubmitting.set(true);
 
-    setTimeout(() => {
-      this.isSubmitting.set(false);
-      this.toastService.showSuccess('Senha redefinida com sucesso!');
-      this.router.navigate(['/auth/login']);
-    }, 1500);
+    this.authApiService
+      .resetPassword({
+        code: this.resetForm.get('code')?.value as string,
+        password: this.resetForm.get('password')?.value as string,
+        confirmPassword: this.resetForm.get('confirmPassword')?.value as string,
+      })
+      .subscribe({
+        next: (response) => {
+          this.isSubmitting.set(false);
+          this.toastService.showSuccess(response.message || 'Senha redefinida com sucesso.');
+          this.router.navigate(['/auth/login']);
+        },
+        error: () => {
+          this.isSubmitting.set(false);
+        },
+      });
   }
 }

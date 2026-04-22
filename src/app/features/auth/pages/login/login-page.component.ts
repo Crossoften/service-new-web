@@ -1,9 +1,9 @@
-import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ToastService } from '@core/services/toast.service';
-
+import { AuthApiService } from '../../services/auth-api.service';
 
 @Component({
   selector: 'app-login-page',
@@ -12,22 +12,30 @@ import { ToastService } from '@core/services/toast.service';
   templateUrl: './login-page.component.html',
   styleUrls: ['./login-page.component.scss'],
 })
-export class LoginPageComponent {
-  loginForm!: FormGroup;
-  isSubmitting = signal(false);
+export class LoginPageComponent implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
+  private readonly authApiService = inject(AuthApiService);
 
-  constructor(
-    private fb: FormBuilder,
-    private router: Router,
-    private toastService: ToastService
-  ) {
-    this.initForm();
-  }
+  readonly isSubmitting = signal(false);
+  readonly apiStatusMessage = signal('Verificando backend...');
+  readonly apiStatusState = signal<'pending' | 'up' | 'down'>('pending');
+  readonly loginForm: FormGroup = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(4)]],
+  });
 
-  private initForm(): void {
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+  ngOnInit(): void {
+    this.authApiService.getHealthCheck().subscribe({
+      next: (message) => {
+        this.apiStatusMessage.set(message || 'Servidor UP');
+        this.apiStatusState.set('up');
+      },
+      error: () => {
+        this.apiStatusMessage.set('Backend indisponivel no momento');
+        this.apiStatusState.set('down');
+      },
     });
   }
 
@@ -37,16 +45,28 @@ export class LoginPageComponent {
   }
 
   onSubmit(): void {
-    if (!this.loginForm.valid) {
+    this.loginForm.markAllAsTouched();
+
+    if (this.loginForm.invalid) {
       return;
     }
 
     this.isSubmitting.set(true);
 
-    setTimeout(() => {
-      this.isSubmitting.set(false);
-      this.toastService.showSuccess('Login realizado com sucesso!');
-      this.router.navigate(['/dashboard']);
-    }, 1500);
+    this.authApiService
+      .login({
+        email: this.loginForm.get('email')?.value as string,
+        password: this.loginForm.get('password')?.value as string,
+      })
+      .subscribe({
+        next: () => {
+          this.isSubmitting.set(false);
+          this.toastService.showSuccess('Login realizado com sucesso.');
+          this.router.navigate(['/dashboard']);
+        },
+        error: () => {
+          this.isSubmitting.set(false);
+        },
+      });
   }
 }

@@ -10,57 +10,22 @@
       </header>
 
       <h1>Termos de Uso</h1>
-      <p class="last-updated">Última atualização: março de 2026</p>
+      <p class="last-updated">
+        @if (text()) {
+          Ultima atualizacao: {{ text()?.updatedAt | date: "MMMM 'de' y" : '' : 'pt-BR' }}
+        } @else {
+          Ultima atualizacao indisponivel
+        }
+      </p>
 
       <div class="legal-content">
-        <h2>1. Aceitação dos Termos</h2>
-        <p>
-          Ao acessar e utilizar a plataforma Service, você concorda com estes Termos de Uso.
-          Caso não concorde com qualquer disposição aqui prevista, recomendamos que não utilize
-          nossos serviços.
-        </p>
-
-        <h2>2. Uso da Plataforma</h2>
-        <p>
-          A plataforma Service é destinada exclusivamente a usuários autorizados para gestão de
-          ordens de serviço, controle de atendimentos e demais funcionalidades disponibilizadas.
-          O uso deve ser feito de forma responsável, respeitando as diretrizes da empresa e a
-          legislação vigente.
-        </p>
-
-        <h2>3. Responsabilidades do Usuário</h2>
-        <p>
-          O usuário é responsável por manter a confidencialidade de suas credenciais de acesso.
-          Qualquer atividade realizada com seu login é de sua inteira responsabilidade. Em caso
-          de suspeita de uso indevido, notifique imediatamente o administrador do sistema.
-        </p>
-
-        <h2>4. Propriedade Intelectual</h2>
-        <p>
-          Todo o conteúdo disponível na plataforma, incluindo mas não se limitando a textos,
-          imagens, logotipos e software, é protegido por direitos autorais e demais legislações
-          de propriedade intelectual aplicáveis.
-        </p>
-
-        <h2>5. Limitação de Responsabilidade</h2>
-        <p>
-          A Service não se responsabiliza por danos diretos ou indiretos decorrentes do uso
-          inadequado da plataforma, falhas técnicas fora de seu controle ou informações
-          incorretas inseridas pelos usuários.
-        </p>
-
-        <h2>6. Alterações nos Termos</h2>
-        <p>
-          Reservamo-nos o direito de alterar estes Termos de Uso a qualquer momento. As
-          alterações entrarão em vigor a partir de sua publicação na plataforma. Recomendamos
-          a revisão periódica deste documento.
-        </p>
-
-        <h2>7. Contato</h2>
-        <p>
-          Para dúvidas ou esclarecimentos sobre estes Termos de Uso, entre em contato com nossa
-          equipe através dos canais oficiais disponibilizados na plataforma.
-        </p>
+        @if (isLoading()) {
+          <p>Carregando conteudo...</p>
+        } @else if (text()?.text) {
+          <div [innerHTML]="text()?.text || ''"></div>
+        } @else {
+          <p>Nao foi possivel carregar os termos de uso no momento.</p>
+        }
       </div>
 
       <a class="back-link" routerLink="/auth/login" aria-label="Voltar para a tela de login">
@@ -72,7 +37,7 @@
 
   <footer class="legal-footer">
     <a routerLink="/auth/terms-of-use"><strong>TERMOS DE USO</strong></a>
-    <a routerLink="/auth/privacy-policy"><strong>POLÍTICAS DE PRIVACIDADE</strong></a>
-    <a href="mailto:contato@service.com"><strong>CONTATO</strong></a>
+    <a routerLink="/auth/privacy-policy"><strong>POLITICAS DE PRIVACIDADE</strong></a>
+    <a routerLink="/auth/contact"><strong>CONTATO</strong></a>
   </footer>
 </main>

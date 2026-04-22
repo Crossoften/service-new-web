@@ -9,65 +9,23 @@
         ></object>
       </header>
 
-      <h1>Políticas de Privacidade</h1>
-      <p class="last-updated">Última atualização: março de 2026</p>
+      <h1>Politicas de Privacidade</h1>
+      <p class="last-updated">
+        @if (text()) {
+          Ultima atualizacao: {{ text()?.updatedAt | date: "MMMM 'de' y" : '' : 'pt-BR' }}
+        } @else {
+          Ultima atualizacao indisponivel
+        }
+      </p>
 
       <div class="legal-content">
-        <h2>1. Informações que Coletamos</h2>
-        <p>
-          Coletamos informações fornecidas diretamente por você ao utilizar nossa plataforma,
-          como nome, endereço de e-mail, dados de acesso e demais informações necessárias para
-          a prestação dos nossos serviços.
-        </p>
-
-        <h2>2. Como Utilizamos suas Informações</h2>
-        <p>
-          As informações coletadas são utilizadas para autenticação, personalização da
-          experiência, comunicações operacionais e melhoria contínua dos nossos serviços.
-          Não comercializamos seus dados pessoais com terceiros.
-        </p>
-
-        <h2>3. Armazenamento e Segurança</h2>
-        <p>
-          Adotamos medidas técnicas e organizacionais adequadas para proteger seus dados contra
-          acesso não autorizado, alteração, divulgação ou destruição. Os dados são armazenados
-          em servidores seguros com acesso restrito.
-        </p>
-
-        <h2>4. Compartilhamento de Dados</h2>
-        <p>
-          Seus dados poderão ser compartilhados com parceiros e prestadores de serviço
-          exclusivamente para viabilizar as funcionalidades da plataforma, sempre sob
-          obrigação de confidencialidade e em conformidade com a LGPD.
-        </p>
-
-        <h2>5. Cookies e Tecnologias Similares</h2>
-        <p>
-          Utilizamos cookies e tecnologias similares para melhorar sua experiência de
-          navegação, analisar o tráfego da plataforma e personalizar conteúdos. Você pode
-          configurar seu navegador para recusar cookies, mas isso pode afetar algumas
-          funcionalidades.
-        </p>
-
-        <h2>6. Seus Direitos (LGPD)</h2>
-        <p>
-          Em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), você tem
-          direito ao acesso, correção, exclusão, portabilidade e oposição ao tratamento de seus
-          dados pessoais. Para exercer esses direitos, entre em contato conosco.
-        </p>
-
-        <h2>7. Retenção de Dados</h2>
-        <p>
-          Mantemos seus dados pelo período necessário para cumprimento das finalidades descritas
-          nesta política ou conforme exigido por lei. Após esse período, os dados são
-          devidamente descartados ou anonimizados.
-        </p>
-
-        <h2>8. Contato do Encarregado (DPO)</h2>
-        <p>
-          Para questões relacionadas à privacidade e proteção de dados, entre em contato com
-          nosso Encarregado de Dados pelos canais oficiais disponibilizados na plataforma.
-        </p>
+        @if (isLoading()) {
+          <p>Carregando conteudo...</p>
+        } @else if (text()?.text) {
+          <div [innerHTML]="text()?.text || ''"></div>
+        } @else {
+          <p>Nao foi possivel carregar a politica de privacidade no momento.</p>
+        }
       </div>
 
       <a class="back-link" routerLink="/auth/login" aria-label="Voltar para a tela de login">
@@ -79,7 +37,7 @@
 
   <footer class="legal-footer">
     <a routerLink="/auth/terms-of-use"><strong>TERMOS DE USO</strong></a>
-    <a routerLink="/auth/privacy-policy"><strong>POLÍTICAS DE PRIVACIDADE</strong></a>
-    <a href="mailto:contato@service.com"><strong>CONTATO</strong></a>
+    <a routerLink="/auth/privacy-policy"><strong>POLITICAS DE PRIVACIDADE</strong></a>
+    <a routerLink="/auth/contact"><strong>CONTATO</strong></a>
   </footer>
 </main>

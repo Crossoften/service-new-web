@@ -10,7 +10,7 @@ import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar
 import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/loading-skeleton.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { UsersService } from '../../services/users.service';
-import { User } from '../../models/user.model';
+import { User, UserStatus } from '../../models/user.model';
 
 @Component({
   selector: 'app-users-list',
@@ -32,15 +32,13 @@ export class UsersListComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   readonly searchControl = new FormControl('');
-
   readonly users = signal<User[]>([]);
   readonly total = signal(0);
   readonly currentPage = signal(1);
   readonly pageSize = signal(10);
   readonly isLoading = signal(false);
 
-  readonly totalPages = computed(() => Math.ceil(this.total() / this.pageSize()));
-
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
   readonly paginationInfo = computed(() => {
     if (this.total() === 0) return '0 itens';
     const start = (this.currentPage() - 1) * this.pageSize() + 1;
@@ -86,11 +84,22 @@ export class UsersListComponent implements OnInit, OnDestroy {
     this.loadUsers();
   }
 
-  navigateToDetail(id: string): void {
+  navigateToDetail(id: number): void {
     this.router.navigate(['/users', id]);
   }
 
-  goToInfluencers(): void {
-    this.router.navigate(['/users/influencers']);
+  goToCollaborators(): void {
+    this.router.navigate(['/settings']);
+  }
+
+  getStatusLabel(status: UserStatus): string {
+    switch (status) {
+      case 'Active':
+        return 'Ativo';
+      case 'Pending':
+        return 'Pendente';
+      default:
+        return 'Inativo';
+    }
   }
 }

@@ -1,0 +1,40 @@
+<div class="app-shell">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="page-wrapper">
+      <p class="breadcrumb-label">COBERTURA DE CONTRATO</p>
+      <h1 class="page-title">{{ title }}</h1>
+
+      <section class="notice-card">
+        <div class="notice-icon" aria-hidden="true">
+          <i class="bi bi-exclamation-diamond"></i>
+        </div>
+
+        <div class="notice-content">
+          <h2>Modulo sem endpoint no backend atual</h2>
+          <p>{{ summary }}</p>
+          <p>
+            Para manter a integracao consistente, a navegacao foi preservada mas o fluxo ficou
+            bloqueado ate que a API correspondente seja disponibilizada.
+          </p>
+
+          @if (missingEndpoints.length) {
+            <div class="endpoint-list">
+              <h3>Endpoints faltantes para esta tela</h3>
+              <ul>
+                @for (endpoint of missingEndpoints; track endpoint) {
+                  <li>{{ endpoint }}</li>
+                }
+              </ul>
+            </div>
+          }
+
+          <a class="action-link" [routerLink]="actionRoute">
+            {{ actionLabel }}
+          </a>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>

@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
-  useMock: true,
-  apiUrl: 'https://api.service.com.br/v1',
+  useMock: false,
+  apiUrl: 'https://homolog.crosoften.com:8029',
   mockDelay: 500,
   appName: 'Service Management',
 };

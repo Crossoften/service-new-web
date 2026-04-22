@@ -1,14 +1,18 @@
-export type UserStatus = 'active' | 'inactive';
+export type UserStatus = 'Active' | 'Pending' | 'Inactive';
+export type UserRole = 'Master' | 'Admin' | 'User';
 
 export interface User {
-  id: string;
+  id: number;
+  code: string;
   name: string;
   email: string;
   phone: string;
-  dateOfBirth: string;
-  openServices: number;
+  role: UserRole;
   status: UserStatus;
-  avatarUrl?: string;
+  fileUrl: string | null;
+  fileKey: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PagedResult<T> {
@@ -22,4 +26,18 @@ export interface UserListParams {
   page: number;
   pageSize: number;
   search: string;
+}
+
+export interface UserApiItem {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  code: string;
+  role: UserRole | string;
+  status: UserStatus | string;
+  fileUrl: string;
+  fileKey: string;
+  createdAt: string;
+  updatedAt: string;
 }

@@ -48,3 +48,5 @@ Thumbs.db
 /.claude
 /.github
 *.json
+Service.md
+docs/api-coverage.md

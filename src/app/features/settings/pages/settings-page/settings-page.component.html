@@ -3,217 +3,199 @@
 
   <main class="main-content">
     <div class="page-wrapper">
+      <p class="breadcrumb-label">CONFIGURACAO</p>
+      <h1 class="page-title">Ferramentas da API</h1>
 
-      <p class="breadcrumb-label">CONFIGURAÇÃO</p>
-      <h1 class="page-title">Configuração</h1>
-
-      <!-- Perfil do Negócio -->
       <div class="settings-card">
         <div class="card-header">
           <div class="card-header-icon">
-            <i class="bi bi-building" aria-hidden="true"></i>
+            <i class="bi bi-person-badge" aria-hidden="true"></i>
           </div>
           <div>
-            <h2 class="card-title">Perfil do Negócio</h2>
-            <p class="card-description">Informações da empresa exibidas na plataforma.</p>
+            <h2 class="card-title">Foto de perfil atual</h2>
+            <p class="card-description">
+              Usa <code>/v1/my-self</code> para exibir o usuario autenticado e
+              <code>/v1/profile-photo</code> para remoção.
+            </p>
           </div>
         </div>
 
-        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="settings-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="companyName">Nome da Empresa</label>
-              <input
-                id="companyName"
-                type="text"
-                class="form-control"
-                formControlName="companyName"
-                placeholder="Nome da empresa"
-              />
+        <div class="card-content profile-content">
+          @if (currentUser()) {
+            <div class="profile-grid">
+              <div class="profile-preview">
+                @if (currentUser()?.fileUrl) {
+                  <img [src]="currentUser()?.fileUrl || ''" alt="Foto de perfil" />
+                } @else {
+                  <div class="profile-placeholder">
+                    {{ currentUser()?.name?.slice(0, 1) || '?' }}
+                  </div>
+                }
+              </div>
+
+              <div class="profile-copy">
+                <p><strong>Nome:</strong> {{ currentUser()?.name }}</p>
+                <p><strong>Email:</strong> {{ currentUser()?.email }}</p>
+                <p><strong>Perfil:</strong> {{ currentUser()?.role }}</p>
+                <p><strong>fileKey:</strong> {{ currentUser()?.fileKey || '-' }}</p>
+              </div>
             </div>
-            <div class="form-group">
-              <label class="form-label" for="cnpj">CNPJ</label>
-              <input
-                id="cnpj"
-                type="text"
-                class="form-control"
-                formControlName="cnpj"
-                placeholder="00.000.000/0000-00"
-              />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="email">E-mail</label>
-              <input
-                id="email"
-                type="email"
-                class="form-control"
-                formControlName="email"
-                placeholder="contato@empresa.com"
-              />
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="phone">Telefone</label>
-              <input
-                id="phone"
-                type="text"
-                class="form-control"
-                formControlName="phone"
-                placeholder="00 9 0000-0000"
-              />
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="address">Endereço</label>
+          } @else {
+            <p class="empty-copy">Nao foi possivel carregar <code>/v1/my-self</code>.</p>
+          }
+
+          <div class="inline-actions">
             <input
-              id="address"
               type="text"
               class="form-control"
-              formControlName="address"
-              placeholder="Rua, número – Cidade, Estado"
+              placeholder="fileKey da foto de perfil"
+              [formControl]="toolsForm.controls.profileFileKey"
             />
-          </div>
-          <div class="card-footer">
-            <button type="submit" class="btn-save" [disabled]="savingProfile() || profileForm.invalid">
-              @if (savingProfile()) {
+            <button
+              type="button"
+              class="btn-secondary"
+              (click)="removeProfilePhoto()"
+              [disabled]="isRemovingProfilePhoto()"
+            >
+              @if (isRemovingProfilePhoto()) {
                 <span class="spinner" aria-hidden="true"></span>
-                Salvando...
+                Removendo...
               } @else {
-                Salvar perfil
+                Remover foto
               }
             </button>
           </div>
-        </form>
+        </div>
       </div>
 
-      <!-- Notificações -->
-      <div class="settings-card">
-        <div class="card-header">
-          <div class="card-header-icon">
-            <i class="bi bi-bell" aria-hidden="true"></i>
+      <div class="settings-grid">
+        <div class="settings-card">
+          <div class="card-header">
+            <div class="card-header-icon">
+              <i class="bi bi-upload" aria-hidden="true"></i>
+            </div>
+            <div>
+              <h2 class="card-title">Upload unitario</h2>
+              <p class="card-description">Endpoint: <code>/v1/upload/one-file</code></p>
+            </div>
           </div>
-          <div>
-            <h2 class="card-title">Notificações</h2>
-            <p class="card-description">Escolha como deseja receber alertas da plataforma.</p>
+
+          <div class="card-content">
+            <label class="upload-zone">
+              <input type="file" (change)="onSingleFileSelected($event)" />
+              <span>Selecionar arquivo</span>
+            </label>
+
+            @if (isUploadingSingle()) {
+              <p class="inline-status">Enviando arquivo...</p>
+            }
+
+            @if (singleUploadResult()) {
+              <div class="result-box">
+                <p><strong>fileKey:</strong> {{ singleUploadResult()?.fileKey }}</p>
+                <a [href]="singleUploadResult()?.fileUrl" target="_blank" rel="noreferrer">
+                  Abrir URL retornada
+                </a>
+              </div>
+            }
           </div>
         </div>
 
-        <form [formGroup]="notificationsForm" (ngSubmit)="saveNotifications()" class="settings-form">
-          <div class="notification-group">
-            <p class="notification-group-title">Por E-mail</p>
-            <label class="toggle-row">
-              <span class="toggle-label">Novo serviço cadastrado</span>
-              <input type="checkbox" class="toggle-input" formControlName="emailNewService" />
-              <span class="toggle-slider"></span>
-            </label>
-            <label class="toggle-row">
-              <span class="toggle-label">Pagamento recebido</span>
-              <input type="checkbox" class="toggle-input" formControlName="emailPayment" />
-              <span class="toggle-slider"></span>
-            </label>
-            <label class="toggle-row">
-              <span class="toggle-label">Novo parceiro</span>
-              <input type="checkbox" class="toggle-input" formControlName="emailPartner" />
-              <span class="toggle-slider"></span>
-            </label>
+        <div class="settings-card">
+          <div class="card-header">
+            <div class="card-header-icon">
+              <i class="bi bi-collection" aria-hidden="true"></i>
+            </div>
+            <div>
+              <h2 class="card-title">Upload multiplo</h2>
+              <p class="card-description">Endpoint: <code>/v1/upload/many-files</code> (max 5)</p>
+            </div>
           </div>
 
-          <div class="notification-group">
-            <p class="notification-group-title">Push</p>
-            <label class="toggle-row">
-              <span class="toggle-label">Novo serviço cadastrado</span>
-              <input type="checkbox" class="toggle-input" formControlName="pushNewService" />
-              <span class="toggle-slider"></span>
+          <div class="card-content">
+            <label class="upload-zone">
+              <input type="file" multiple (change)="onManyFilesSelected($event)" />
+              <span>Selecionar ate 5 arquivos</span>
             </label>
-            <label class="toggle-row">
-              <span class="toggle-label">Pagamento recebido</span>
-              <input type="checkbox" class="toggle-input" formControlName="pushPayment" />
-              <span class="toggle-slider"></span>
-            </label>
-            <label class="toggle-row">
-              <span class="toggle-label">Novo parceiro</span>
-              <input type="checkbox" class="toggle-input" formControlName="pushPartner" />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
 
-          <div class="card-footer">
-            <button type="submit" class="btn-save" [disabled]="savingNotifications()">
-              @if (savingNotifications()) {
-                <span class="spinner" aria-hidden="true"></span>
-                Salvando...
-              } @else {
-                Salvar notificações
-              }
-            </button>
+            @if (isUploadingMany()) {
+              <p class="inline-status">Enviando arquivos...</p>
+            }
+
+            @if (manyUploadResults().length) {
+              <div class="result-list">
+                @for (file of manyUploadResults(); track file.fileKey) {
+                  <div class="result-box">
+                    <p><strong>fileKey:</strong> {{ file.fileKey }}</p>
+                    <a [href]="file.fileUrl" target="_blank" rel="noreferrer">Abrir arquivo</a>
+                  </div>
+                }
+              </div>
+            }
           </div>
-        </form>
+        </div>
       </div>
 
-      <!-- Sistema -->
       <div class="settings-card">
         <div class="card-header">
           <div class="card-header-icon">
-            <i class="bi bi-gear" aria-hidden="true"></i>
+            <i class="bi bi-folder2-open" aria-hidden="true"></i>
           </div>
           <div>
-            <h2 class="card-title">Sistema</h2>
-            <p class="card-description">Parâmetros gerais de funcionamento da plataforma.</p>
+            <h2 class="card-title">Consulta, download e exclusao</h2>
+            <p class="card-description">
+              Usa <code>/v1/one-file/{{ '{id}' }}</code>,
+              <code>/download/{{ '{id}' }}</code> e
+              <code>DELETE /v1/one-file/{{ '{id}' }}</code>. Caso o backend use
+              <code>fileKey</code> como identificador, informe o valor retornado no upload.
+            </p>
           </div>
         </div>
 
-        <form [formGroup]="systemForm" (ngSubmit)="saveSystem()" class="settings-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="defaultCommission">Comissão padrão (%)</label>
-              <input
-                id="defaultCommission"
-                type="number"
-                class="form-control"
-                formControlName="defaultCommission"
-                min="0"
-                max="100"
-              />
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="currency">Moeda</label>
-              <select id="currency" class="form-control" formControlName="currency">
-                <option value="BRL">BRL – Real Brasileiro</option>
-                <option value="USD">USD – Dólar Americano</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="timezone">Fuso Horário</label>
-              <select id="timezone" class="form-control" formControlName="timezone">
-                <option value="America/Sao_Paulo">América/São_Paulo (GMT-3)</option>
-                <option value="America/Manaus">América/Manaus (GMT-4)</option>
-                <option value="America/Belem">América/Belém (GMT-3)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="language">Idioma</label>
-              <select id="language" class="form-control" formControlName="language">
-                <option value="pt-BR">Português (Brasil)</option>
-                <option value="en-US">English (US)</option>
-              </select>
-            </div>
-          </div>
-          <div class="card-footer">
-            <button type="submit" class="btn-save" [disabled]="savingSystem() || systemForm.invalid">
-              @if (savingSystem()) {
+        <div class="card-content">
+          <div class="inline-actions">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Informe o id ou fileKey"
+              [formControl]="toolsForm.controls.fileId"
+            />
+            <button type="button" class="btn-secondary" (click)="lookupFile()" [disabled]="isLookingUpFile()">
+              @if (isLookingUpFile()) {
                 <span class="spinner" aria-hidden="true"></span>
-                Salvando...
+                Consultando...
               } @else {
-                Salvar sistema
+                Consultar
+              }
+            </button>
+            <button type="button" class="btn-secondary" (click)="downloadFile()">Download</button>
+            <button type="button" class="btn-danger" (click)="deleteFile()" [disabled]="isDeletingFile()">
+              @if (isDeletingFile()) {
+                <span class="spinner" aria-hidden="true"></span>
+                Excluindo...
+              } @else {
+                Excluir
               }
             </button>
           </div>
-        </form>
-      </div>
 
+          @if (fileLookupResult()) {
+            <div class="result-box">
+              <p><strong>fileKey:</strong> {{ fileLookupResult()?.fileKey }}</p>
+              <a [href]="fileLookupResult()?.fileUrl" target="_blank" rel="noreferrer">
+                Abrir URL retornada
+              </a>
+            </div>
+          }
+
+          @if (deletedFileResult()) {
+            <div class="result-box deleted">
+              <p><strong>Arquivo removido:</strong> {{ deletedFileResult()?.name }}</p>
+              <p><strong>fileKey:</strong> {{ deletedFileResult()?.fileKey }}</p>
+            </div>
+          }
+        </div>
+      </div>
     </div>
   </main>
 </div>

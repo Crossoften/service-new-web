@@ -3,9 +3,8 @@
 
   <main class="main-content">
     <div class="page-wrapper">
-
-      <p class="breadcrumb-label">USUÁRIOS</p>
-      <h1 class="page-title">Usuários</h1>
+      <p class="breadcrumb-label">USUARIOS</p>
+      <h1 class="page-title">Usuarios</h1>
 
       <div class="toolbar">
         <div class="search-box">
@@ -13,18 +12,15 @@
           <input
             type="text"
             class="search-input"
-            placeholder="Buscar"
+            placeholder="Buscar por nome, email, telefone ou perfil"
             [formControl]="searchControl"
-            aria-label="Buscar usuários"
+            aria-label="Buscar usuarios"
           />
         </div>
-        <button class="btn-icon" type="button" aria-label="Filtrar">
-          <i class="bi bi-funnel" aria-hidden="true"></i>
-        </button>
         <span class="toolbar-spacer"></span>
-        <button class="btn-toggle-view" type="button" (click)="goToInfluencers()" title="Ver Influencers">
-          <i class="bi bi-star" aria-hidden="true"></i>
-          Influencers
+        <button class="btn-toggle-view" type="button" (click)="goToCollaborators()">
+          <i class="bi bi-shield-lock" aria-hidden="true"></i>
+          Administradores
         </button>
       </div>
 
@@ -32,36 +28,22 @@
         <app-loading-skeleton [variant]="'table'" [count]="10"></app-loading-skeleton>
       } @else if (!users().length) {
         <app-empty-state
-          [title]="'Nenhum usuário encontrado'"
-          [description]="'Tente ajustar a busca ou adicione um novo usuário.'"
+          [title]="'Nenhum usuario encontrado'"
+          [description]="'O endpoint /v1/no-auth/users nao retornou registros para os filtros atuais.'"
           [icon]="'bi-people'"
         ></app-empty-state>
       } @else {
         <div class="table-wrapper">
-          <table class="users-table" aria-label="Lista de usuários">
+          <table class="users-table" aria-label="Lista de usuarios">
             <thead>
               <tr>
-                <th scope="col">
-                  Nome
-                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                </th>
-                <th scope="col">
-                  Email
-                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                </th>
-                <th scope="col">
-                  Telefone
-                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                </th>
-                <th scope="col">
-                  Serviços abertos
-                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                </th>
-                <th scope="col">
-                  Status
-                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                </th>
-                <th scope="col" class="col-actions" aria-label="Ações"></th>
+                <th scope="col">Codigo</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Email</th>
+                <th scope="col">Perfil</th>
+                <th scope="col">Status</th>
+                <th scope="col">Criado em</th>
+                <th scope="col" class="col-actions" aria-label="Acoes"></th>
               </tr>
             </thead>
             <tbody>
@@ -75,19 +57,25 @@
                   (keydown.space)="navigateToDetail(user.id); $event.preventDefault()"
                   [attr.aria-label]="'Abrir detalhes de ' + user.name"
                 >
+                  <td class="code-cell">{{ user.code }}</td>
                   <td>{{ user.name }}</td>
                   <td>{{ user.email }}</td>
-                  <td>{{ user.phone }}</td>
-                  <td>{{ user.openServices }}</td>
+                  <td>
+                    <span class="role-badge" [class.master]="user.role === 'Master'">
+                      {{ user.role }}
+                    </span>
+                  </td>
                   <td>
                     <span
                       class="status-badge"
-                      [class.active]="user.status === 'active'"
-                      [class.inactive]="user.status === 'inactive'"
+                      [class.active]="user.status === 'Active'"
+                      [class.pending]="user.status === 'Pending'"
+                      [class.inactive]="user.status === 'Inactive'"
                     >
-                      {{ user.status === 'active' ? 'Ativo' : 'Desativado' }}
+                      {{ getStatusLabel(user.status) }}
                     </span>
                   </td>
+                  <td>{{ user.createdAt | date: 'dd/MM/yyyy' }}</td>
                   <td class="col-actions" (click)="$event.stopPropagation()">
                     <div ngbDropdown placement="bottom-end" class="actions-dropdown">
                       <button
@@ -97,16 +85,12 @@
                         (click)="$event.stopPropagation()"
                         (keydown.enter)="$event.stopPropagation()"
                         (keydown.space)="$event.stopPropagation()"
-                        [attr.aria-label]="'Ações para ' + user.name"
+                        [attr.aria-label]="'Acoes para ' + user.name"
                       >
                         <i class="bi bi-three-dots" aria-hidden="true"></i>
                       </button>
                       <div ngbDropdownMenu>
-                        <button
-                          ngbDropdownItem
-                          type="button"
-                          (click)="navigateToDetail(user.id)"
-                        >
+                        <button ngbDropdownItem type="button" (click)="navigateToDetail(user.id)">
                           <i class="bi bi-eye me-2" aria-hidden="true"></i>
                           Ver detalhes
                         </button>
@@ -127,7 +111,7 @@
               type="button"
               [disabled]="currentPage() === 1"
               (click)="onPageChange(currentPage() - 1)"
-              aria-label="Página anterior"
+              aria-label="Pagina anterior"
             >
               <i class="bi bi-chevron-left" aria-hidden="true"></i>
             </button>
@@ -136,14 +120,13 @@
               type="button"
               [disabled]="currentPage() >= totalPages()"
               (click)="onPageChange(currentPage() + 1)"
-              aria-label="Próxima página"
+              aria-label="Proxima pagina"
             >
               <i class="bi bi-chevron-right" aria-hidden="true"></i>
             </button>
           </div>
         </div>
       }
-
     </div>
   </main>
 </div>

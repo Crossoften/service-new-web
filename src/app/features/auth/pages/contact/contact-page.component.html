@@ -1,0 +1,73 @@
+<main class="contact-page">
+  <section class="contact-container">
+    <article class="contact-panel">
+      <header class="brand">
+        <object
+          data="/assets/service-logo-official.svg"
+          type="image/svg+xml"
+          aria-label="Logo Service"
+        ></object>
+      </header>
+
+      <h1>Fale conosco</h1>
+      <p class="description">
+        Esta tela utiliza o endpoint publico <strong>/v1/no-auth/contact-us</strong> para registrar
+        duvidas, solicitacoes ou relatar problemas.
+      </p>
+
+      <form class="contact-form" [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+        <label for="name">Nome</label>
+        <div class="input-wrap" [class.invalid]="isFieldInvalid('name')">
+          <i class="bi bi-person" aria-hidden="true"></i>
+          <input id="name" type="text" formControlName="name" placeholder="Seu nome" />
+        </div>
+
+        <label for="email">Email</label>
+        <div class="input-wrap" [class.invalid]="isFieldInvalid('email')">
+          <i class="bi bi-at" aria-hidden="true"></i>
+          <input id="email" type="email" formControlName="email" placeholder="voce@empresa.com" />
+        </div>
+
+        <label for="phone">Telefone</label>
+        <div class="input-wrap" [class.invalid]="isFieldInvalid('phone')">
+          <i class="bi bi-telephone" aria-hidden="true"></i>
+          <input id="phone" type="text" formControlName="phone" placeholder="(00) 00000-0000" />
+        </div>
+
+        <label for="text">Mensagem</label>
+        <div class="textarea-wrap" [class.invalid]="isFieldInvalid('text')">
+          <textarea
+            id="text"
+            rows="5"
+            formControlName="text"
+            placeholder="Descreva sua necessidade"
+          ></textarea>
+        </div>
+
+        <button type="submit" [disabled]="isSubmitting() || contactForm.invalid">
+          @if (isSubmitting()) {
+            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+            ENVIANDO
+          } @else {
+            ENVIAR MENSAGEM
+          }
+        </button>
+      </form>
+
+      <a class="back-link" routerLink="/auth/login" aria-label="Voltar para a tela de login">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        Voltar para a tela de login
+      </a>
+    </article>
+
+    <figure class="illustration-panel">
+      <img src="/assets/login-illustration.svg" alt="Ilustracao de pessoas e engrenagens" />
+    </figure>
+  </section>
+
+  <footer class="contact-footer">
+    <a routerLink="/auth/terms-of-use"><strong>TERMOS DE USO</strong></a>
+    <a routerLink="/auth/privacy-policy"><strong>POLITICAS DE PRIVACIDADE</strong></a>
+    <a routerLink="/auth/contact"><strong>CONTATO</strong></a>
+  </footer>
+</main>

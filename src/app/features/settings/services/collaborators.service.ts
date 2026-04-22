@@ -1,58 +1,177 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { Collaborator, PagedResult, CollaboratorListParams } from '../models/collaborator.model';
+import { Injectable, inject } from '@angular/core';
+import { ApiService } from '@core/services/api.service';
+import { map, Observable } from 'rxjs';
+import {
+  Collaborator,
+  CollaboratorApiItem,
+  CollaboratorListApiResponse,
+  CollaboratorListParams,
+  CollaboratorListResponse,
+  CollaboratorPermission,
+  CollaboratorRole,
+  CollaboratorStatus,
+  SaveCollaboratorInput,
+} from '../models/collaborator.model';
 
-const MOCK_COLLABORATORS: Collaborator[] = Array.from({ length: 12 }, (_, i) => ({
-  id: `col-${i + 1}`,
-  cod: String(10 + i).padStart(2, '0'),
-  name: `Nome usuário ${i + 1}`,
-  email: `mail@email.com`,
-  token: `TK${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-  role: i % 3 === 0 ? 'Admin Master' : 'Admin',
-  status: i % 4 === 0 ? 'inactive' : 'active',
-  permissions: {
-    dashboard: true,
-    users: i % 2 === 0,
-    services: i % 3 !== 0,
-    finance: i % 4 === 0,
-    settings: i % 5 === 0,
-  },
-}));
+interface CreateAdminPayload {
+  name: string;
+  email: string;
+  document: string;
+  phone?: string;
+  password: string;
+  adminPermissions: CollaboratorPermission[];
+  fileUrl?: string;
+  fileKey?: string;
+}
+
+interface UpdateAdminPayload {
+  name?: string;
+  document?: string;
+  email?: string;
+  phone?: string;
+  status?: CollaboratorStatus;
+  password?: string;
+  adminPermissions: CollaboratorPermission[];
+  fileUrl?: string;
+  fileKey?: string;
+}
+
+type PermissionApiItem =
+  | string
+  | {
+      id: number;
+      name: string;
+      createdAt: string;
+      updatedAt: string;
+    };
 
 @Injectable({ providedIn: 'root' })
 export class CollaboratorsService {
-  getCollaborators(params: CollaboratorListParams): Observable<PagedResult<Collaborator>> {
-    const filtered = MOCK_COLLABORATORS.filter((c) =>
-      c.name.toLowerCase().includes(params.search.toLowerCase()) ||
-      c.email.toLowerCase().includes(params.search.toLowerCase())
-    );
-    const start = (params.page - 1) * params.pageSize;
-    const data = filtered.slice(start, start + params.pageSize);
-    return of({ data, total: filtered.length, page: params.page, pageSize: params.pageSize }).pipe(delay(400));
+  private readonly apiService = inject(ApiService);
+
+  getAvailablePermissions(): Observable<CollaboratorPermission[]> {
+    return this.apiService
+      .get<PermissionApiItem[]>('/v1/admin-settings/all-permissions')
+      .pipe(
+        map((permissions) =>
+          permissions
+            .map((permission) => (typeof permission === 'string' ? permission : permission.name))
+            .filter(this.isCollaboratorPermission)
+        )
+      );
   }
 
-  getCollaboratorById(id: string): Observable<Collaborator | undefined> {
-    return of(MOCK_COLLABORATORS.find((c) => c.id === id)).pipe(delay(300));
-  }
-
-  saveCollaborator(collaborator: Partial<Collaborator>): Observable<Collaborator> {
-    if (collaborator.id) {
-      const idx = MOCK_COLLABORATORS.findIndex((c) => c.id === collaborator.id);
-      if (idx !== -1) Object.assign(MOCK_COLLABORATORS[idx], collaborator);
-      return of(MOCK_COLLABORATORS[idx]).pipe(delay(500));
-    }
-    const newOne: Collaborator = {
-      id: `col-${Date.now()}`,
-      cod: String(MOCK_COLLABORATORS.length + 10).padStart(2, '0'),
-      name: collaborator.name ?? '',
-      email: collaborator.email ?? '',
-      token: `TK${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-      role: collaborator.role ?? 'Admin',
-      status: 'active',
-      permissions: collaborator.permissions ?? { dashboard: false, users: false, services: false, finance: false, settings: false },
+  getCollaborators(params: CollaboratorListParams): Observable<CollaboratorListResponse> {
+    const query: Record<string, string> = {
+      take: String(params.pageSize),
+      skip: String((params.page - 1) * params.pageSize),
     };
-    MOCK_COLLABORATORS.push(newOne);
-    return of(newOne).pipe(delay(500));
+
+    if (params.search.trim()) {
+      query['name'] = params.search.trim();
+    }
+
+    if (params.status) {
+      query['status'] = params.status;
+    }
+
+    return this.apiService.get<CollaboratorListApiResponse>('/v1/admin-settings', query).pipe(
+      map((response) => ({
+        data: response.admins.map((item) => this.mapCollaborator(item)),
+        total: response.count,
+        page: params.page,
+        pageSize: params.pageSize,
+      }))
+    );
+  }
+
+  getCollaboratorById(id: number | string): Observable<Collaborator> {
+    return this.apiService
+      .get<CollaboratorApiItem>(`/v1/admin-settings/${id}`)
+      .pipe(map((response) => this.mapCollaborator(response)));
+  }
+
+  saveCollaborator(collaborator: SaveCollaboratorInput): Observable<Collaborator> {
+    if (collaborator.id) {
+      return this.apiService
+        .patch<CollaboratorApiItem>(
+          `/v1/admin-settings/${collaborator.id}`,
+          this.buildUpdatePayload(collaborator)
+        )
+        .pipe(map((response) => this.mapCollaborator(response)));
+    }
+
+    return this.apiService
+      .post<{ message: string; admin: CollaboratorApiItem }>(
+        '/v1/admin-settings',
+        this.buildCreatePayload(collaborator)
+      )
+      .pipe(map((response) => this.mapCollaborator(response.admin)));
+  }
+
+  private buildCreatePayload(collaborator: SaveCollaboratorInput): CreateAdminPayload {
+    return {
+      name: collaborator.name,
+      email: collaborator.email,
+      document: collaborator.document,
+      phone: collaborator.phone || undefined,
+      password: collaborator.password ?? '',
+      adminPermissions: collaborator.permissions,
+      fileUrl: collaborator.fileUrl ?? undefined,
+      fileKey: collaborator.fileKey ?? undefined,
+    };
+  }
+
+  private buildUpdatePayload(collaborator: SaveCollaboratorInput): UpdateAdminPayload {
+    return {
+      name: collaborator.name,
+      document: collaborator.document,
+      email: collaborator.email,
+      phone: collaborator.phone || undefined,
+      status: collaborator.status,
+      password: collaborator.password || undefined,
+      adminPermissions: collaborator.permissions,
+      fileUrl: collaborator.fileUrl ?? undefined,
+      fileKey: collaborator.fileKey ?? undefined,
+    };
+  }
+
+  private mapCollaborator(item: CollaboratorApiItem): Collaborator {
+    return {
+      id: item.id,
+      code: `#${String(item.id).padStart(3, '0')}`,
+      name: item.name,
+      email: item.email,
+      document: item.document,
+      phone: item.phone,
+      role: this.mapRole(item.role),
+      status: this.mapStatus(item.status),
+      permissions: item.adminPermissions.filter(this.isCollaboratorPermission),
+      fileUrl: item.fileUrl || null,
+      fileKey: item.fileKey || null,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    };
+  }
+
+  private mapRole(role: string): CollaboratorRole {
+    return role === 'Master' ? 'Master' : 'Admin';
+  }
+
+  private mapStatus(status: string): CollaboratorStatus {
+    switch (status) {
+      case 'Active':
+      case 'Pending':
+      case 'Inactive':
+        return status;
+      default:
+        return 'Inactive';
+    }
+  }
+
+  private isCollaboratorPermission(
+    permission: string
+  ): permission is CollaboratorPermission {
+    return permission === 'Dashboard' || permission === 'Settings';
   }
 }

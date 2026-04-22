@@ -3,151 +3,86 @@
 
   <main class="main-content">
     <div class="page-wrapper">
-
-      <p class="breadcrumb-label">USUÁRIOS</p>
-      <h1 class="page-title">Usuários</h1>
+      <p class="breadcrumb-label">USUARIOS</p>
+      <h1 class="page-title">Detalhes do usuario</h1>
 
       @if (isLoading()) {
         <app-loading-skeleton [variant]="'card'" [count]="1"></app-loading-skeleton>
       } @else if (user()) {
         <div class="detail-card">
-
-          <!-- Header: avatar + summary info -->
           <div class="detail-header">
             <div class="avatar-wrap">
-              @if (user()?.avatarUrl) {
-                <img
-                  [src]="user()!.avatarUrl"
-                  [alt]="'Foto de ' + user()!.name"
-                  class="avatar-img"
-                />
+              @if (user()?.fileUrl) {
+                <img [src]="user()!.fileUrl!" [alt]="'Foto de ' + user()!.name" class="avatar-img" />
               } @else {
                 <div class="avatar-initials" aria-hidden="true">{{ avatarInitials }}</div>
               }
             </div>
 
-            <div class="header-info">
-              <div class="info-grid">
-                <div class="info-item">
-                  <span class="info-label">Nome</span>
-                  <span class="info-value">{{ user()!.name }}</span>
+            <div class="header-copy">
+              <div class="headline-row">
+                <div>
+                  <p class="user-code">{{ user()?.code }}</p>
+                  <h2>{{ user()?.name }}</h2>
                 </div>
-                <div class="info-item">
-                  <span class="info-label">Serviços abertos</span>
-                  <span class="info-value">{{ user()!.openServices }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Celular</span>
-                  <span class="info-value">{{ user()!.phone }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Email</span>
-                  <span class="info-value">{{ user()!.email }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Data de nascimento</span>
-                  <span class="info-value">{{ user()!.dateOfBirth | date:'dd/MM/yyyy' }}</span>
-                </div>
+                <span
+                  class="status-badge"
+                  [class.active]="user()?.status === 'Active'"
+                  [class.pending]="user()?.status === 'Pending'"
+                  [class.inactive]="user()?.status === 'Inactive'"
+                >
+                  {{ getStatusLabel(user()!.status) }}
+                </span>
               </div>
-            </div>
 
-            <div class="status-toggle-wrap">
-              <label class="toggle" [attr.aria-label]="'Status do usuário: ' + (form.get('status')?.value ? 'Ativo' : 'Inativo')">
-                <input type="checkbox" [formControl]="$any(form.get('status'))" />
-                <span class="toggle-track"></span>
-              </label>
+              <p class="detail-copy">
+                O contrato atual disponibiliza apenas consulta via <code>/v1/no-auth/users</code>.
+                Por isso esta tela fica em modo leitura.
+              </p>
             </div>
           </div>
 
-          <hr class="divider" />
-
-          <!-- Edit form -->
-          <form [formGroup]="form" class="edit-form" (ngSubmit)="onSave()" novalidate>
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="form-label" for="field-name">Nome</label>
-                <input
-                  id="field-name"
-                  type="text"
-                  class="form-control"
-                  [class.is-invalid]="isFieldInvalid('name')"
-                  formControlName="name"
-                  placeholder="Nome completo"
-                />
-                @if (isFieldInvalid('name')) {
-                  <div class="invalid-feedback">Nome é obrigatório.</div>
-                }
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="field-email">Email</label>
-                <input
-                  id="field-email"
-                  type="email"
-                  class="form-control"
-                  [class.is-invalid]="isFieldInvalid('email')"
-                  formControlName="email"
-                  placeholder="email@exemplo.com"
-                />
-                @if (isFieldInvalid('email')) {
-                  <div class="invalid-feedback">Email inválido.</div>
-                }
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="field-phone">Celular</label>
-                <input
-                  id="field-phone"
-                  type="tel"
-                  class="form-control"
-                  [class.is-invalid]="isFieldInvalid('phone')"
-                  formControlName="phone"
-                  placeholder="(xx) xxxxx-xxxx"
-                />
-                @if (isFieldInvalid('phone')) {
-                  <div class="invalid-feedback">Telefone é obrigatório.</div>
-                }
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="field-dob">Data de nascimento</label>
-                <input
-                  id="field-dob"
-                  type="date"
-                  class="form-control"
-                  [class.is-invalid]="isFieldInvalid('dateOfBirth')"
-                  formControlName="dateOfBirth"
-                />
-                @if (isFieldInvalid('dateOfBirth')) {
-                  <div class="invalid-feedback">Data de nascimento é obrigatória.</div>
-                }
-              </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Email</span>
+              <strong>{{ user()?.email }}</strong>
             </div>
-
-            <div class="form-actions">
-              <button
-                type="button"
-                class="btn-cancel"
-                (click)="onCancel()"
-                [disabled]="isSaving()"
-              >
-                CANCELAR
-              </button>
-              <button
-                type="submit"
-                class="btn-save"
-                [disabled]="isSaving()"
-              >
-                @if (isSaving()) {
-                  <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-                }
-                SALVAR
-              </button>
+            <div class="info-item">
+              <span class="info-label">Telefone</span>
+              <strong>{{ user()?.phone }}</strong>
             </div>
-          </form>
+            <div class="info-item">
+              <span class="info-label">Perfil</span>
+              <strong>{{ user()?.role }}</strong>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Criado em</span>
+              <strong>{{ user()?.createdAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Atualizado em</span>
+              <strong>{{ user()?.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
+            </div>
+            <div class="info-item">
+              <span class="info-label">fileKey</span>
+              <strong>{{ user()?.fileKey || '-' }}</strong>
+            </div>
+          </div>
+
+          <div class="detail-copy detail-copy--gaps">
+            <strong>Endpoints faltantes para evoluir este fluxo</strong>
+            <ul>
+              @for (endpoint of missingEndpoints; track endpoint) {
+                <li>{{ endpoint }}</li>
+              }
+            </ul>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" (click)="onBack()">VOLTAR</button>
+          </div>
         </div>
       }
-
     </div>
   </main>
 </div>

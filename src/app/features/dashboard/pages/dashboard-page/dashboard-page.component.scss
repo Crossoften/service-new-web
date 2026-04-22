@@ -7,7 +7,7 @@
 .app-shell {
   display: flex;
   height: 100%;
-  background: #f5f6fa;
+  background: #f7f7f7;
 }
 
 .main-content {
@@ -20,112 +20,206 @@
 }
 
 .page-wrapper {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 2rem 2.5rem 2rem;
-  min-height: 0;
+  gap: 1rem;
+  padding: 2.25rem 1.6rem 2rem;
+}
+
+.dashboard-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: fit-content;
+  padding: 0.55rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.dashboard-status.up {
+  background: rgba(40, 167, 69, 0.12);
+  color: #1a7a30;
+}
+
+.dashboard-status.down {
+  background: rgba(220, 53, 69, 0.12);
+  color: #a61d2b;
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
-  margin-bottom: 1.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
 }
 
 .stat-card {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  padding: 1.5rem 1.75rem;
+  gap: 1rem;
+  min-height: 114px;
+  padding: 1.2rem 1.35rem;
   background: #ffffff;
   border-radius: 1rem;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-  transition: box-shadow 0.2s, transform 0.2s;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
 
-  &:hover {
-    box-shadow: 0 6px 24px rgba(131, 8, 210, 0.12);
-    transform: translateY(-2px);
-  }
+.stat-card.unavailable {
+  opacity: 0.94;
 }
 
 .stat-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 0.75rem;
-  background: rgba(131, 8, 210, 0.1);
+  width: 42px;
+  height: 42px;
+  border-radius: 0.7rem;
+  background: #821ee2;
+  color: #fff;
   flex-shrink: 0;
-
-  i {
-    font-size: 1.5rem;
-    color: #8308d2;
-  }
 }
 
-.stat-body {
+.stat-icon i {
+  font-size: 1.1rem;
+}
+
+.stat-copy {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  align-items: flex-end;
+  width: 100%;
+  text-align: right;
 }
 
 .stat-value {
   font-size: 1.9rem;
   font-weight: 800;
-  color: #8308d2;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
+  color: #821ee2;
+  line-height: 1.05;
 }
 
 .stat-label {
-  font-size: 0.85rem;
-  color: #888;
+  margin-top: 0.35rem;
+  font-size: 0.92rem;
   font-weight: 500;
+  color: #1f2937;
+}
+
+.stat-note {
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #8b8b8b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .chart-card {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
   background: #ffffff;
   border-radius: 1rem;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-  padding: 1.5rem 1.75rem 1.75rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 1rem 1rem 0.6rem;
 }
 
-.chart-title {
+.chart-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-bottom: 0.35rem;
+}
+
+.chart-header h2 {
+  margin: 0;
   font-size: 1rem;
   font-weight: 700;
-  color: #1a1a1a;
-  margin: 0 0 0.75rem;
+  color: #111827;
+}
+
+.chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  font-weight: 500;
+}
+
+.legend-item.users {
+  color: #821ee2;
+}
+
+.legend-item.services {
+  color: #4b4b4b;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-flex;
+}
+
+.legend-item.users .legend-dot {
+  background: #821ee2;
+}
+
+.legend-item.services .legend-dot {
+  background: #4b4b4b;
 }
 
 .chart-wrap {
   position: relative;
-  flex: 1;
-  min-height: 0;
-  background: #e8e8e8;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  padding: 0.5rem;
+  min-height: 320px;
 }
 
-@media (max-width: 900px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.gaps-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 1rem 1.1rem;
 }
 
-@media (max-width: 600px) {
-  .page-wrapper {
-    padding: 1.25rem 1rem;
-  }
+.gap-column h3 {
+  margin: 0 0 0.65rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #111827;
+}
 
-  .stats-grid {
+.gap-column ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.gap-column li {
+  margin-bottom: 0.45rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+@media (max-width: 1024px) {
+  .stats-grid,
+  .gaps-card {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-wrapper {
+    padding: 1.25rem 1rem 1.5rem;
+  }
+
+  .chart-wrap {
+    min-height: 260px;
   }
 }
