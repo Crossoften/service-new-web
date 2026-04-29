@@ -35,10 +35,7 @@
                 </span>
               </div>
 
-              <p class="detail-copy">
-                O contrato atual disponibiliza apenas consulta via <code>/v1/no-auth/users</code>.
-                Por isso esta tela fica em modo leitura.
-              </p>
+              <p class="detail-copy">Dados carregados pelo endpoint gerencial <code>/v1/admin-users/{{ user()?.id }}</code>.</p>
             </div>
           </div>
 
@@ -67,15 +64,6 @@
               <span class="info-label">fileKey</span>
               <strong>{{ user()?.fileKey || '-' }}</strong>
             </div>
-          </div>
-
-          <div class="detail-copy detail-copy--gaps">
-            <strong>Endpoints faltantes para evoluir este fluxo</strong>
-            <ul>
-              @for (endpoint of missingEndpoints; track endpoint) {
-                <li>{{ endpoint }}</li>
-              }
-            </ul>
           </div>
 
           <div class="form-actions">

@@ -14,8 +14,8 @@
 
           <div class="detail-header">
             <div class="avatar-wrap">
-              @if (supplier()?.avatarUrl) {
-                <img [src]="supplier()!.avatarUrl" [alt]="'Foto de ' + supplier()!.name" class="avatar-img" />
+              @if (supplier()?.fileUrl) {
+                <img [src]="supplier()!.fileUrl" [alt]="'Foto de ' + supplier()!.name" class="avatar-img" />
               } @else {
                 <div class="avatar-initials" aria-hidden="true">{{ avatarInitials }}</div>
               }
@@ -28,8 +28,8 @@
                   <span class="info-value">{{ supplier()!.name }}</span>
                 </div>
                 <div class="info-item">
-                  <span class="info-label">Serviços abertos</span>
-                  <span class="info-value">{{ supplier()!.openServices }}</span>
+                  <span class="info-label">Serviços</span>
+                  <span class="info-value">{{ supplier()!.totalServices }}</span>
                 </div>
                 <div class="info-item">
                   <span class="info-label">Celular</span>
@@ -40,83 +40,66 @@
                   <span class="info-value">{{ supplier()!.email }}</span>
                 </div>
                 <div class="info-item">
-                  <span class="info-label">Data de nascimento</span>
-                  <span class="info-value">{{ supplier()!.dateOfBirth | date:'dd/MM/yyyy' }}</span>
-                </div>
-                <div class="info-item">
                   <span class="info-label">Avaliação</span>
                   <span class="info-value rating-value">
-                    <i class="bi bi-hand-thumbs-up-fill" aria-hidden="true"></i>
-                    {{ supplier()!.rating }}
+                    <i class="bi bi-star-fill" aria-hidden="true"></i>
+                    {{ supplier()!.averageRating ?? 'N/D' }}
+                  </span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Status</span>
+                  <span class="status-badge" [ngClass]="getStatusClass(supplier()!.status)">
+                    {{ getStatusLabel(supplier()!.status) }}
                   </span>
                 </div>
               </div>
-            </div>
-
-            <div class="status-toggle-wrap">
-              <label class="toggle" [attr.aria-label]="'Status: ' + (form.get('status')?.value ? 'Ativo' : 'Inativo')">
-                <input type="checkbox" [formControl]="$any(form.get('status'))" />
-                <span class="toggle-track"></span>
-              </label>
             </div>
           </div>
 
           <!-- Histórico de Serviços -->
           <div class="history-section">
-            <h3 class="section-title">Histórico de serviços</h3>
-            <div class="history-list">
-              @for (item of supplier()!.serviceHistory; track item.id) {
-                <div class="history-item">
-                  <div class="history-avatar">
-                    <span>{{ item.clientName.charAt(0) }}</span>
-                  </div>
-                  <div class="history-info">
-                    <span class="history-service">{{ item.serviceName }}</span>
-                    <span class="history-client">{{ item.clientName }} · {{ formatDate(item.date) }}</span>
-                  </div>
-                  <span class="history-value">{{ formatCurrency(item.value) }}</span>
-                </div>
-              }
+            <div class="section-header">
+              <h3 class="section-title">Histórico de serviços</h3>
+              <span class="booking-count">{{ historyTotal() }} no total</span>
             </div>
+
+            @if (isLoadingHistory()) {
+              <app-loading-skeleton [variant]="'table'" [count]="5"></app-loading-skeleton>
+            } @else if (!history().length) {
+              <p class="empty-hint">Nenhum histórico encontrado.</p>
+            } @else {
+              <div class="history-list">
+                @for (item of history(); track item.id) {
+                  <div class="history-item">
+                    <div class="history-avatar">
+                      <span>{{ item.clientName.charAt(0) }}</span>
+                    </div>
+                    <div class="history-info">
+                      <span class="history-service">{{ item.serviceName }}</span>
+                      <span class="history-client">{{ item.clientName }}</span>
+                    </div>
+                    <span class="history-value">{{ formatCurrency(item.value) }}</span>
+                  </div>
+                }
+              </div>
+
+              <div class="pagination-bar">
+                <div class="pagination-controls">
+                  <button class="btn-page" type="button" [disabled]="currentPage() === 1" (click)="onPageChange(currentPage() - 1)" aria-label="Anterior">
+                    <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                  </button>
+                  <button class="btn-page" type="button" [disabled]="currentPage() >= totalPages" (click)="onPageChange(currentPage() + 1)" aria-label="Próxima">
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+            }
           </div>
 
-          <hr class="divider" />
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" (click)="onBack()">VOLTAR</button>
+          </div>
 
-          <form [formGroup]="form" class="edit-form" (ngSubmit)="onSave()" novalidate>
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="form-label" for="sup-name">Nome</label>
-                <input id="sup-name" type="text" class="form-control" [class.is-invalid]="isFieldInvalid('name')" formControlName="name" placeholder="Nome completo" />
-                @if (isFieldInvalid('name')) { <div class="invalid-feedback">Nome é obrigatório.</div> }
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="sup-email">Email</label>
-                <input id="sup-email" type="email" class="form-control" [class.is-invalid]="isFieldInvalid('email')" formControlName="email" placeholder="email@exemplo.com" />
-                @if (isFieldInvalid('email')) { <div class="invalid-feedback">Email inválido.</div> }
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="sup-phone">Celular</label>
-                <input id="sup-phone" type="tel" class="form-control" [class.is-invalid]="isFieldInvalid('phone')" formControlName="phone" placeholder="(xx) xxxxx-xxxx" />
-                @if (isFieldInvalid('phone')) { <div class="invalid-feedback">Telefone é obrigatório.</div> }
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="sup-dob">Data de nascimento</label>
-                <input id="sup-dob" type="date" class="form-control" [class.is-invalid]="isFieldInvalid('dateOfBirth')" formControlName="dateOfBirth" />
-                @if (isFieldInvalid('dateOfBirth')) { <div class="invalid-feedback">Data é obrigatória.</div> }
-              </div>
-            </div>
-
-            <div class="form-actions">
-              <button type="button" class="btn-cancel" (click)="onCancel()" [disabled]="isSaving()">CANCELAR</button>
-              <button type="submit" class="btn-save" [disabled]="isSaving()">
-                @if (isSaving()) { <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span> }
-                SALVAR
-              </button>
-            </div>
-          </form>
         </div>
       }
 

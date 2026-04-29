@@ -9,8 +9,9 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar.component';
 import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/loading-skeleton.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
+import { ErrorStateComponent } from '@shared/components/error-state/error-state.component';
 import { ServicesService } from '../../services/services.service';
-import { Service } from '../../models/service.model';
+import { AdminService, AdminServiceStatus } from '../../models/service.model';
 
 @Component({
   selector: 'app-services-list',
@@ -22,6 +23,7 @@ import { Service } from '../../models/service.model';
     SidebarComponent,
     LoadingSkeletonComponent,
     EmptyStateComponent,
+    ErrorStateComponent,
   ],
   templateUrl: './services-list.component.html',
   styleUrls: ['./services-list.component.scss'],
@@ -32,15 +34,14 @@ export class ServicesListComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   readonly searchControl = new FormControl('');
-
-  readonly services = signal<Service[]>([]);
+  readonly services = signal<AdminService[]>([]);
   readonly total = signal(0);
   readonly currentPage = signal(1);
   readonly pageSize = signal(10);
   readonly isLoading = signal(false);
+  readonly hasError = signal(false);
 
-  readonly totalPages = computed(() => Math.ceil(this.total() / this.pageSize()));
-
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
   readonly paginationInfo = computed(() => {
     if (this.total() === 0) return '0 itens';
     const start = (this.currentPage() - 1) * this.pageSize() + 1;
@@ -65,19 +66,23 @@ export class ServicesListComponent implements OnInit, OnDestroy {
 
   loadServices(): void {
     this.isLoading.set(true);
+    this.hasError.set(false);
     this.servicesService
       .getServices({
-        page: this.currentPage(),
-        pageSize: this.pageSize(),
-        search: this.searchControl.value ?? '',
+        take: this.pageSize(),
+        skip: this.currentPage(),
+        search: this.searchControl.value ?? undefined,
       })
       .subscribe({
         next: (result) => {
-          this.services.set(result.data);
-          this.total.set(result.total);
+          this.services.set(result.services);
+          this.total.set(result.count);
           this.isLoading.set(false);
         },
-        error: () => this.isLoading.set(false),
+        error: () => {
+          this.hasError.set(true);
+          this.isLoading.set(false);
+        },
       });
   }
 
@@ -90,11 +95,27 @@ export class ServicesListComponent implements OnInit, OnDestroy {
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  navigateToDetail(id: string): void {
+  navigateToDetail(id: number): void {
     this.router.navigate(['/services', id]);
   }
 
   goToSuppliers(): void {
     this.router.navigate(['/suppliers']);
+  }
+
+  getStatusLabel(status: AdminServiceStatus): string {
+    switch (status) {
+      case 'Active': return 'Ativo';
+      case 'Pending': return 'Pendente';
+      default: return 'Inativo';
+    }
+  }
+
+  getStatusClass(status: AdminServiceStatus): string {
+    switch (status) {
+      case 'Active': return 'badge-active';
+      case 'Pending': return 'badge-pending';
+      default: return 'badge-inactive';
+    }
   }
 }

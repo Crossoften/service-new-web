@@ -13,16 +13,13 @@
           <input
             type="text"
             class="search-input"
-            placeholder="Buscar"
+            placeholder="Buscar por nome, email ou telefone"
             [formControl]="searchControl"
             aria-label="Buscar influencers"
           />
         </div>
-        <button class="btn-icon" type="button" aria-label="Filtrar">
-          <i class="bi bi-funnel" aria-hidden="true"></i>
-        </button>
         <span class="toolbar-spacer"></span>
-        <button class="btn-toggle-view" type="button" (click)="goToUsers()" title="Ver Usuários">
+        <button class="btn-toggle-view" type="button" (click)="goToUsers()">
           <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
           Usuários
         </button>
@@ -30,10 +27,16 @@
 
       @if (isLoading()) {
         <app-loading-skeleton [variant]="'table'" [count]="10"></app-loading-skeleton>
+      } @else if (hasError()) {
+        <app-error-state
+          [title]="'Erro ao carregar influencers'"
+          [description]="'Não foi possível buscar os dados. Tente novamente.'"
+          (retry)="loadInfluencers()"
+        ></app-error-state>
       } @else if (!influencers().length) {
         <app-empty-state
           [title]="'Nenhum influencer encontrado'"
-          [description]="'Tente ajustar a busca ou verifique os filtros.'"
+          [description]="'Tente ajustar a busca ou os filtros.'"
           [icon]="'bi-star'"
         ></app-empty-state>
       } @else {
@@ -41,53 +44,45 @@
           <table class="data-table" aria-label="Lista de influencers">
             <thead>
               <tr>
-                <th scope="col">
-                  Nome
-                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                </th>
-                <th scope="col">
-                  Email
-                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                </th>
-                <th scope="col">
-                  Telefone
-                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                </th>
-                <th scope="col">
-                  Rating
-                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                </th>
-                <th scope="col">
-                  Comentários
-                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                </th>
-                <th scope="col">
-                  Status
-                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                </th>
+                <th scope="col">Nome</th>
+                <th scope="col">Email</th>
+                <th scope="col">Telefone</th>
+                <th scope="col">Referências</th>
+                <th scope="col">Comissão</th>
+                <th scope="col">Ranking</th>
+                <th scope="col">Status</th>
                 <th scope="col" class="col-actions" aria-label="Ações"></th>
               </tr>
             </thead>
             <tbody>
               @for (inf of influencers(); track inf.id) {
-                <tr class="clickable-row" (click)="navigateToDetail(inf.id)" tabindex="0" (keydown.enter)="navigateToDetail(inf.id)">
+                <tr
+                  class="clickable-row"
+                  tabindex="0"
+                  role="button"
+                  (click)="navigateToDetail(inf.id)"
+                  (keydown.enter)="navigateToDetail(inf.id)"
+                  [attr.aria-label]="'Abrir detalhes de ' + inf.name"
+                >
                   <td class="td-name">{{ inf.name }}</td>
                   <td>{{ inf.email }}</td>
                   <td>{{ inf.phone }}</td>
+                  <td>{{ inf.stats.totalReferrals }}</td>
                   <td>
-                    <span class="rating-value">
-                      <i class="bi bi-hand-thumbs-up-fill" aria-hidden="true"></i>
-                      {{ inf.rating }}
+                    @if (inf.stats.accumulatedCommission != null) {
+                      {{ inf.stats.accumulatedCommission | currency: 'BRL' : 'symbol' : '1.2-2' }}
+                    } @else {
+                      N/D
+                    }
+                  </td>
+                  <td>
+                    <span class="ranking-badge">
+                      {{ inf.stats.rankingPosition != null ? '#' + inf.stats.rankingPosition : 'N/D' }}
                     </span>
                   </td>
-                  <td>{{ inf.comments }}</td>
                   <td>
-                    <span
-                      class="status-badge"
-                      [class.active]="inf.status === 'active'"
-                      [class.inactive]="inf.status === 'inactive'"
-                    >
-                      {{ inf.status === 'active' ? 'Ativo' : 'Desativado' }}
+                    <span class="status-badge" [ngClass]="getStatusClass(inf.status)">
+                      {{ getStatusLabel(inf.status) }}
                     </span>
                   </td>
                   <td class="col-actions" (click)="$event.stopPropagation()">

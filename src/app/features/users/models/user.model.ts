@@ -1,43 +1,90 @@
-export type UserStatus = 'Active' | 'Pending' | 'Inactive';
-export type UserRole = 'Master' | 'Admin' | 'User';
+export type AdminUserStatus = 'Active' | 'Pending' | 'Inactive';
+export type AdminUserRole = 'Master' | 'Admin' | 'User';
+export type AdminUserProfileType = 'Client' | 'Supplier' | 'Influencer';
 
-export interface User {
+export interface AdminUser {
   id: number;
-  code: string;
   name: string;
   email: string;
   phone: string;
-  role: UserRole;
-  status: UserStatus;
+  code: string;
+  role: AdminUserRole;
+  profileType: AdminUserProfileType;
+  status: AdminUserStatus;
   fileUrl: string | null;
   fileKey: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface PagedResult<T> {
-  data: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
-
-export interface UserListParams {
-  page: number;
-  pageSize: number;
-  search: string;
-}
-
-export interface UserApiItem {
+export interface AdminUserListItem {
   id: number;
   name: string;
   email: string;
   phone: string;
   code: string;
-  role: UserRole | string;
-  status: UserStatus | string;
+  role: AdminUserRole;
+  profileType: AdminUserProfileType;
+  status: AdminUserStatus;
+  fileUrl: string | null;
+  fileKey: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminUserListResponse {
+  users: AdminUserListItem[];
+  pages: number;
+  count: number;
+}
+
+export interface AdminUserListParams {
+  search?: string;
+  status?: AdminUserStatus;
+  take?: number;
+  skip?: number;
+}
+
+// API response interfaces — raw shapes from the real API
+export interface AdminUserApiListItem {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  status: string;
+  openServices: number;
+  fileUrl: string;
+}
+
+export interface AdminUserApiDetail {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  document: string;
+  status: string;
+  openServices: number;
   fileUrl: string;
   fileKey: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface AdminUserApiListResponse {
+  users: AdminUserApiListItem[];
+  currentPage: number;
+  totalPages: number;
+  totalRecords: number;
+}
+
+// Legacy aliases
+export type UserStatus = AdminUserStatus;
+export type UserRole = AdminUserRole;
+export type User = AdminUser;
+
+export interface PagedResult<T> {
+  data: T[];
+  total: number;
+  page: number;
+  pageSize: number;
 }

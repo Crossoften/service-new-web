@@ -1,6 +1,6 @@
 export type CollaboratorStatus = 'Active' | 'Pending' | 'Inactive';
 export type CollaboratorRole = 'Admin' | 'Master';
-export type CollaboratorPermission = 'Dashboard' | 'Settings';
+export type CollaboratorPermission = 'Dashboard' | 'Settings' | 'Services' | 'Financial' | 'Users';
 
 export interface Collaborator {
   id: number;

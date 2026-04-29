@@ -3,67 +3,71 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from '@core/services/api.service';
 import {
-  PagedResult,
-  User,
-  UserApiItem,
-  UserListParams,
-  UserRole,
-  UserStatus,
+  AdminUser,
+  AdminUserListParams,
+  AdminUserApiListItem,
+  AdminUserApiDetail,
+  AdminUserApiListResponse,
+  AdminUserRole,
+  AdminUserStatus,
+  AdminUserProfileType,
 } from '../models/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class UsersService {
   constructor(private readonly apiService: ApiService) {}
 
-  getAllUsers(): Observable<User[]> {
-    return this.apiService.get<UserApiItem[]>('/v1/no-auth/users').pipe(
-      map((users) =>
-        users
-          .map((user) => this.mapUser(user))
-          .sort((left, right) => left.name.localeCompare(right.name, 'pt-BR'))
-      )
-    );
+  getUsers(params: AdminUserListParams): Observable<{ users: AdminUser[]; pages: number; count: number }> {
+    const query: Record<string, string | number> = {
+      take: params.take ?? 10,
+    };
+    if (params.skip && params.skip > 0) query['skip'] = params.skip;
+    if (params.search) query['search'] = params.search;
+    if (params.status) query['status'] = params.status;
+
+    return this.apiService
+      .get<AdminUserApiListResponse>('/v1/admin-users', query)
+      .pipe(
+        map((res) => ({
+          users: res.users.map((u) => this.mapUserFromList(u)),
+          pages: res.totalPages,
+          count: res.totalRecords,
+        }))
+      );
   }
 
-  getUsers(params: UserListParams): Observable<PagedResult<User>> {
-    return this.getAllUsers().pipe(
-      map((users) => {
-        const search = params.search.trim().toLowerCase();
-        const filtered = users.filter(
-          (user) =>
-            !search ||
-            user.name.toLowerCase().includes(search) ||
-            user.email.toLowerCase().includes(search) ||
-            user.phone.toLowerCase().includes(search) ||
-            user.role.toLowerCase().includes(search) ||
-            user.code.toLowerCase().includes(search)
-        );
-        const start = (params.page - 1) * params.pageSize;
-
-        return {
-          data: filtered.slice(start, start + params.pageSize),
-          total: filtered.length,
-          page: params.page,
-          pageSize: params.pageSize,
-        };
-      })
-    );
+  getUserById(id: number): Observable<AdminUser> {
+    return this.apiService
+      .get<AdminUserApiDetail>(`/v1/admin-users/${id}`)
+      .pipe(map((u) => this.mapUserFromDetail(u)));
   }
 
-  getUserById(id: string): Observable<User | undefined> {
-    return this.getAllUsers().pipe(
-      map((users) => users.find((user) => user.id === Number(id)))
-    );
-  }
-
-  private mapUser(item: UserApiItem): User {
+  private mapUserFromList(item: AdminUserApiListItem): AdminUser {
     return {
       id: item.id,
-      code: item.code || `#${String(item.id).padStart(3, '0')}`,
       name: item.name,
       email: item.email,
       phone: item.phone || '-',
-      role: this.mapRole(item.role),
+      code: `#${String(item.id).padStart(3, '0')}`,
+      role: 'User' as AdminUserRole,
+      profileType: 'Client' as AdminUserProfileType,
+      status: this.mapStatus(item.status),
+      fileUrl: item.fileUrl || null,
+      fileKey: null,
+      createdAt: '',
+      updatedAt: '',
+    };
+  }
+
+  private mapUserFromDetail(item: AdminUserApiDetail): AdminUser {
+    return {
+      id: item.id,
+      name: item.name,
+      email: item.email,
+      phone: item.phone || '-',
+      code: `#${String(item.id).padStart(3, '0')}`,
+      role: 'User' as AdminUserRole,
+      profileType: 'Client' as AdminUserProfileType,
       status: this.mapStatus(item.status),
       fileUrl: item.fileUrl || null,
       fileKey: item.fileKey || null,
@@ -72,25 +76,8 @@ export class UsersService {
     };
   }
 
-  private mapRole(role: string): UserRole {
-    switch (role) {
-      case 'Master':
-      case 'Admin':
-      case 'User':
-        return role;
-      default:
-        return 'User';
-    }
-  }
-
-  private mapStatus(status: string): UserStatus {
-    switch (status) {
-      case 'Active':
-      case 'Pending':
-      case 'Inactive':
-        return status;
-      default:
-        return 'Inactive';
-    }
+  private mapStatus(status: string): AdminUserStatus {
+    if (status === 'Active' || status === 'Pending' || status === 'Inactive') return status;
+    return 'Inactive';
   }
 }

@@ -12,7 +12,7 @@
           <input
             type="text"
             class="search-input"
-            placeholder="Buscar por nome, email, telefone ou perfil"
+            placeholder="Buscar por nome, email, telefone ou documento"
             [formControl]="searchControl"
             aria-label="Buscar usuarios"
           />
@@ -26,10 +26,16 @@
 
       @if (isLoading()) {
         <app-loading-skeleton [variant]="'table'" [count]="10"></app-loading-skeleton>
+      } @else if (hasError()) {
+        <app-error-state
+          [title]="'Erro ao carregar usuários'"
+          [description]="'Não foi possível buscar os dados. Tente novamente.'"
+          (retry)="loadUsers()"
+        ></app-error-state>
       } @else if (!users().length) {
         <app-empty-state
-          [title]="'Nenhum usuario encontrado'"
-          [description]="'O endpoint /v1/no-auth/users nao retornou registros para os filtros atuais.'"
+          [title]="'Nenhum usuário encontrado'"
+          [description]="'Tente ajustar a busca ou os filtros.'"
           [icon]="'bi-people'"
         ></app-empty-state>
       } @else {
@@ -75,7 +81,7 @@
                       {{ getStatusLabel(user.status) }}
                     </span>
                   </td>
-                  <td>{{ user.createdAt | date: 'dd/MM/yyyy' }}</td>
+                  <td>{{ user.createdAt ? (user.createdAt | date: 'dd/MM/yyyy') : 'N/D' }}</td>
                   <td class="col-actions" (click)="$event.stopPropagation()">
                     <div ngbDropdown placement="bottom-end" class="actions-dropdown">
                       <button

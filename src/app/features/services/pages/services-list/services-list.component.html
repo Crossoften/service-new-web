@@ -13,16 +13,13 @@
           <input
             type="text"
             class="search-input"
-            placeholder="Buscar"
+            placeholder="Buscar por nome do servico"
             [formControl]="searchControl"
             aria-label="Buscar serviços"
           />
         </div>
-        <button class="btn-icon" type="button" aria-label="Filtrar">
-          <i class="bi bi-funnel" aria-hidden="true"></i>
-        </button>
         <span class="toolbar-spacer"></span>
-        <button class="btn-toggle-view" type="button" (click)="goToSuppliers()" title="Ver Fornecedores">
+        <button class="btn-toggle-view" type="button" (click)="goToSuppliers()">
           <i class="bi bi-building" aria-hidden="true"></i>
           Fornecedores
         </button>
@@ -30,10 +27,16 @@
 
       @if (isLoading()) {
         <app-loading-skeleton [variant]="'table'" [count]="10"></app-loading-skeleton>
+      } @else if (hasError()) {
+        <app-error-state
+          [title]="'Erro ao carregar serviços'"
+          [description]="'Não foi possível buscar os dados. Tente novamente.'"
+          (retry)="loadServices()"
+        ></app-error-state>
       } @else if (!services().length) {
         <app-empty-state
           [title]="'Nenhum serviço encontrado'"
-          [description]="'Tente ajustar a busca ou cadastre um novo serviço.'"
+          [description]="'Tente ajustar a busca ou os filtros.'"
           [icon]="'bi-grid'"
         ></app-empty-state>
       } @else {
@@ -41,66 +44,43 @@
           <table class="services-table" aria-label="Lista de serviços">
             <thead>
               <tr>
-                <th scope="col">
-                  Serviço
-                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                </th>
-                <th scope="col">
-                  Categoria
-                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                </th>
-                <th scope="col">
-                  Prestador
-                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                </th>
-                <th scope="col">
-                  Valor
-                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                </th>
-                <th scope="col">
-                  Avaliação
-                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                </th>
-                <th scope="col">
-                  Status
-                  <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                </th>
+                <th scope="col">Serviço</th>
+                <th scope="col">Categoria</th>
+                <th scope="col">Prestador</th>
+                <th scope="col">Valor</th>
+                <th scope="col">Avaliações</th>
+                <th scope="col">Trabalhos</th>
+                <th scope="col">Status</th>
                 <th scope="col" class="col-actions" aria-label="Ações"></th>
               </tr>
             </thead>
             <tbody>
               @for (service of services(); track service.id) {
-                <tr class="clickable-row" (click)="navigateToDetail(service.id)" tabindex="0" (keydown.enter)="navigateToDetail(service.id)">
+                <tr
+                  class="clickable-row"
+                  tabindex="0"
+                  role="button"
+                  (click)="navigateToDetail(service.id)"
+                  (keydown.enter)="navigateToDetail(service.id)"
+                  [attr.aria-label]="'Abrir detalhes de ' + service.name"
+                >
                   <td class="td-name">{{ service.name }}</td>
-                  <td>{{ service.category }}</td>
-                  <td>{{ service.provider }}</td>
+                  <td>{{ service.category.name }}</td>
+                  <td>{{ service.provider.name }}</td>
                   <td>{{ formatPrice(service.price) }}</td>
                   <td>
-                    <div class="rating">
-                      <span class="rating-item likes">
-                        <i class="bi bi-hand-thumbs-up-fill" aria-hidden="true"></i>
-                        {{ service.likes }}
-                      </span>
-                      <span class="rating-item dislikes">
-                        <i class="bi bi-hand-thumbs-down-fill" aria-hidden="true"></i>
-                        {{ service.dislikes }}
-                      </span>
-                      <span class="rating-item negotiations">
-                        <i class="bi bi-bag-fill" aria-hidden="true"></i>
-                        {{ service.negotiations }}
-                      </span>
-                    </div>
-                  </td>
-                  <td>
-                    <span
-                      class="status-badge"
-                      [class.active]="service.status === 'active'"
-                      [class.inactive]="service.status === 'inactive'"
-                    >
-                      {{ service.status === 'active' ? 'Ativo' : 'Desativado' }}
+                    <span class="rating-value">
+                      <i class="bi bi-star-fill" aria-hidden="true"></i>
+                      {{ service.totalRatings }}
                     </span>
                   </td>
-                  <td class="col-actions">
+                  <td>{{ service.totalWorks ?? 'N/D' }}</td>
+                  <td>
+                    <span class="status-badge" [ngClass]="getStatusClass(service.status)">
+                      {{ getStatusLabel(service.status) }}
+                    </span>
+                  </td>
+                  <td class="col-actions" (click)="$event.stopPropagation()">
                     <div ngbDropdown placement="bottom-end" class="actions-dropdown">
                       <button
                         class="btn-actions"
@@ -111,13 +91,9 @@
                         <i class="bi bi-three-dots" aria-hidden="true"></i>
                       </button>
                       <div ngbDropdownMenu>
-                        <button ngbDropdownItem type="button">
+                        <button ngbDropdownItem type="button" (click)="navigateToDetail(service.id)">
                           <i class="bi bi-eye me-2" aria-hidden="true"></i>
                           Ver detalhes
-                        </button>
-                        <button ngbDropdownItem type="button">
-                          <i class="bi bi-pencil me-2" aria-hidden="true"></i>
-                          Editar
                         </button>
                       </div>
                     </div>

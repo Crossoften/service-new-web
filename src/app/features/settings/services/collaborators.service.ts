@@ -64,11 +64,11 @@ export class CollaboratorsService {
   getCollaborators(params: CollaboratorListParams): Observable<CollaboratorListResponse> {
     const query: Record<string, string> = {
       take: String(params.pageSize),
-      skip: String((params.page - 1) * params.pageSize),
     };
+    if (params.page > 0) query['skip'] = String(params.page);
 
     if (params.search.trim()) {
-      query['name'] = params.search.trim();
+      query['search'] = params.search.trim();
     }
 
     if (params.status) {
@@ -107,6 +107,10 @@ export class CollaboratorsService {
         this.buildCreatePayload(collaborator)
       )
       .pipe(map((response) => this.mapCollaborator(response.admin)));
+  }
+
+  deleteCollaborator(id: number): Observable<{ message: string }> {
+    return this.apiService.delete<{ message: string }>(`/v1/admin-settings/${id}`);
   }
 
   private buildCreatePayload(collaborator: SaveCollaboratorInput): CreateAdminPayload {
@@ -172,6 +176,12 @@ export class CollaboratorsService {
   private isCollaboratorPermission(
     permission: string
   ): permission is CollaboratorPermission {
-    return permission === 'Dashboard' || permission === 'Settings';
+    return (
+      permission === 'Dashboard' ||
+      permission === 'Settings' ||
+      permission === 'Services' ||
+      permission === 'Financial' ||
+      permission === 'Users'
+    );
   }
 }

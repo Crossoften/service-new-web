@@ -1,18 +1,17 @@
 import { Component, OnInit, Input, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar.component';
 import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/loading-skeleton.component';
 import { ToastService } from '@core/services/toast.service';
 import { SuppliersService } from '../../services/suppliers.service';
-import { Supplier } from '../../models/supplier.model';
+import { AdminProvider, ProviderServiceHistoryItem } from '../../models/supplier.model';
 
 @Component({
   selector: 'app-supplier-detail',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SidebarComponent, LoadingSkeletonComponent],
+  imports: [CommonModule, SidebarComponent, LoadingSkeletonComponent],
   templateUrl: './supplier-detail.component.html',
   styleUrls: ['./supplier-detail.component.scss'],
 })
@@ -20,48 +19,55 @@ export class SupplierDetailComponent implements OnInit {
   @Input() id!: string;
 
   private readonly router = inject(Router);
-  private readonly fb = inject(FormBuilder);
   private readonly suppliersService = inject(SuppliersService);
   private readonly toastService = inject(ToastService);
 
-  readonly supplier = signal<Supplier | undefined>(undefined);
+  readonly supplier = signal<AdminProvider | undefined>(undefined);
+  readonly history = signal<ProviderServiceHistoryItem[]>([]);
+  readonly historyTotal = signal(0);
   readonly isLoading = signal(false);
-  readonly isSaving = signal(false);
-
-  form!: FormGroup;
+  readonly isLoadingHistory = signal(false);
+  readonly currentPage = signal(1);
+  readonly pageSize = 10;
 
   ngOnInit(): void {
-    this.form = this.fb.group({
-      name:        ['', [Validators.required, Validators.minLength(2)]],
-      email:       ['', [Validators.required, Validators.email]],
-      phone:       ['', Validators.required],
-      dateOfBirth: ['', Validators.required],
-      status:      [false],
-    });
-
     this.isLoading.set(true);
-    this.suppliersService.getSupplierById(this.id).subscribe({
+    this.suppliersService.getSupplierById(Number(this.id)).subscribe({
       next: (sup) => {
-        if (!sup) {
-          this.toastService.showError('Fornecedor não encontrado.');
-          this.router.navigate(['/suppliers']);
-          return;
-        }
         this.supplier.set(sup);
-        this.form.patchValue({
-          name:        sup.name,
-          email:       sup.email,
-          phone:       sup.phone,
-          dateOfBirth: sup.dateOfBirth,
-          status:      sup.status === 'active',
-        });
         this.isLoading.set(false);
+        this.loadHistory();
       },
       error: () => {
         this.toastService.showError('Erro ao carregar fornecedor.');
         this.isLoading.set(false);
+        this.router.navigate(['/suppliers']);
       },
     });
+  }
+
+  loadHistory(): void {
+    this.isLoadingHistory.set(true);
+    this.suppliersService.getSupplierHistory(Number(this.id), {
+      take: this.pageSize,
+      skip: this.currentPage(),
+    }).subscribe({
+      next: (res) => {
+        this.history.set(res.history);
+        this.historyTotal.set(res.count);
+        this.isLoadingHistory.set(false);
+      },
+      error: () => this.isLoadingHistory.set(false),
+    });
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage.set(page);
+    this.loadHistory();
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.historyTotal() / this.pageSize));
   }
 
   get avatarInitials(): string {
@@ -73,37 +79,27 @@ export class SupplierDetailComponent implements OnInit {
       .toUpperCase();
   }
 
-  isFieldInvalid(field: string): boolean {
-    const ctrl = this.form.get(field);
-    return !!ctrl && ctrl.invalid && (ctrl.dirty || ctrl.touched);
-  }
-
   formatCurrency(value: number): string {
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  formatDate(dateStr: string): string {
-    const [y, m, d] = dateStr.split('-');
-    return `${d}/${m}/${y}`;
+  getStatusLabel(status: string): string {
+    switch (status) {
+      case 'Active': return 'Ativo';
+      case 'Pending': return 'Pendente';
+      default: return 'Inativo';
+    }
   }
 
-  onSave(): void {
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
-    this.isSaving.set(true);
-    const { status, ...rest } = this.form.value as { status: boolean; name: string; email: string; phone: string; dateOfBirth: string };
-    this.suppliersService.updateSupplier(this.id, { ...rest, status: status ? 'active' : 'inactive' }).subscribe({
-      next: () => {
-        this.toastService.showSuccess('Fornecedor atualizado com sucesso.');
-        this.router.navigate(['/suppliers']);
-      },
-      error: () => {
-        this.toastService.showError('Erro ao salvar fornecedor.');
-        this.isSaving.set(false);
-      },
-    });
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'Active': return 'badge-active';
+      case 'Pending': return 'badge-pending';
+      default: return 'badge-inactive';
+    }
   }
 
-  onCancel(): void {
+  onBack(): void {
     this.router.navigate(['/suppliers']);
   }
 }

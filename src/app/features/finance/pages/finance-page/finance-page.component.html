@@ -9,21 +9,6 @@
 
       <!-- Action Buttons -->
       <div class="action-bar">
-        <div class="toolbar">
-          <div class="search-box">
-            <i class="bi bi-search search-icon" aria-hidden="true"></i>
-            <input
-              type="text"
-              class="search-input"
-              placeholder="Buscar"
-              [formControl]="searchControl"
-              aria-label="Buscar"
-            />
-          </div>
-          <button class="btn-icon" type="button" aria-label="Filtrar">
-            <i class="bi bi-funnel" aria-hidden="true"></i>
-          </button>
-        </div>
         <div class="modal-buttons">
           <button class="btn-modal" type="button" (click)="openRatesModal(ratesModalTpl)">
             <i class="bi bi-percent" aria-hidden="true"></i>
@@ -33,74 +18,59 @@
             <i class="bi bi-people-fill" aria-hidden="true"></i>
             Comissão de Parceiros
           </button>
-          <button class="btn-modal" type="button" (click)="openParamsModal(paramsModalTpl)">
-            <i class="bi bi-journal-text" aria-hidden="true"></i>
-            Parâmetros Assinatura
+          <button class="btn-modal" type="button" (click)="openCreatePlanModal(planModalTpl)">
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            Novo Plano
           </button>
         </div>
       </div>
 
-      <!-- Entries Table -->
-      @if (isLoading()) {
-        <app-loading-skeleton [variant]="'table'" [count]="10"></app-loading-skeleton>
-      } @else if (!entries().length) {
+      <!-- Plans Table -->
+      @if (isLoadingPlans()) {
+        <app-loading-skeleton [variant]="'table'" [count]="5"></app-loading-skeleton>
+      } @else if (hasPlansError()) {
         <app-empty-state
-          [title]="'Nenhum registro encontrado'"
-          [description]="'Tente ajustar a busca ou o período selecionado.'"
+          [title]="'Erro ao carregar planos'"
+          [description]="'Não foi possível buscar os dados. Tente novamente.'"
+          [icon]="'bi-exclamation-circle'"
+        ></app-empty-state>
+      } @else if (!plans().length) {
+        <app-empty-state
+          [title]="'Nenhum plano encontrado'"
+          [description]="'Crie um novo plano para começar.'"
           [icon]="'bi-graph-up'"
         ></app-empty-state>
       } @else {
         <div class="table-wrapper">
-          <table class="finance-table" aria-label="Registros financeiros">
+          <table class="finance-table" aria-label="Planos de assinatura">
             <thead>
               <tr>
-                <th scope="col">Serviço <i class="bi bi-arrow-down-short sort-icon"></i></th>
-                <th scope="col">Categoria <i class="bi bi-arrow-down-short sort-icon"></i></th>
-                <th scope="col">Valor <i class="bi bi-arrow-down-short sort-icon"></i></th>
-                <th scope="col">Valor Plataforma <i class="bi bi-arrow-down-short sort-icon"></i></th>
-                <th scope="col">Avaliação <i class="bi bi-arrow-down-short sort-icon"></i></th>
-                <th scope="col">Status <i class="bi bi-arrow-down-short sort-icon"></i></th>
+                <th scope="col">Nome</th>
+                <th scope="col">Descrição</th>
+                <th scope="col">Valor</th>
+                <th scope="col">Intervalo</th>
+                <th scope="col" class="col-actions" aria-label="Ações"></th>
               </tr>
             </thead>
             <tbody>
-              @for (entry of entries(); track entry.id) {
+              @for (plan of plans(); track plan.id) {
                 <tr>
-                  <td class="td-service">{{ entry.service }}</td>
-                  <td>
-                    <span class="category-chip">{{ entry.category }}</span>
-                  </td>
-                  <td class="td-value">{{ formatCurrency(entry.value) }}</td>
-                  <td class="td-platform">{{ formatCurrency(entry.platformValue) }}</td>
-                  <td>
-                    <span class="stars" [attr.aria-label]="entry.rating + ' estrelas'">
-                      {{ renderStars(entry.rating) }}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      class="status-badge"
-                      [class.active]="entry.status === 'active'"
-                      [class.inactive]="entry.status === 'inactive'"
-                    >
-                      {{ entry.status === 'active' ? 'Ativo' : 'Desativado' }}
-                    </span>
+                  <td class="td-bold">{{ plan.name }}</td>
+                  <td>{{ plan.description }}</td>
+                  <td class="td-value">{{ formatCurrency(plan.price) }}</td>
+                  <td>{{ plan.interval === 'monthly' ? 'Mensal' : 'Anual' }}</td>
+                  <td class="col-actions">
+                    <button class="btn-icon-sm" type="button" (click)="openEditPlanModal(plan, planModalTpl)" aria-label="Editar plano">
+                      <i class="bi bi-pencil" aria-hidden="true"></i>
+                    </button>
+                    <button class="btn-icon-sm btn-danger" type="button" (click)="deletePlan(plan.id)" aria-label="Excluir plano">
+                      <i class="bi bi-trash" aria-hidden="true"></i>
+                    </button>
                   </td>
                 </tr>
               }
             </tbody>
           </table>
-        </div>
-
-        <div class="pagination-bar">
-          <span class="pagination-info">{{ paginationInfo() }}</span>
-          <div class="pagination-controls">
-            <button class="btn-page" type="button" [disabled]="currentPage() === 1" (click)="onPageChange(currentPage() - 1)" aria-label="Anterior">
-              <i class="bi bi-chevron-left" aria-hidden="true"></i>
-            </button>
-            <button class="btn-page" type="button" [disabled]="currentPage() >= totalPages()" (click)="onPageChange(currentPage() + 1)" aria-label="Próxima">
-              <i class="bi bi-chevron-right" aria-hidden="true"></i>
-            </button>
-          </div>
         </div>
       }
 
@@ -122,8 +92,8 @@
       <table class="modal-table" formArrayName="rates">
         <thead>
           <tr>
-            <th>Categoria <i class="bi bi-arrow-down-short sort-icon"></i></th>
-            <th>Porcentagem <i class="bi bi-arrow-down-short sort-icon"></i></th>
+            <th>Categoria</th>
+            <th>Porcentagem</th>
           </tr>
         </thead>
         <tbody>
@@ -140,12 +110,17 @@
           }
         </tbody>
       </table>
-      <div class="modal-pagination-info">{{ ratesArray.length }} de {{ ratesArray.length }} itens</div>
     </div>
 
     <div class="modal-card-footer">
       <button class="btn-cancel" type="button" (click)="dismissModal()">CANCELAR</button>
-      <button class="btn-save" type="button" [disabled]="isSavingModal()" (click)="saveRates()">
+      <button
+        class="btn-save"
+        type="button"
+        [disabled]="isSavingModal() || !hasSupplierRatesEndpoint"
+        title="Endpoint Portal Gerencial nao documentado"
+        (click)="saveRates()"
+      >
         @if (isSavingModal()) { <span class="spinner-border spinner-border-sm me-2"></span> }
         SALVAR
       </button>
@@ -167,8 +142,8 @@
       <table class="modal-table" formArrayName="commissions">
         <thead>
           <tr>
-            <th>Nome Parceiros <i class="bi bi-arrow-down-short sort-icon"></i></th>
-            <th>Porcentagem <i class="bi bi-arrow-down-short sort-icon"></i></th>
+            <th>Nome Parceiro</th>
+            <th>Porcentagem</th>
           </tr>
         </thead>
         <tbody>
@@ -185,12 +160,17 @@
           }
         </tbody>
       </table>
-      <div class="modal-pagination-info">{{ commissionsArray.length }} de {{ commissionsArray.length }} itens</div>
     </div>
 
     <div class="modal-card-footer">
       <button class="btn-cancel" type="button" (click)="dismissModal()">CANCELAR</button>
-      <button class="btn-save" type="button" [disabled]="isSavingModal()" (click)="saveCommissions()">
+      <button
+        class="btn-save"
+        type="button"
+        [disabled]="isSavingModal() || !hasPartnerCommissionsEndpoint"
+        title="Endpoint Portal Gerencial nao documentado"
+        (click)="saveCommissions()"
+      >
         @if (isSavingModal()) { <span class="spinner-border spinner-border-sm me-2"></span> }
         SALVAR
       </button>
@@ -198,47 +178,42 @@
   </div>
 </ng-template>
 
-<!-- ── Modal: Parâmetros Assinatura ──────────────────────────────────────── -->
-<ng-template #paramsModalTpl let-modal>
+<!-- ── Modal: Plano ───────────────────────────────────────────────────────── -->
+<ng-template #planModalTpl let-modal>
   <div class="modal-card">
     <div class="modal-card-header">
-      <h4 class="modal-title">Parâmetros Assinatura</h4>
+      <h4 class="modal-title">{{ editingPlan() ? 'Editar Plano' : 'Novo Plano' }}</h4>
       <button class="modal-close" type="button" (click)="dismissModal()" aria-label="Fechar">
         <i class="bi bi-x-lg" aria-hidden="true"></i>
       </button>
     </div>
 
-    <div class="modal-card-body" [formGroup]="paramsForm">
-      <table class="modal-table" formArrayName="params">
-        <thead>
-          <tr>
-            <th>Plano <i class="bi bi-arrow-down-short sort-icon"></i></th>
-            <th>Ação <i class="bi bi-arrow-down-short sort-icon"></i></th>
-            <th>Valor <i class="bi bi-arrow-down-short sort-icon"></i></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (ctrl of paramsArray.controls; track $index) {
-            <tr [formGroupName]="$index">
-              <td class="td-bold">{{ ctrl.get('plan')?.value }}</td>
-              <td>{{ ctrl.get('action')?.value }}</td>
-              <td>
-                <div class="currency-input-wrap">
-                  <span class="currency-sign">R$</span>
-                  <input type="number" class="currency-input" formControlName="value" min="0" step="0.01" />
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-      <div class="modal-pagination-info">{{ paramsArray.length }} de {{ paramsArray.length }} itens</div>
+    <div class="modal-card-body" [formGroup]="planForm">
+      <div class="form-group">
+        <label class="form-label" for="plan-name">Nome</label>
+        <input id="plan-name" type="text" class="form-control" formControlName="name" placeholder="Nome do plano" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="plan-desc">Descrição</label>
+        <input id="plan-desc" type="text" class="form-control" formControlName="description" placeholder="Descrição" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="plan-price">Valor (R$)</label>
+        <input id="plan-price" type="number" class="form-control" formControlName="price" min="0" step="0.01" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="plan-interval">Intervalo</label>
+        <select id="plan-interval" class="form-control" formControlName="interval">
+          <option value="monthly">Mensal</option>
+          <option value="yearly">Anual</option>
+        </select>
+      </div>
     </div>
 
     <div class="modal-card-footer">
       <button class="btn-cancel" type="button" (click)="dismissModal()">CANCELAR</button>
-      <button class="btn-save" type="button" [disabled]="isSavingModal()" (click)="saveParams()">
-        @if (isSavingModal()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+      <button class="btn-save" type="button" [disabled]="isSavingPlan()" (click)="savePlan()">
+        @if (isSavingPlan()) { <span class="spinner-border spinner-border-sm me-2"></span> }
         SALVAR
       </button>
     </div>

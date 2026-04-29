@@ -1,29 +1,36 @@
 import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
+import { Observable } from 'rxjs';
+import { ApiService } from '@core/services/api.service';
 import {
-  FinanceSummary,
-  PagedResult,
-  Transaction,
-  TransactionListParams,
+  Plan,
+  CreatePlanPayload,
+  UpdatePlanPayload,
+  PlansListResponse,
 } from '../models/finance.model';
 
 @Injectable({ providedIn: 'root' })
 export class FinanceService {
-  getSummary(): Observable<FinanceSummary> {
-    return throwError(
-      () =>
-        new Error(
-          'O contrato atual do backend nao documenta endpoints para o modulo financeiro.'
-        )
-    );
+  constructor(private readonly apiService: ApiService) {}
+
+  getPlans(): Observable<PlansListResponse> {
+    return this.apiService.get<PlansListResponse>('/v1/plans');
   }
 
-  getTransactions(_params: TransactionListParams): Observable<PagedResult<Transaction>> {
-    return throwError(
-      () =>
-        new Error(
-          'O contrato atual do backend nao documenta endpoints para o modulo financeiro.'
-        )
-    );
+  createPlan(payload: CreatePlanPayload): Observable<Plan> {
+    return this.apiService.post<Plan>('/v1/plans', payload);
   }
+
+  updatePlan(id: number, payload: UpdatePlanPayload): Observable<Plan> {
+    return this.apiService.patch<Plan>(`/v1/plans/${id}`, payload);
+  }
+
+  deletePlan(id: number): Observable<void> {
+    return this.apiService.delete<void>(`/v1/plans/${id}`);
+  }
+
+  // TODO: endpoint não documentado — aguardando backend
+  // getSupplierRates(): Observable<SupplierRate[]>
+
+  // TODO: endpoint não documentado — aguardando backend
+  // getPartnerCommissions(): Observable<PartnerCommission[]>
 }

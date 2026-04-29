@@ -6,7 +6,9 @@ import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar
 import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/loading-skeleton.component';
 import { ToastService } from '@core/services/toast.service';
 import { UsersService } from '../../services/users.service';
-import { User, UserStatus } from '../../models/user.model';
+import { AdminUser, AdminUserStatus } from '../../models/user.model';
+
+type UserStatus = AdminUserStatus;
 
 @Component({
   selector: 'app-user-detail',
@@ -22,24 +24,13 @@ export class UserDetailComponent implements OnInit {
   private readonly usersService = inject(UsersService);
   private readonly toastService = inject(ToastService);
 
-  readonly user = signal<User | undefined>(undefined);
+  readonly user = signal<AdminUser | undefined>(undefined);
   readonly isLoading = signal(false);
-  readonly missingEndpoints = [
-    'GET /v1/users/{id} ou endpoint equivalente para consulta individual autenticada em producao.',
-    'GET /v1/users ou endpoint equivalente para substituir o uso de /v1/no-auth/users fora do ambiente DEV.',
-    'PATCH /v1/users/{id} ou endpoint equivalente para atualizar cadastro e status.',
-  ];
 
   ngOnInit(): void {
     this.isLoading.set(true);
-    this.usersService.getUserById(this.id).subscribe({
+    this.usersService.getUserById(Number(this.id)).subscribe({
       next: (user) => {
-        if (!user) {
-          this.toastService.showError('Usuario nao encontrado.');
-          this.router.navigate(['/users']);
-          return;
-        }
-
         this.user.set(user);
         this.isLoading.set(false);
       },

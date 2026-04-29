@@ -12,10 +12,9 @@ import {
 } from '@angular/core';
 import { Chart, registerables } from 'chart.js';
 import { catchError, forkJoin, of } from 'rxjs';
-import { AuthApiService } from '@features/auth/services/auth-api.service';
 import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/loading-skeleton.component';
-import { User } from '@features/users/models/user.model';
-import { UsersService } from '@features/users/services/users.service';
+import { DashboardService } from '../../services/dashboard.service';
+import { DashboardCards, DashboardChart } from '../../models/dashboard.model';
 import { SidebarComponent } from '../../components/sidebar/sidebar.component';
 
 Chart.register(...registerables);
@@ -37,80 +36,64 @@ interface DashboardMetricCard {
 export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
 
-  private readonly authApiService = inject(AuthApiService);
-  private readonly usersService = inject(UsersService);
+  private readonly dashboardService = inject(DashboardService);
 
   private chart: Chart | null = null;
   private viewReady = false;
 
   readonly isLoading = signal(true);
-  readonly users = signal<User[]>([]);
-  readonly healthMessage = signal('Verificando backend...');
-  readonly healthState = signal<'up' | 'down'>('down');
+  readonly hasError = signal(false);
+  readonly cards = signal<DashboardCards | null>(null);
+  readonly chartData = signal<DashboardChart | null>(null);
 
   readonly months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
 
-  readonly metricCards = computed<DashboardMetricCard[]>(() => [
-    {
-      label: 'Usuarios',
-      value: String(this.users().length),
-      icon: 'bi-briefcase',
-      unavailable: false,
-    },
-    {
-      label: 'Servicos',
-      value: 'N/D',
-      icon: 'bi-grid',
-      unavailable: true,
-    },
-    {
-      label: 'Valor em caixa',
-      value: 'N/D',
-      icon: 'bi-graph-up-arrow',
-      unavailable: true,
-    },
-  ]);
-
-  readonly usersMonthlySeries = computed(() => {
-    const monthlyTotals = Array.from({ length: 12 }, () => 0);
-
-    for (const user of this.users()) {
-      const date = new Date(user.createdAt);
-      if (Number.isNaN(date.getTime())) {
-        continue;
-      }
-
-      monthlyTotals[date.getMonth()] += 1;
-    }
-
-    return monthlyTotals;
+  readonly metricCards = computed<DashboardMetricCard[]>(() => {
+    const c = this.cards();
+    return [
+      {
+        label: 'Usuários',
+        value: c?.totalUsers != null ? String(c.totalUsers) : 'N/D',
+        icon: 'bi-briefcase',
+        unavailable: c?.totalUsers == null,
+      },
+      {
+        label: 'Serviços',
+        value: c?.totalServices != null ? String(c.totalServices) : 'N/D',
+        icon: 'bi-grid',
+        unavailable: c?.totalServices == null,
+      },
+      {
+        label: 'Valor em caixa',
+        value: c?.totalCashValue != null ? String(c.totalCashValue) : 'N/D',
+        icon: 'bi-graph-up',
+        unavailable: c?.totalCashValue == null,
+      },
+    ];
   });
 
-  readonly servicesMonthlySeries = computed(() =>
-    Array.from({ length: 12 }, () => null as number | null)
-  );
+  readonly usersMonthlySeries = computed<number[]>(() => {
+    const data = this.chartData();
+    if (!data?.months) return Array(12).fill(0);
+    return data.months.map((m) => m.users ?? 0);
+  });
 
-  readonly missingEndpoints = computed(() => [
-    'GET /v1/dashboard/services-count ou endpoint equivalente para o card "Servicos".',
-    'GET /v1/dashboard/cash-balance ou endpoint equivalente para o card "Valor em caixa".',
-    'GET /v1/dashboard/monthly-services ou endpoint equivalente para a serie mensal de servicos.',
-    'GET /v1/dashboard/monthly-users ou endpoint dedicado para dashboard em producao, pois /v1/no-auth/users esta marcado como DEV ONLY.',
-  ]);
-
-  readonly existingDashboardSources = computed(() => [
-    'GET /v1/no-auth/users: usado para contar usuarios e derivar a serie mensal atual.',
-    'GET /v1/no-auth/health-check: usado para validar disponibilidade da API.',
-    'GET /v1/my-self: disponivel para contexto do usuario autenticado, mas nao necessario para reproduzir o layout de referencia.',
-  ]);
+  readonly servicesMonthlySeries = computed<number[]>(() => {
+    const data = this.chartData();
+    if (!data?.months) return Array(12).fill(0);
+    return data.months.map((m) => m.services ?? 0);
+  });
 
   ngOnInit(): void {
     forkJoin({
-      health: this.authApiService.getHealthCheck().pipe(catchError(() => of('Backend indisponivel'))),
-      users: this.usersService.getAllUsers().pipe(catchError(() => of([]))),
-    }).subscribe(({ health, users }) => {
-      this.healthMessage.set(health);
-      this.healthState.set(health.toLowerCase().includes('indisponivel') ? 'down' : 'up');
-      this.users.set(users);
+      cards: this.dashboardService.getCards().pipe(catchError(() => of(null))),
+      chart: this.dashboardService.getChart().pipe(catchError(() => of(null))),
+    }).subscribe(({ cards, chart }) => {
+      if (!cards && !chart) {
+        this.hasError.set(true);
+      }
+      this.cards.set(cards);
+      this.chartData.set(chart);
       this.isLoading.set(false);
       this.refreshChart();
     });
@@ -126,13 +109,13 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   private refreshChart(): void {
-    if (!this.viewReady || !this.chartCanvas) {
+    if (!this.viewReady || this.isLoading() || !this.chartCanvas) {
       return;
     }
 
     const usersSeries = this.usersMonthlySeries();
     const servicesSeries = this.servicesMonthlySeries();
-    const chartMax = this.resolveYAxisMax(usersSeries);
+    const chartMax = this.resolveYAxisMax([...usersSeries, ...servicesSeries]);
 
     if (this.chart) {
       this.chart.data.datasets[0].data = usersSeries;
@@ -151,7 +134,7 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
         labels: this.months,
         datasets: [
           {
-            label: 'Usuarios',
+            label: 'Usuários',
             data: usersSeries,
             borderColor: '#8a2be2',
             backgroundColor: 'rgba(138, 43, 226, 0.12)',
@@ -163,17 +146,17 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
             pointBorderColor: '#8a2be2',
           },
           {
-            label: 'Servicos',
+            label: 'Serviços',
             data: servicesSeries,
             borderColor: '#7a7a7a',
             backgroundColor: 'rgba(122, 122, 122, 0.08)',
             borderWidth: 4,
             tension: 0.45,
             spanGaps: false,
-            pointRadius: 0,
-            pointHoverRadius: 0,
-            pointBackgroundColor: '#7a7a7a',
-            pointBorderColor: '#7a7a7a',
+            pointRadius: 4,
+            pointHoverRadius: 5,
+            pointBackgroundColor: '#111111',
+            pointBorderColor: '#111111',
           },
         ],
       },
@@ -182,9 +165,7 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
         maintainAspectRatio: false,
         animation: false,
         plugins: {
-          legend: {
-            display: false,
-          },
+          legend: { display: false },
           tooltip: {
             backgroundColor: 'rgba(255,255,255,0.97)',
             titleColor: '#1a1a1a',
@@ -196,42 +177,23 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
             displayColors: true,
           },
         },
-        interaction: {
-          mode: 'nearest',
-          intersect: false,
-        },
+        interaction: { mode: 'nearest', intersect: false },
         scales: {
           x: {
-            grid: {
-              color: '#efefef',
-            },
-            border: {
-              display: false,
-            },
-            ticks: {
-              color: '#4b5563',
-              font: {
-                size: 10,
-                weight: 500,
-              },
-            },
+            grid: { color: '#efefef' },
+            border: { display: false },
+            ticks: { color: '#4b5563', font: { size: 10, weight: 500 } },
           },
           y: {
             min: 0,
             max: chartMax,
             suggestedMax: chartMax,
-            grid: {
-              color: '#efefef',
-            },
-            border: {
-              display: false,
-            },
+            grid: { color: '#efefef' },
+            border: { display: false },
             ticks: {
               stepSize: Math.max(1, Math.ceil(chartMax / 5)),
               color: '#4b5563',
-              font: {
-                size: 10,
-              },
+              font: { size: 10 },
             },
           },
         },

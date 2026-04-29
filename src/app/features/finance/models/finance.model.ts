@@ -1,49 +1,75 @@
-export type TransactionType = 'income' | 'expense';
-export type TransactionStatus = 'paid' | 'pending' | 'cancelled';
-
-export interface Transaction {
-  id: string;
+// Plans
+export interface Plan {
+  id: number;
+  name: string;
   description: string;
-  provider: string;
-  value: number;
-  date: string;
-  type: TransactionType;
-  status: TransactionStatus;
+  price: number;
+  interval: string;
+  features: string[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface FinanceEntry {
-  id: string;
-  service: string;
-  category: string;
-  value: number;
-  platformValue: number;
-  rating: number;
-  status: 'active' | 'inactive';
+export interface CreatePlanPayload {
+  name: string;
+  description: string;
+  price: number;
+  interval: string;
+  features: string[];
 }
 
-export interface FinanceSummary {
-  totalRevenue: number;
-  pendingPayments: number;
-  activePartners: number;
+export interface UpdatePlanPayload {
+  name?: string;
+  description?: string;
+  price?: number;
+  interval?: string;
+  features?: string[];
+  isActive?: boolean;
 }
 
+export interface PlansListResponse {
+  plans: Plan[];
+}
+
+// Subscriptions
+export type SubscriptionStatus = 'Active' | 'Cancelled' | 'Expired';
+
+export interface SubscriptionPlan {
+  id: number;
+  name: string;
+  price: number;
+  interval: string;
+}
+
+export interface Subscription {
+  id: number;
+  plan: SubscriptionPlan;
+  status: SubscriptionStatus;
+  startedAt: string;
+  expiresAt: string | null;
+  cancelledAt: string | null;
+  createdAt: string;
+}
+
+export interface SubscriptionsListResponse {
+  subscriptions: Subscription[];
+  pages: number;
+  count: number;
+}
+
+// TODO: endpoint não documentado — aguardando backend
 export interface SupplierRate {
   id: string;
   category: string;
   percentage: number;
 }
 
+// TODO: endpoint não documentado — aguardando backend
 export interface PartnerCommission {
   id: string;
   name: string;
   percentage: number;
-}
-
-export interface SubscriptionParam {
-  id: string;
-  plan: string;
-  action: string;
-  value: number;
 }
 
 export interface PagedResult<T> {
@@ -51,10 +77,4 @@ export interface PagedResult<T> {
   total: number;
   page: number;
   pageSize: number;
-}
-
-export interface TransactionListParams {
-  page: number;
-  pageSize: number;
-  search: string;
 }

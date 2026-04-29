@@ -9,8 +9,9 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar.component';
 import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/loading-skeleton.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
+import { ErrorStateComponent } from '@shared/components/error-state/error-state.component';
 import { UsersService } from '../../services/users.service';
-import { User, UserStatus } from '../../models/user.model';
+import { AdminUser, AdminUserStatus } from '../../models/user.model';
 
 @Component({
   selector: 'app-users-list',
@@ -22,6 +23,7 @@ import { User, UserStatus } from '../../models/user.model';
     SidebarComponent,
     LoadingSkeletonComponent,
     EmptyStateComponent,
+    ErrorStateComponent,
   ],
   templateUrl: './users-list.component.html',
   styleUrls: ['./users-list.component.scss'],
@@ -32,11 +34,12 @@ export class UsersListComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   readonly searchControl = new FormControl('');
-  readonly users = signal<User[]>([]);
+  readonly users = signal<AdminUser[]>([]);
   readonly total = signal(0);
   readonly currentPage = signal(1);
   readonly pageSize = signal(10);
   readonly isLoading = signal(false);
+  readonly hasError = signal(false);
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
   readonly paginationInfo = computed(() => {
@@ -63,19 +66,23 @@ export class UsersListComponent implements OnInit, OnDestroy {
 
   loadUsers(): void {
     this.isLoading.set(true);
+    this.hasError.set(false);
     this.usersService
       .getUsers({
-        page: this.currentPage(),
-        pageSize: this.pageSize(),
-        search: this.searchControl.value ?? '',
+        take: this.pageSize(),
+        skip: this.currentPage(),
+        search: this.searchControl.value ?? undefined,
       })
       .subscribe({
         next: (result) => {
-          this.users.set(result.data);
-          this.total.set(result.total);
+          this.users.set(result.users);
+          this.total.set(result.count);
           this.isLoading.set(false);
         },
-        error: () => this.isLoading.set(false),
+        error: () => {
+          this.hasError.set(true);
+          this.isLoading.set(false);
+        },
       });
   }
 
@@ -92,14 +99,19 @@ export class UsersListComponent implements OnInit, OnDestroy {
     this.router.navigate(['/settings']);
   }
 
-  getStatusLabel(status: UserStatus): string {
+  getStatusLabel(status: AdminUserStatus): string {
     switch (status) {
-      case 'Active':
-        return 'Ativo';
-      case 'Pending':
-        return 'Pendente';
-      default:
-        return 'Inativo';
+      case 'Active': return 'Ativo';
+      case 'Pending': return 'Pendente';
+      default: return 'Inativo';
+    }
+  }
+
+  getStatusClass(status: AdminUserStatus): string {
+    switch (status) {
+      case 'Active': return 'badge-active';
+      case 'Pending': return 'badge-pending';
+      default: return 'badge-inactive';
     }
   }
 }

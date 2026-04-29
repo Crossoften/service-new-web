@@ -5,7 +5,7 @@
     <div class="page-wrapper">
 
       <p class="breadcrumb-label">SERVIÇOS</p>
-      <h1 class="page-title">Serviços</h1>
+      <h1 class="page-title">Detalhes do Serviço</h1>
 
       @if (isLoading()) {
         <app-loading-skeleton [variant]="'card'" [count]="1"></app-loading-skeleton>
@@ -20,105 +20,87 @@
             <div class="service-meta">
               <h2 class="service-name">{{ service()!.name }}</h2>
               <div class="service-tags">
-                <span class="tag tag-category">{{ service()!.category }}</span>
+                <span class="tag tag-category">{{ service()!.category.name }}</span>
                 <span class="tag tag-provider">
                   <i class="bi bi-person-fill" aria-hidden="true"></i>
-                  {{ service()!.provider }}
+                  {{ service()!.provider.name }}
                 </span>
                 <span class="tag tag-price">{{ formatCurrency(service()!.price) }}</span>
               </div>
             </div>
             <div class="service-ratings">
-              <div class="rating-chip likes">
-                <i class="bi bi-hand-thumbs-up-fill" aria-hidden="true"></i>
-                {{ service()!.likes }}
+              <div class="rating-chip">
+                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                {{ service()!.totalRatings }}
               </div>
-              <div class="rating-chip dislikes">
-                <i class="bi bi-hand-thumbs-down-fill" aria-hidden="true"></i>
-                {{ service()!.dislikes }}
-              </div>
-              <div class="rating-chip negotiations">
+              <div class="rating-chip">
                 <i class="bi bi-bag-fill" aria-hidden="true"></i>
-                {{ service()!.negotiations }}
+                {{ service()!.totalWorks ?? 'N/D' }}
               </div>
             </div>
             <span
               class="status-badge"
-              [class.active]="service()!.status === 'active'"
-              [class.inactive]="service()!.status === 'inactive'"
+              [class.active]="service()!.status === 'Active'"
+              [class.inactive]="service()!.status === 'Inactive'"
             >
-              {{ service()!.status === 'active' ? 'Ativo' : 'Desativado' }}
+              {{ service()!.status === 'Active' ? 'Ativo' : 'Desativado' }}
             </span>
           </div>
 
           <hr class="divider" />
 
-          <!-- Bookings Table -->
+          <!-- Clients Table -->
           <div class="bookings-section">
             <div class="section-header">
-              <h3 class="section-title">Agendamentos</h3>
-              <span class="booking-count">{{ totalBookings() }} no total</span>
+              <h3 class="section-title">Clientes</h3>
+              <span class="booking-count">{{ clientsTotal() }} no total</span>
             </div>
 
-            <div class="table-wrapper">
-              <table class="bookings-table" aria-label="Agendamentos do serviço">
-                <thead>
-                  <tr>
-                    <th scope="col">
-                      Data
-                      <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                    </th>
-                    <th scope="col">
-                      Cliente
-                      <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                    </th>
-                    <th scope="col">
-                      Valor
-                      <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                    </th>
-                    <th scope="col">
-                      Avaliação
-                      <i class="bi bi-arrow-down-short sort-icon" aria-hidden="true"></i>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (booking of bookings(); track booking.id) {
+            @if (isLoadingClients()) {
+              <app-loading-skeleton [variant]="'table'" [count]="5"></app-loading-skeleton>
+            } @else if (!clients().length) {
+              <p class="empty-hint">Nenhum cliente encontrado.</p>
+            } @else {
+              <div class="table-wrapper">
+                <table class="bookings-table" aria-label="Clientes do serviço">
+                  <thead>
                     <tr>
-                      <td>{{ formatDate(booking.date) }}</td>
-                      <td class="td-client">{{ booking.client }}</td>
-                      <td class="td-value">{{ formatCurrency(booking.value) }}</td>
-                      <td>
-                        <span class="stars" [attr.aria-label]="booking.rating + ' estrelas'">
-                          {{ renderStars(booking.rating) }}
-                        </span>
-                      </td>
+                      <th scope="col">Data</th>
+                      <th scope="col">Cliente</th>
+                      <th scope="col">Valor</th>
+                      <th scope="col">Status</th>
                     </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-
-            <div class="pagination-bar">
-              <span class="pagination-info">{{ paginationInfo }}</span>
-              <div class="pagination-controls">
-                <button class="btn-page" type="button" [disabled]="currentPage() === 1" (click)="currentPage.set(currentPage() - 1)" aria-label="Anterior">
-                  <i class="bi bi-chevron-left" aria-hidden="true"></i>
-                </button>
-                <button class="btn-page" type="button" [disabled]="currentPage() >= totalPages" (click)="currentPage.set(currentPage() + 1)" aria-label="Próxima">
-                  <i class="bi bi-chevron-right" aria-hidden="true"></i>
-                </button>
+                  </thead>
+                  <tbody>
+                    @for (client of clients(); track client.id) {
+                      <tr>
+                        <td>{{ formatDate(client.createdAt) }}</td>
+                        <td class="td-client">{{ client.clientName }}</td>
+                        <td class="td-value">{{ formatCurrency(client.value) }}</td>
+                        <td>{{ getStatusLabel(client.status) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
               </div>
-            </div>
+
+              <div class="pagination-bar">
+                <span class="pagination-info">{{ paginationInfo }}</span>
+                <div class="pagination-controls">
+                  <button class="btn-page" type="button" [disabled]="currentPage() === 1" (click)="onPageChange(currentPage() - 1)" aria-label="Anterior">
+                    <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                  </button>
+                  <button class="btn-page" type="button" [disabled]="currentPage() >= totalPages" (click)="onPageChange(currentPage() + 1)" aria-label="Próxima">
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+            }
           </div>
 
           <!-- Actions -->
           <div class="form-actions">
-            <button type="button" class="btn-cancel" (click)="onCancel()" [disabled]="isSaving()">CANCELAR</button>
-            <button type="button" class="btn-save" (click)="onSave()" [disabled]="isSaving()">
-              @if (isSaving()) { <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span> }
-              SALVAR
-            </button>
+            <button type="button" class="btn-cancel" (click)="onBack()">VOLTAR</button>
           </div>
 
         </div>

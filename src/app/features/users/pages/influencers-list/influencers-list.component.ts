@@ -9,8 +9,9 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar.component';
 import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/loading-skeleton.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
+import { ErrorStateComponent } from '@shared/components/error-state/error-state.component';
 import { InfluencersService } from '../../services/influencers.service';
-import { Influencer } from '../../models/influencer.model';
+import { AdminInfluencer, AdminInfluencerStatus } from '../../models/influencer.model';
 
 @Component({
   selector: 'app-influencers-list',
@@ -22,6 +23,7 @@ import { Influencer } from '../../models/influencer.model';
     SidebarComponent,
     LoadingSkeletonComponent,
     EmptyStateComponent,
+    ErrorStateComponent,
   ],
   templateUrl: './influencers-list.component.html',
   styleUrls: ['./influencers-list.component.scss'],
@@ -32,13 +34,14 @@ export class InfluencersListComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   readonly searchControl = new FormControl('');
-  readonly influencers = signal<Influencer[]>([]);
+  readonly influencers = signal<AdminInfluencer[]>([]);
   readonly total = signal(0);
   readonly currentPage = signal(1);
   readonly pageSize = signal(10);
   readonly isLoading = signal(false);
+  readonly hasError = signal(false);
 
-  readonly totalPages = computed(() => Math.ceil(this.total() / this.pageSize()));
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
   readonly paginationInfo = computed(() => {
     if (this.total() === 0) return '0 itens';
     const start = (this.currentPage() - 1) * this.pageSize() + 1;
@@ -57,17 +60,21 @@ export class InfluencersListComponent implements OnInit, OnDestroy {
 
   loadInfluencers(): void {
     this.isLoading.set(true);
+    this.hasError.set(false);
     this.influencersService.getInfluencers({
-      page: this.currentPage(),
-      pageSize: this.pageSize(),
-      search: this.searchControl.value ?? '',
+      take: this.pageSize(),
+      skip: this.currentPage(),
+      search: this.searchControl.value ?? undefined,
     }).subscribe({
       next: (result) => {
-        this.influencers.set(result.data);
-        this.total.set(result.total);
+        this.influencers.set(result.influencers);
+        this.total.set(result.count);
         this.isLoading.set(false);
       },
-      error: () => this.isLoading.set(false),
+      error: () => {
+        this.hasError.set(true);
+        this.isLoading.set(false);
+      },
     });
   }
 
@@ -76,11 +83,27 @@ export class InfluencersListComponent implements OnInit, OnDestroy {
     this.loadInfluencers();
   }
 
-  navigateToDetail(id: string): void {
+  navigateToDetail(id: number): void {
     this.router.navigate(['/users/influencers', id]);
   }
 
   goToUsers(): void {
     this.router.navigate(['/users']);
+  }
+
+  getStatusLabel(status: AdminInfluencerStatus): string {
+    switch (status) {
+      case 'Active': return 'Ativo';
+      case 'Pending': return 'Pendente';
+      default: return 'Inativo';
+    }
+  }
+
+  getStatusClass(status: AdminInfluencerStatus): string {
+    switch (status) {
+      case 'Active': return 'badge-active';
+      case 'Pending': return 'badge-pending';
+      default: return 'badge-inactive';
+    }
   }
 }

@@ -28,15 +28,24 @@ type CollaboratorFormGroup = FormGroup<{
   status: FormControl<CollaboratorStatus>;
   permDashboard: FormControl<boolean>;
   permSettings: FormControl<boolean>;
+  permServices: FormControl<boolean>;
+  permFinancial: FormControl<boolean>;
+  permUsers: FormControl<boolean>;
 }>;
 
 const ALL_PERMISSION_OPTIONS: Array<{
-  key: keyof Pick<CollaboratorFormGroup['controls'], 'permDashboard' | 'permSettings'>;
+  key: keyof Pick<
+    CollaboratorFormGroup['controls'],
+    'permDashboard' | 'permSettings' | 'permServices' | 'permFinancial' | 'permUsers'
+  >;
   label: string;
   value: CollaboratorPermission;
 }> = [
   { key: 'permDashboard', label: 'Dashboard', value: 'Dashboard' },
   { key: 'permSettings', label: 'Configuracoes', value: 'Settings' },
+  { key: 'permServices', label: 'Servicos', value: 'Services' },
+  { key: 'permFinancial', label: 'Financeiro', value: 'Financial' },
+  { key: 'permUsers', label: 'Usuarios', value: 'Users' },
 ];
 
 @Component({
@@ -81,6 +90,9 @@ export class CollaboratorFormComponent implements OnInit {
       status: ['Active' as CollaboratorStatus, Validators.required],
       permDashboard: [false],
       permSettings: [false],
+      permServices: [false],
+      permFinancial: [false],
+      permUsers: [false],
     });
 
     this.loadPermissions();
@@ -168,6 +180,9 @@ export class CollaboratorFormComponent implements OnInit {
           status: collaborator.status,
           permDashboard: collaborator.permissions.includes('Dashboard'),
           permSettings: collaborator.permissions.includes('Settings'),
+          permServices: collaborator.permissions.includes('Services'),
+          permFinancial: collaborator.permissions.includes('Financial'),
+          permUsers: collaborator.permissions.includes('Users'),
         });
         this.isLoading.set(false);
       },
@@ -188,6 +203,18 @@ export class CollaboratorFormComponent implements OnInit {
 
     if (this.form.controls.permSettings.value) {
       permissions.push('Settings');
+    }
+
+    if (this.form.controls.permServices.value) {
+      permissions.push('Services');
+    }
+
+    if (this.form.controls.permFinancial.value) {
+      permissions.push('Financial');
+    }
+
+    if (this.form.controls.permUsers.value) {
+      permissions.push('Users');
     }
 
     return permissions;

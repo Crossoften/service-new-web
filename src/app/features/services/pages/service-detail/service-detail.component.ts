@@ -6,15 +6,7 @@ import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar
 import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/loading-skeleton.component';
 import { ToastService } from '@core/services/toast.service';
 import { ServicesService } from '../../services/services.service';
-import { Service } from '../../models/service.model';
-
-interface Booking {
-  id: string;
-  date: string;
-  client: string;
-  value: number;
-  rating: number;
-}
+import { AdminService, ServiceClientItem } from '../../models/service.model';
 
 @Component({
   selector: 'app-service-detail',
@@ -30,86 +22,81 @@ export class ServiceDetailComponent implements OnInit {
   private readonly servicesService = inject(ServicesService);
   private readonly toastService = inject(ToastService);
 
-  readonly service = signal<Service | undefined>(undefined);
+  readonly service = signal<AdminService | undefined>(undefined);
+  readonly clients = signal<ServiceClientItem[]>([]);
+  readonly clientsTotal = signal(0);
   readonly isLoading = signal(false);
-  readonly isSaving = signal(false);
-
-  readonly bookings = signal<Booking[]>([]);
-  readonly totalBookings = signal(0);
+  readonly isLoadingClients = signal(false);
   readonly currentPage = signal(1);
-  readonly pageSize = 8;
+  readonly pageSize = 10;
 
   ngOnInit(): void {
     this.isLoading.set(true);
-    this.servicesService.getServices({ page: 1, pageSize: 100, search: '' }).subscribe({
-      next: (result) => {
-        const found = result.data.find((s) => s.id === this.id);
-        if (!found) {
-          this.toastService.showError('Serviço não encontrado.');
-          this.router.navigate(['/services']);
-          return;
-        }
-        this.service.set(found);
-        this.generateBookings(found);
+    this.servicesService.getServiceById(Number(this.id)).subscribe({
+      next: (svc) => {
+        this.service.set(svc);
         this.isLoading.set(false);
+        this.loadClients();
       },
       error: () => {
         this.toastService.showError('Erro ao carregar serviço.');
         this.isLoading.set(false);
+        this.router.navigate(['/services']);
       },
     });
   }
 
-  private generateBookings(service: Service): void {
-    const clients = ['Ana Silva', 'Carlos Souza', 'Maria Oliveira', 'Pedro Santos', 'Juliana Costa', 'Roberto Lima', 'Sandra Vieira', 'Felipe Gomes'];
-    const all: Booking[] = Array.from({ length: 12 }, (_, i) => {
-      const d = new Date(2024, i % 12, (i * 3 + 1) % 28 + 1);
-      return {
-        id: `bk-${service.id}-${i}`,
-        date: d.toISOString().slice(0, 10),
-        client: clients[i % clients.length],
-        value: service.price * (0.9 + Math.random() * 0.2),
-        rating: Math.floor(Math.random() * 3) + 3,
-      };
+  loadClients(): void {
+    this.isLoadingClients.set(true);
+    this.servicesService.getServiceClients(Number(this.id), {
+      take: this.pageSize,
+      skip: this.currentPage(),
+    }).subscribe({
+      next: (res) => {
+        this.clients.set(res.clients);
+        this.clientsTotal.set(res.count);
+        this.isLoadingClients.set(false);
+      },
+      error: () => this.isLoadingClients.set(false),
     });
-    this.bookings.set(all.slice(0, this.pageSize));
-    this.totalBookings.set(all.length);
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage.set(page);
+    this.loadClients();
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.clientsTotal() / this.pageSize));
   }
 
   get paginationInfo(): string {
-    const total = this.totalBookings();
+    const total = this.clientsTotal();
     if (total === 0) return '0 itens';
     const start = (this.currentPage() - 1) * this.pageSize + 1;
     const end = Math.min(this.currentPage() * this.pageSize, total);
     return `${start}-${end} de ${total} itens`;
   }
 
-  get totalPages(): number {
-    return Math.ceil(this.totalBookings() / this.pageSize);
-  }
-
-  formatDate(str: string): string {
-    const [y, m, d] = str.split('-');
-    return `${d}/${m}/${y}`;
-  }
-
   formatCurrency(value: number): string {
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  renderStars(rating: number): string {
-    return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+  formatDate(str: string): string {
+    if (!str) return '-';
+    const [y, m, d] = str.slice(0, 10).split('-');
+    return `${d}/${m}/${y}`;
   }
 
-  onSave(): void {
-    this.isSaving.set(true);
-    setTimeout(() => {
-      this.toastService.showSuccess('Serviço atualizado com sucesso.');
-      this.isSaving.set(false);
-    }, 700);
+  getStatusLabel(status: string): string {
+    switch (status) {
+      case 'Active': return 'Ativo';
+      case 'Pending': return 'Pendente';
+      default: return 'Inativo';
+    }
   }
 
-  onCancel(): void {
+  onBack(): void {
     this.router.navigate(['/services']);
   }
 }
