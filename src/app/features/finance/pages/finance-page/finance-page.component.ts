@@ -102,7 +102,8 @@ export class FinancePageComponent implements OnInit, OnDestroy {
       name: ['', Validators.required],
       description: [''],
       price: [0, [Validators.required, Validators.min(0)]],
-      interval: ['monthly', Validators.required],
+      interval: ['Month', Validators.required],
+      intervalCount: [1, [Validators.required, Validators.min(1)]],
     });
     this.activeModalRef = this.modal.open(templateRef, { centered: true, size: 'md' });
   }
@@ -112,8 +113,9 @@ export class FinancePageComponent implements OnInit, OnDestroy {
     this.planForm = this.fb.group({
       name: [plan.name, Validators.required],
       description: [plan.description],
-      price: [plan.price, [Validators.required, Validators.min(0)]],
+      price: [Number(plan.price), [Validators.required, Validators.min(0)]],
       interval: [plan.interval, Validators.required],
+      intervalCount: [plan.intervalCount ?? 1, [Validators.required, Validators.min(1)]],
     });
     this.activeModalRef = this.modal.open(templateRef, { centered: true, size: 'md' });
   }
@@ -121,11 +123,30 @@ export class FinancePageComponent implements OnInit, OnDestroy {
   savePlan(): void {
     if (this.planForm.invalid) return;
     this.isSavingPlan.set(true);
-    const payload = this.planForm.value;
+    const raw = this.planForm.value;
     const editing = this.editingPlan();
+
     const request$ = editing
-      ? this.financeService.updatePlan(editing.id, payload)
-      : this.financeService.createPlan(payload);
+      ? this.financeService.updatePlan(editing.id, {
+          name: raw.name,
+          description: raw.description,
+          price: raw.price,
+          interval: raw.interval,
+          intervalCount: raw.intervalCount,
+        })
+      : this.financeService.createPlan({
+          name: raw.name,
+          slug: raw.name.toLowerCase()
+            .normalize('NFD').replace(/[̀-ͯ]/g, '')
+            .replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+          description: raw.description ?? '',
+          price: raw.price,
+          interval: raw.interval,
+          intervalCount: raw.intervalCount,
+          benefits: [],
+          isActive: true,
+          sortOrder: 1,
+        });
 
     request$.pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
@@ -185,7 +206,16 @@ export class FinancePageComponent implements OnInit, OnDestroy {
 
   dismissModal(): void { this.activeModalRef?.dismiss(); }
 
-  formatCurrency(v: number): string {
-    return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  formatCurrency(v: number | string): string {
+    return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  formatInterval(interval: string): string {
+    switch (interval) {
+      case 'Month': return 'Mensal';
+      case 'Quarter': return 'Trimestral';
+      case 'Year': return 'Anual';
+      default: return interval ?? '-';
+    }
   }
 }

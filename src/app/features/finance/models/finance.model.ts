@@ -2,21 +2,28 @@
 export interface Plan {
   id: number;
   name: string;
+  slug: string;
   description: string;
-  price: number;
+  price: number | string;
   interval: string;
-  features: string[];
+  intervalCount: number;
+  benefits: string[];
   isActive: boolean;
+  sortOrder: number;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreatePlanPayload {
   name: string;
+  slug: string;
   description: string;
   price: number;
   interval: string;
-  features: string[];
+  intervalCount: number;
+  benefits: string[];
+  isActive: boolean;
+  sortOrder: number;
 }
 
 export interface UpdatePlanPayload {
@@ -24,7 +31,8 @@ export interface UpdatePlanPayload {
   description?: string;
   price?: number;
   interval?: string;
-  features?: string[];
+  intervalCount?: number;
+  benefits?: string[];
   isActive?: boolean;
 }
 

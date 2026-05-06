@@ -65,7 +65,9 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
       },
       {
         label: 'Valor em caixa',
-        value: c?.totalCashValue != null ? String(c.totalCashValue) : 'N/D',
+        value: c?.totalCashValue != null
+          ? c.totalCashValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+          : 'N/D',
         icon: 'bi-graph-up',
         unavailable: c?.totalCashValue == null,
       },

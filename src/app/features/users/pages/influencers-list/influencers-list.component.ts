@@ -63,7 +63,7 @@ export class InfluencersListComponent implements OnInit, OnDestroy {
     this.hasError.set(false);
     this.influencersService.getInfluencers({
       take: this.pageSize(),
-      skip: this.currentPage(),
+      skip: (this.currentPage() - 1) * this.pageSize(),
       search: this.searchControl.value ?? undefined,
     }).subscribe({
       next: (result) => {
@@ -89,6 +89,10 @@ export class InfluencersListComponent implements OnInit, OnDestroy {
 
   goToUsers(): void {
     this.router.navigate(['/users']);
+  }
+
+  goToSuppliers(): void {
+    this.router.navigate(['/suppliers']);
   }
 
   getStatusLabel(status: AdminInfluencerStatus): string {

@@ -115,22 +115,25 @@
   }
 }
 
-.btn-icon {
+.btn-icon,
+.btn-filter {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border: 1px solid #e0e0e0;
   border-radius: var(--radius-button);
   background: #fff;
   color: #1a1a1a;
   cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
 
   &:hover {
-    background: var(--color-surface-hover);
+    background: rgba(131, 8, 210, 0.08);
     color: var(--color-primary);
+    border-color: rgba(131, 8, 210, 0.3);
   }
 }
 

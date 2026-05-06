@@ -63,7 +63,7 @@ export class SuppliersListComponent implements OnInit, OnDestroy {
     this.hasError.set(false);
     this.suppliersService.getSuppliers({
       take: this.pageSize(),
-      skip: this.currentPage(),
+      skip: (this.currentPage() - 1) * this.pageSize(),
       search: this.searchControl.value ?? undefined,
     }).subscribe({
       next: (result) => {
@@ -85,6 +85,14 @@ export class SuppliersListComponent implements OnInit, OnDestroy {
 
   navigateToDetail(id: number): void {
     this.router.navigate(['/suppliers', id]);
+  }
+
+  goToUsers(): void {
+    this.router.navigate(['/users']);
+  }
+
+  goToInfluencers(): void {
+    this.router.navigate(['/users/influencers']);
   }
 
   getStatusLabel(status: AdminProviderStatus): string {

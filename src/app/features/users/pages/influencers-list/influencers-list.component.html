@@ -7,6 +7,21 @@
       <p class="breadcrumb-label">USUÁRIOS</p>
       <h1 class="page-title">Influencers</h1>
 
+      <div class="type-tabs" role="tablist" aria-label="Tipo de usuário">
+        <button class="type-tab" role="tab" aria-selected="false" type="button" (click)="goToUsers()">
+          <i class="bi bi-people" aria-hidden="true"></i>
+          Usuários
+        </button>
+        <button class="type-tab type-tab--active" role="tab" aria-selected="true" type="button">
+          <i class="bi bi-star" aria-hidden="true"></i>
+          Influencers
+        </button>
+        <button class="type-tab" role="tab" aria-selected="false" type="button" (click)="goToSuppliers()">
+          <i class="bi bi-building" aria-hidden="true"></i>
+          Fornecedores
+        </button>
+      </div>
+
       <div class="toolbar">
         <div class="search-box">
           <i class="bi bi-search search-icon" aria-hidden="true"></i>
@@ -18,10 +33,8 @@
             aria-label="Buscar influencers"
           />
         </div>
-        <span class="toolbar-spacer"></span>
-        <button class="btn-toggle-view" type="button" (click)="goToUsers()">
-          <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
-          Usuários
+        <button class="btn-filter" type="button" aria-label="Filtrar">
+          <i class="bi bi-funnel" aria-hidden="true"></i>
         </button>
       </div>
 

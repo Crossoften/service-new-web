@@ -6,6 +6,21 @@
       <p class="breadcrumb-label">USUARIOS</p>
       <h1 class="page-title">Usuarios</h1>
 
+      <div class="type-tabs" role="tablist" aria-label="Tipo de usuário">
+        <button class="type-tab type-tab--active" role="tab" aria-selected="true" type="button">
+          <i class="bi bi-people" aria-hidden="true"></i>
+          Usuários
+        </button>
+        <button class="type-tab" role="tab" aria-selected="false" type="button" (click)="goToInfluencers()">
+          <i class="bi bi-star" aria-hidden="true"></i>
+          Influencers
+        </button>
+        <button class="type-tab" role="tab" aria-selected="false" type="button" (click)="goToSuppliers()">
+          <i class="bi bi-building" aria-hidden="true"></i>
+          Fornecedores
+        </button>
+      </div>
+
       <div class="toolbar">
         <div class="search-box">
           <i class="bi bi-search search-icon" aria-hidden="true"></i>
@@ -17,6 +32,9 @@
             aria-label="Buscar usuarios"
           />
         </div>
+        <button class="btn-filter" type="button" aria-label="Filtrar">
+          <i class="bi bi-funnel" aria-hidden="true"></i>
+        </button>
         <span class="toolbar-spacer"></span>
         <button class="btn-toggle-view" type="button" (click)="goToCollaborators()">
           <i class="bi bi-shield-lock" aria-hidden="true"></i>
@@ -43,12 +61,11 @@
           <table class="users-table" aria-label="Lista de usuarios">
             <thead>
               <tr>
-                <th scope="col">Codigo</th>
                 <th scope="col">Nome</th>
                 <th scope="col">Email</th>
-                <th scope="col">Perfil</th>
+                <th scope="col">Celular</th>
+                <th scope="col">Serviços</th>
                 <th scope="col">Status</th>
-                <th scope="col">Criado em</th>
                 <th scope="col" class="col-actions" aria-label="Acoes"></th>
               </tr>
             </thead>
@@ -63,14 +80,10 @@
                   (keydown.space)="navigateToDetail(user.id); $event.preventDefault()"
                   [attr.aria-label]="'Abrir detalhes de ' + user.name"
                 >
-                  <td class="code-cell">{{ user.code }}</td>
-                  <td>{{ user.name }}</td>
+                  <td class="td-name">{{ user.name }}</td>
                   <td>{{ user.email }}</td>
-                  <td>
-                    <span class="role-badge" [class.master]="user.role === 'Master'">
-                      {{ user.role }}
-                    </span>
-                  </td>
+                  <td>{{ user.phone }}</td>
+                  <td>{{ user.openServices }}</td>
                   <td>
                     <span
                       class="status-badge"
@@ -81,7 +94,6 @@
                       {{ getStatusLabel(user.status) }}
                     </span>
                   </td>
-                  <td>{{ user.createdAt ? (user.createdAt | date: 'dd/MM/yyyy') : 'N/D' }}</td>
                   <td class="col-actions" (click)="$event.stopPropagation()">
                     <div ngbDropdown placement="bottom-end" class="actions-dropdown">
                       <button

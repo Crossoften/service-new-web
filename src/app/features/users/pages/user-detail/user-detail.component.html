@@ -4,7 +4,7 @@
   <main class="main-content">
     <div class="page-wrapper">
       <p class="breadcrumb-label">USUARIOS</p>
-      <h1 class="page-title">Detalhes do usuario</h1>
+      <h1 class="page-title">Usuarios</h1>
 
       @if (isLoading()) {
         <app-loading-skeleton [variant]="'card'" [count]="1"></app-loading-skeleton>
@@ -35,39 +35,30 @@
                 </span>
               </div>
 
-              <p class="detail-copy">Dados carregados pelo endpoint gerencial <code>/v1/admin-users/{{ user()?.id }}</code>.</p>
-            </div>
+              </div>
           </div>
 
           <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Serviços abertos</span>
+              <strong>{{ user()?.openServices ?? 0 }}</strong>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Celular</span>
+              <strong>{{ user()?.phone }}</strong>
+            </div>
             <div class="info-item">
               <span class="info-label">Email</span>
               <strong>{{ user()?.email }}</strong>
             </div>
             <div class="info-item">
-              <span class="info-label">Telefone</span>
-              <strong>{{ user()?.phone }}</strong>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Perfil</span>
-              <strong>{{ user()?.role }}</strong>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Criado em</span>
-              <strong>{{ user()?.createdAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Atualizado em</span>
-              <strong>{{ user()?.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
-            </div>
-            <div class="info-item">
-              <span class="info-label">fileKey</span>
-              <strong>{{ user()?.fileKey || '-' }}</strong>
+              <span class="info-label">Data de nascimento</span>
+              <strong>N/D</strong>
             </div>
           </div>
 
           <div class="form-actions">
-            <button type="button" class="btn-cancel" (click)="onBack()">VOLTAR</button>
+            <button type="button" class="btn-cancel" (click)="onBack()">CANCELAR</button>
           </div>
         </div>
       }

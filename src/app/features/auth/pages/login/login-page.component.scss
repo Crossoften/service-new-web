@@ -27,7 +27,6 @@
 .login-panel {
   max-width: 480px;
   width: 100%;
-  min-height: 620px;
   margin: 1.25rem auto 0;
   padding: 2.5rem;
   background: #ffffff;
@@ -205,16 +204,28 @@
 
 @media (min-width: 992px) {
   .login-page {
-    padding: 1rem 2rem;
+    padding: 0;
+    background: #f5f5f5;
   }
 
   .login-content {
-    grid-template-columns: 480px 1fr;
-    gap: 2.5rem;
+    grid-template-columns: 520px 1fr;
+    gap: 0;
+    max-width: none;
+    margin: 0;
+    align-items: stretch;
   }
 
   .login-panel {
-    margin: 1.25rem 0 0;
+    background: #fff;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+    padding: 3.5rem 3.5rem 2.5rem;
+    max-width: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
   }
 
   .illustration-panel {
@@ -222,7 +233,7 @@
   }
 
   .illustration-panel img {
-    margin-top: 5rem;
+    margin-top: 2rem;
   }
 }
 

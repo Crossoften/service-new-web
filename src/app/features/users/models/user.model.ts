@@ -11,6 +11,7 @@ export interface AdminUser {
   role: AdminUserRole;
   profileType: AdminUserProfileType;
   status: AdminUserStatus;
+  openServices: number;
   fileUrl: string | null;
   fileKey: string | null;
   createdAt: string;
@@ -26,6 +27,7 @@ export interface AdminUserListItem {
   role: AdminUserRole;
   profileType: AdminUserProfileType;
   status: AdminUserStatus;
+  openServices: number;
   fileUrl: string | null;
   fileKey: string | null;
   createdAt: string;

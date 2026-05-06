@@ -129,6 +129,27 @@
   &::after { display: none; }
 }
 
+.btn-filter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #444;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: rgba(131, 8, 210, 0.08);
+    color: #8308d2;
+    border-color: rgba(131, 8, 210, 0.3);
+  }
+}
+
 .pagination-bar {
   display: flex; align-items: center; justify-content: flex-end;
   gap: 1rem; padding-top: 1rem;

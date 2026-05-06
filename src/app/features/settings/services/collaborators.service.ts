@@ -65,7 +65,7 @@ export class CollaboratorsService {
     const query: Record<string, string> = {
       take: String(params.pageSize),
     };
-    if (params.page > 0) query['skip'] = String(params.page);
+    if (params.page > 1) query['skip'] = String((params.page - 1) * params.pageSize);
 
     if (params.search.trim()) {
       query['search'] = params.search.trim();
@@ -150,7 +150,7 @@ export class CollaboratorsService {
       phone: item.phone,
       role: this.mapRole(item.role),
       status: this.mapStatus(item.status),
-      permissions: item.adminPermissions.filter(this.isCollaboratorPermission),
+      permissions: (item.adminPermissions ?? []).filter(this.isCollaboratorPermission),
       fileUrl: item.fileUrl || null,
       fileKey: item.fileKey || null,
       createdAt: item.createdAt,

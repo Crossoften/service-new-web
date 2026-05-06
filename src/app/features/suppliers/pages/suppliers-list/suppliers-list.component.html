@@ -4,8 +4,23 @@
   <main class="main-content">
     <div class="page-wrapper">
 
-      <p class="breadcrumb-label">PARCEIROS</p>
+      <p class="breadcrumb-label">USUÁRIOS</p>
       <h1 class="page-title">Fornecedores</h1>
+
+      <div class="type-tabs" role="tablist" aria-label="Tipo de usuário">
+        <button class="type-tab" role="tab" aria-selected="false" type="button" (click)="goToUsers()">
+          <i class="bi bi-people" aria-hidden="true"></i>
+          Usuários
+        </button>
+        <button class="type-tab" role="tab" aria-selected="false" type="button" (click)="goToInfluencers()">
+          <i class="bi bi-star" aria-hidden="true"></i>
+          Influencers
+        </button>
+        <button class="type-tab type-tab--active" role="tab" aria-selected="true" type="button">
+          <i class="bi bi-building" aria-hidden="true"></i>
+          Fornecedores
+        </button>
+      </div>
 
       <div class="toolbar">
         <div class="search-box">
@@ -18,6 +33,9 @@
             aria-label="Buscar fornecedores"
           />
         </div>
+        <button class="btn-filter" type="button" aria-label="Filtrar">
+          <i class="bi bi-funnel" aria-hidden="true"></i>
+        </button>
       </div>
 
       @if (isLoading()) {

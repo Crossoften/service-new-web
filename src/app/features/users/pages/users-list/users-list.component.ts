@@ -70,7 +70,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
     this.usersService
       .getUsers({
         take: this.pageSize(),
-        skip: this.currentPage(),
+        skip: (this.currentPage() - 1) * this.pageSize(),
         search: this.searchControl.value ?? undefined,
       })
       .subscribe({
@@ -97,6 +97,14 @@ export class UsersListComponent implements OnInit, OnDestroy {
 
   goToCollaborators(): void {
     this.router.navigate(['/settings']);
+  }
+
+  goToInfluencers(): void {
+    this.router.navigate(['/users/influencers']);
+  }
+
+  goToSuppliers(): void {
+    this.router.navigate(['/suppliers']);
   }
 
   getStatusLabel(status: AdminUserStatus): string {

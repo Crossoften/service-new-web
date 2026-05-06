@@ -58,14 +58,16 @@
                   <td class="td-bold">{{ plan.name }}</td>
                   <td>{{ plan.description }}</td>
                   <td class="td-value">{{ formatCurrency(plan.price) }}</td>
-                  <td>{{ plan.interval === 'monthly' ? 'Mensal' : 'Anual' }}</td>
+                  <td>{{ formatInterval(plan.interval) }}</td>
                   <td class="col-actions">
-                    <button class="btn-icon-sm" type="button" (click)="openEditPlanModal(plan, planModalTpl)" aria-label="Editar plano">
-                      <i class="bi bi-pencil" aria-hidden="true"></i>
-                    </button>
-                    <button class="btn-icon-sm btn-danger" type="button" (click)="deletePlan(plan.id)" aria-label="Excluir plano">
-                      <i class="bi bi-trash" aria-hidden="true"></i>
-                    </button>
+                    <div class="col-actions-inline">
+                      <button class="btn-icon-sm" type="button" (click)="openEditPlanModal(plan, planModalTpl)" aria-label="Editar plano">
+                        <i class="bi bi-pencil" aria-hidden="true"></i>
+                      </button>
+                      <button class="btn-icon-sm btn-danger" type="button" (click)="deletePlan(plan.id)" aria-label="Excluir plano">
+                        <i class="bi bi-trash" aria-hidden="true"></i>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               }
@@ -204,9 +206,14 @@
       <div class="form-group">
         <label class="form-label" for="plan-interval">Intervalo</label>
         <select id="plan-interval" class="form-control" formControlName="interval">
-          <option value="monthly">Mensal</option>
-          <option value="yearly">Anual</option>
+          <option value="Month">Mensal</option>
+          <option value="Quarter">Trimestral</option>
+          <option value="Year">Anual</option>
         </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="plan-interval-count">Quantidade de intervalos</label>
+        <input id="plan-interval-count" type="number" class="form-control" formControlName="intervalCount" min="1" step="1" />
       </div>
     </div>
 
