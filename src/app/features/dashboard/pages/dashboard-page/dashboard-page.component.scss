@@ -179,6 +179,31 @@
   min-height: 320px;
 }
 
+.chart-empty-state {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  color: #4b5563;
+  text-align: center;
+}
+
+.chart-empty-state i {
+  font-size: 2rem;
+  color: #821ee2;
+}
+
+.chart-empty-state strong {
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.chart-empty-state span {
+  font-size: 0.82rem;
+}
+
 .gaps-card {
   display: grid;
   grid-template-columns: 1fr 1fr;

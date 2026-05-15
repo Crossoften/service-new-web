@@ -11,6 +11,7 @@ export interface DashboardChartMonth {
 }
 
 export interface DashboardChart {
+  year: number;
   months: DashboardChartMonth[];
 }
 

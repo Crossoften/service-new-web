@@ -7,6 +7,7 @@ import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
+import { ErrorStateComponent } from '@shared/components/error-state/error-state.component';
 import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/loading-skeleton.component';
 import { Collaborator, CollaboratorStatus } from '../../models/collaborator.model';
 import { CollaboratorsService } from '../../services/collaborators.service';
@@ -21,6 +22,7 @@ import { CollaboratorsService } from '../../services/collaborators.service';
     SidebarComponent,
     LoadingSkeletonComponent,
     EmptyStateComponent,
+    ErrorStateComponent,
   ],
   templateUrl: './collaborators-list.component.html',
   styleUrls: ['./collaborators-list.component.scss'],
@@ -36,6 +38,7 @@ export class CollaboratorsListComponent implements OnInit, OnDestroy {
   readonly currentPage = signal(1);
   readonly pageSize = signal(10);
   readonly isLoading = signal(false);
+  readonly hasError = signal(false);
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
   readonly paginationInfo = computed(() => {
@@ -62,6 +65,7 @@ export class CollaboratorsListComponent implements OnInit, OnDestroy {
 
   loadCollaborators(): void {
     this.isLoading.set(true);
+    this.hasError.set(false);
     this.collaboratorsService
       .getCollaborators({
         page: this.currentPage(),
@@ -74,7 +78,10 @@ export class CollaboratorsListComponent implements OnInit, OnDestroy {
           this.total.set(result.total);
           this.isLoading.set(false);
         },
-        error: () => this.isLoading.set(false),
+        error: () => {
+          this.hasError.set(true);
+          this.isLoading.set(false);
+        },
       });
   }
 

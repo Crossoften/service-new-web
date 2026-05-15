@@ -70,7 +70,7 @@ export class ServicesListComponent implements OnInit, OnDestroy {
     this.servicesService
       .getServices({
         take: this.pageSize(),
-        skip: (this.currentPage() - 1) * this.pageSize(),
+        skip: this.currentPage(),
         search: this.searchControl.value ?? undefined,
       })
       .subscribe({

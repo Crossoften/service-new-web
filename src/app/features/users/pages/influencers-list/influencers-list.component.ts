@@ -63,7 +63,7 @@ export class InfluencersListComponent implements OnInit, OnDestroy {
     this.hasError.set(false);
     this.influencersService.getInfluencers({
       take: this.pageSize(),
-      skip: (this.currentPage() - 1) * this.pageSize(),
+      skip: this.currentPage(),
       search: this.searchControl.value ?? undefined,
     }).subscribe({
       next: (result) => {

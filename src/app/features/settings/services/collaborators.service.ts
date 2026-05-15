@@ -65,7 +65,7 @@ export class CollaboratorsService {
     const query: Record<string, string> = {
       take: String(params.pageSize),
     };
-    if (params.page > 1) query['skip'] = String((params.page - 1) * params.pageSize);
+    if (params.page > 0) query['skip'] = String(params.page);
 
     if (params.search.trim()) {
       query['search'] = params.search.trim();
@@ -107,10 +107,6 @@ export class CollaboratorsService {
         this.buildCreatePayload(collaborator)
       )
       .pipe(map((response) => this.mapCollaborator(response.admin)));
-  }
-
-  deleteCollaborator(id: number): Observable<{ message: string }> {
-    return this.apiService.delete<{ message: string }>(`/v1/admin-settings/${id}`);
   }
 
   private buildCreatePayload(collaborator: SaveCollaboratorInput): CreateAdminPayload {

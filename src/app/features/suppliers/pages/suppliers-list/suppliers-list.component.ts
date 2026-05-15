@@ -63,7 +63,7 @@ export class SuppliersListComponent implements OnInit, OnDestroy {
     this.hasError.set(false);
     this.suppliersService.getSuppliers({
       take: this.pageSize(),
-      skip: (this.currentPage() - 1) * this.pageSize(),
+      skip: this.currentPage(),
       search: this.searchControl.value ?? undefined,
     }).subscribe({
       next: (result) => {

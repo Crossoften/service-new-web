@@ -61,6 +61,20 @@
 
 .info-value { font-size: 0.9rem; font-weight: 500; color: #111; }
 
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.2rem 0.75rem;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &.active { background: rgba(40, 167, 69, 0.1); color: #1a7a30; }
+  &.pending { background: rgba(255, 193, 7, 0.16); color: #8a6500; }
+  &.inactive { background: rgba(108, 117, 125, 0.1); color: #555; }
+}
+
 .status-toggle-wrap { align-self: flex-start; padding-top: 0.25rem; }
 
 .toggle {

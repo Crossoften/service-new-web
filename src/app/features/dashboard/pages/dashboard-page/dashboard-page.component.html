@@ -8,7 +8,7 @@
       } @else if (hasError()) {
         <div class="error-state">
           <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
-          <p>Não foi possível carregar os dados do dashboard. Verifique a conexão com a API.</p>
+          <p>Nao foi possivel carregar os dados do dashboard. Verifique a conexao com a API.</p>
         </div>
       } @else {
         <section class="stats-grid" aria-label="Resumo do dashboard">
@@ -21,30 +21,39 @@
                 <strong class="stat-value">{{ card.value }}</strong>
                 <span class="stat-label">{{ card.label }}</span>
                 @if (card.unavailable) {
-                  <span class="stat-note">Indisponível</span>
+                  <span class="stat-note">Indisponivel</span>
                 }
               </div>
             </article>
           }
         </section>
 
-        <section class="chart-card" aria-label="Gráfico do dashboard">
+        <section class="chart-card" aria-label="Grafico do dashboard">
           <div class="chart-header">
-            <h2>Usuários</h2>
-            <div class="chart-legend" aria-label="Legenda do gráfico">
+            <h2>Usuarios x Servicos</h2>
+            <div class="chart-legend" aria-label="Legenda do grafico">
               <span class="legend-item users">
                 <i class="legend-dot" aria-hidden="true"></i>
-                Usuários
+                Usuarios
               </span>
               <span class="legend-item services">
                 <i class="legend-dot" aria-hidden="true"></i>
-                Serviços
+                Servicos
               </span>
             </div>
           </div>
-          <div class="chart-wrap">
-            <canvas #chartCanvas aria-label="Gráfico mensal de usuários e serviços"></canvas>
-          </div>
+
+          @if (hasChartData()) {
+            <div class="chart-wrap">
+              <canvas #chartCanvas aria-label="Grafico mensal de usuarios e servicos"></canvas>
+            </div>
+          } @else {
+            <div class="chart-empty-state">
+              <i class="bi bi-bar-chart" aria-hidden="true"></i>
+              <strong>Grafico mensal indisponivel</strong>
+              <span>A API retornou a serie mensal vazia para usuarios e servicos.</span>
+            </div>
+          }
         </section>
       }
     </div>

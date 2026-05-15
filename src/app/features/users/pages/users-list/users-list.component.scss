@@ -210,6 +210,33 @@
   color: #111827;
 }
 
+.profile-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.7rem;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(108, 117, 125, 0.12);
+  color: #444;
+  white-space: nowrap;
+}
+
+.profile-badge.client {
+  background: rgba(40, 167, 69, 0.1);
+  color: #1e7e34;
+}
+
+.profile-badge.influencer {
+  background: rgba(131, 8, 210, 0.08);
+  color: #8308d2;
+}
+
+.profile-badge.supplier {
+  background: rgba(13, 110, 253, 0.1);
+  color: #0b5ed7;
+}
+
 .status-badge {
   display: inline-flex;
   align-items: center;

@@ -1,6 +1,12 @@
 export type AdminUserStatus = 'Active' | 'Pending' | 'Inactive';
 export type AdminUserRole = 'Master' | 'Admin' | 'User';
-export type AdminUserProfileType = 'Client' | 'Supplier' | 'Influencer';
+export type AdminUserProfileType =
+  | 'Client'
+  | 'Supplier'
+  | 'Partner'
+  | 'Delivery'
+  | 'Influencer'
+  | 'Unknown';
 
 export interface AdminUser {
   id: number;
@@ -12,6 +18,7 @@ export interface AdminUser {
   profileType: AdminUserProfileType;
   status: AdminUserStatus;
   openServices: number;
+  birthDate: string | null;
   fileUrl: string | null;
   fileKey: string | null;
   createdAt: string;
@@ -28,6 +35,7 @@ export interface AdminUserListItem {
   profileType: AdminUserProfileType;
   status: AdminUserStatus;
   openServices: number;
+  birthDate: string | null;
   fileUrl: string | null;
   fileKey: string | null;
   createdAt: string;
@@ -55,7 +63,9 @@ export interface AdminUserApiListItem {
   phone: string | null;
   status: string;
   openServices: number;
-  fileUrl: string;
+  birthDate: string | null;
+  profileType: string;
+  fileUrl: string | null;
 }
 
 export interface AdminUserApiDetail {
@@ -63,11 +73,13 @@ export interface AdminUserApiDetail {
   name: string;
   email: string;
   phone: string | null;
-  document: string;
+  document: string | null;
   status: string;
   openServices: number;
-  fileUrl: string;
-  fileKey: string;
+  fileUrl: string | null;
+  fileKey: string | null;
+  birthDate: string | null;
+  profileType?: string;
   createdAt: string;
   updatedAt: string;
 }

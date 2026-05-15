@@ -34,6 +34,10 @@ export interface AdminInfluencer {
   status: AdminInfluencerStatus;
   fileUrl: string | null;
   fileKey: string | null;
+  birthDate: string | null;
+  referralCode: string | null;
+  commissionRate: number | null;
+  effectiveCommissionRate: number | null;
   stats: AdminInfluencerStats;
   createdAt: string;
   updatedAt: string;
@@ -57,8 +61,8 @@ export interface AdminInfluencerApiListItem {
   id: number;
   name: string;
   email: string;
-  phone: string;
-  fileUrl: string;
+  phone: string | null;
+  fileUrl: string | null;
   ranking: number;
   totalReferrals: number;
   status: string;
@@ -82,12 +86,15 @@ export interface AdminInfluencerApiDetail {
   id: number;
   name: string;
   email: string;
-  phone: string;
-  document: string;
-  fileUrl: string;
-  referralCode: string;
+  phone: string | null;
+  document: string | null;
+  fileUrl: string | null;
+  referralCode: string | null;
+  birthDate: string | null;
   status: string;
   stats?: AdminInfluencerApiStats;
+  commissionRate: number | null;
+  effectiveCommissionRate: number | null;
   createdAt: string;
   updatedAt: string;
 }

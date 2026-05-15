@@ -11,7 +11,7 @@ import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/lo
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { ErrorStateComponent } from '@shared/components/error-state/error-state.component';
 import { UsersService } from '../../services/users.service';
-import { AdminUser, AdminUserStatus } from '../../models/user.model';
+import { AdminUser, AdminUserProfileType, AdminUserStatus } from '../../models/user.model';
 
 @Component({
   selector: 'app-users-list',
@@ -70,7 +70,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
     this.usersService
       .getUsers({
         take: this.pageSize(),
-        skip: (this.currentPage() - 1) * this.pageSize(),
+        skip: this.currentPage(),
         search: this.searchControl.value ?? undefined,
       })
       .subscribe({
@@ -92,7 +92,10 @@ export class UsersListComponent implements OnInit, OnDestroy {
   }
 
   navigateToDetail(id: number): void {
-    this.router.navigate(['/users', id]);
+    const selectedUser = this.users().find((user) => user.id === id);
+    this.router.navigate(['/users', id], {
+      state: selectedUser ? { user: selectedUser } : undefined,
+    });
   }
 
   goToCollaborators(): void {
@@ -120,6 +123,17 @@ export class UsersListComponent implements OnInit, OnDestroy {
       case 'Active': return 'badge-active';
       case 'Pending': return 'badge-pending';
       default: return 'badge-inactive';
+    }
+  }
+
+  getProfileTypeLabel(profileType: AdminUserProfileType): string {
+    switch (profileType) {
+      case 'Client': return 'Cliente';
+      case 'Supplier': return 'Fornecedor';
+      case 'Influencer': return 'Influencer';
+      case 'Partner': return 'Parceiro';
+      case 'Delivery': return 'Entregador';
+      default: return 'N/D';
     }
   }
 }

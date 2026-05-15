@@ -50,6 +50,10 @@ export class InfluencersService {
       status: this.mapStatus(item.status),
       fileUrl: item.fileUrl || null,
       fileKey: null,
+      birthDate: null,
+      referralCode: null,
+      commissionRate: null,
+      effectiveCommissionRate: null,
       stats: {
         totalReferrals: item.totalReferrals ?? 0,
         totalPlatformValue: null,
@@ -72,6 +76,10 @@ export class InfluencersService {
       status: this.mapStatus(item.status),
       fileUrl: item.fileUrl || null,
       fileKey: null,
+      birthDate: item.birthDate ?? null,
+      referralCode: item.referralCode ?? null,
+      commissionRate: item.commissionRate ?? null,
+      effectiveCommissionRate: item.effectiveCommissionRate ?? null,
       stats: {
         totalReferrals: item.stats?.totalReferrals ?? 0,
         totalPlatformValue: item.stats?.totalPaying ?? null,

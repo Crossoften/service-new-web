@@ -9,6 +9,7 @@ export interface AdminProviderListItem {
   status: AdminProviderStatus;
   fileUrl: string | null;
   fileKey: string | null;
+  ranking: number | null;
   totalServices: number;
   averageRating: number | null;
   createdAt: string;
@@ -24,6 +25,8 @@ export interface AdminProvider {
   status: AdminProviderStatus;
   fileUrl: string | null;
   fileKey: string | null;
+  ranking: number | null;
+  birthDate: string | null;
   totalServices: number;
   averageRating: number | null;
   totalRatings: number;
@@ -37,7 +40,7 @@ export interface ProviderServiceHistoryItem {
   clientName: string;
   clientFileUrl: string | null;
   status: string;
-  value: number;
+  value: number | null;
   startedAt: string | null;
   finishedAt: string | null;
   createdAt: string;
@@ -72,8 +75,8 @@ export interface AdminProviderApiListItem {
   id: number;
   name: string;
   email: string;
-  phone: string;
-  fileUrl: string;
+  phone: string | null;
+  fileUrl: string | null;
   ranking: number;
   totalServices: number;
   status: string;
@@ -90,14 +93,16 @@ export interface AdminProviderApiDetail {
   id: number;
   name: string;
   email: string;
-  phone: string;
-  document: string;
-  fileUrl: string;
+  phone: string | null;
+  document: string | null;
+  fileUrl: string | null;
+  birthDate: string | null;
   status: string;
   openServices: number;
   positiveReviews: number;
   negativeReviews: number;
   totalReviews: number;
+  averageRating: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -105,11 +110,12 @@ export interface AdminProviderApiDetail {
 export interface ProviderHistoryApiItem {
   workId: number;
   serviceName: string;
+  serviceDescription?: string | null;
   requesterName: string;
-  requesterFileUrl: string;
-  totalValue: number;
+  requesterFileUrl: string | null;
+  totalValue: number | null;
   status: string;
-  serviceDate: string;
+  serviceDate: string | null;
   createdAt: string;
 }
 

@@ -39,7 +39,7 @@
       } @else if (!services().length) {
         <app-empty-state
           [title]="'Nenhum serviço encontrado'"
-          [description]="'Tente ajustar a busca ou os filtros.'"
+          [description]="'Nenhum servico cadastrado no ambiente atual para os filtros informados.'"
           [icon]="'bi-grid'"
         ></app-empty-state>
       } @else {
@@ -79,7 +79,12 @@
                   </td>
                   <td>{{ service.totalWorks ?? 'N/D' }}</td>
                   <td>
-                    <span class="status-badge" [ngClass]="getStatusClass(service.status)">
+                    <span
+                      class="status-badge"
+                      [class.active]="service.status === 'Active'"
+                      [class.pending]="service.status === 'Pending'"
+                      [class.inactive]="service.status === 'Inactive'"
+                    >
                       {{ getStatusLabel(service.status) }}
                     </span>
                   </td>

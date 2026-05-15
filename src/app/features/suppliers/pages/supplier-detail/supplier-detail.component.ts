@@ -79,7 +79,11 @@ export class SupplierDetailComponent implements OnInit {
       .toUpperCase();
   }
 
-  formatCurrency(value: number): string {
+  formatCurrency(value: number | null): string {
+    if (value == null) {
+      return 'N/D';
+    }
+
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 

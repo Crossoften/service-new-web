@@ -62,6 +62,7 @@
             <thead>
               <tr>
                 <th scope="col">Nome</th>
+                <th scope="col">Tipo</th>
                 <th scope="col">Email</th>
                 <th scope="col">Celular</th>
                 <th scope="col">Serviços</th>
@@ -81,6 +82,16 @@
                   [attr.aria-label]="'Abrir detalhes de ' + user.name"
                 >
                   <td class="td-name">{{ user.name }}</td>
+                  <td>
+                    <span
+                      class="profile-badge"
+                      [class.client]="user.profileType === 'Client'"
+                      [class.influencer]="user.profileType === 'Influencer'"
+                      [class.supplier]="user.profileType === 'Supplier'"
+                    >
+                      {{ getProfileTypeLabel(user.profileType) }}
+                    </span>
+                  </td>
                   <td>{{ user.email }}</td>
                   <td>{{ user.phone }}</td>
                   <td>{{ user.openServices }}</td>

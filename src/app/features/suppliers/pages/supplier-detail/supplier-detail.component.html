@@ -48,7 +48,12 @@
                 </div>
                 <div class="info-item">
                   <span class="info-label">Status</span>
-                  <span class="status-badge" [ngClass]="getStatusClass(supplier()!.status)">
+                  <span
+                    class="status-badge"
+                    [class.active]="supplier()!.status === 'Active'"
+                    [class.pending]="supplier()!.status === 'Pending'"
+                    [class.inactive]="supplier()!.status === 'Inactive'"
+                  >
                     {{ getStatusLabel(supplier()!.status) }}
                   </span>
                 </div>

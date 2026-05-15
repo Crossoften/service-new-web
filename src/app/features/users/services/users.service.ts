@@ -50,9 +50,10 @@ export class UsersService {
       phone: item.phone || '-',
       code: `#${String(item.id).padStart(3, '0')}`,
       role: 'User' as AdminUserRole,
-      profileType: 'Client' as AdminUserProfileType,
+      profileType: this.mapProfileType(item.profileType),
       status: this.mapStatus(item.status),
       openServices: item.openServices ?? 0,
+      birthDate: item.birthDate ?? null,
       fileUrl: item.fileUrl || null,
       fileKey: null,
       createdAt: '',
@@ -68,9 +69,10 @@ export class UsersService {
       phone: item.phone || '-',
       code: `#${String(item.id).padStart(3, '0')}`,
       role: 'User' as AdminUserRole,
-      profileType: 'Client' as AdminUserProfileType,
+      profileType: this.mapProfileType(item.profileType),
       status: this.mapStatus(item.status),
       openServices: item.openServices ?? 0,
+      birthDate: item.birthDate ?? null,
       fileUrl: item.fileUrl || null,
       fileKey: item.fileKey || null,
       createdAt: item.createdAt,
@@ -81,5 +83,18 @@ export class UsersService {
   private mapStatus(status: string): AdminUserStatus {
     if (status === 'Active' || status === 'Pending' || status === 'Inactive') return status;
     return 'Inactive';
+  }
+
+  private mapProfileType(profileType: string | undefined): AdminUserProfileType {
+    switch (profileType) {
+      case 'Client':
+      case 'Supplier':
+      case 'Partner':
+      case 'Delivery':
+      case 'Influencer':
+        return profileType;
+      default:
+        return 'Unknown';
+    }
   }
 }

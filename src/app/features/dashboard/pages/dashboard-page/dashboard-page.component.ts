@@ -46,8 +46,6 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
   readonly cards = signal<DashboardCards | null>(null);
   readonly chartData = signal<DashboardChart | null>(null);
 
-  readonly months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
-
   readonly metricCards = computed<DashboardMetricCard[]>(() => {
     const c = this.cards();
     return [
@@ -76,15 +74,18 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
 
   readonly usersMonthlySeries = computed<number[]>(() => {
     const data = this.chartData();
-    if (!data?.months) return Array(12).fill(0);
+    if (!data?.months?.length) return [];
     return data.months.map((m) => m.users ?? 0);
   });
 
   readonly servicesMonthlySeries = computed<number[]>(() => {
     const data = this.chartData();
-    if (!data?.months) return Array(12).fill(0);
+    if (!data?.months?.length) return [];
     return data.months.map((m) => m.services ?? 0);
   });
+
+  readonly chartLabels = computed<string[]>(() => this.chartData()?.months.map((m) => m.month) ?? []);
+  readonly hasChartData = computed(() => this.chartLabels().length > 0);
 
   ngOnInit(): void {
     forkJoin({
@@ -97,7 +98,7 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
       this.cards.set(cards);
       this.chartData.set(chart);
       this.isLoading.set(false);
-      this.refreshChart();
+      setTimeout(() => this.refreshChart());
     });
   }
 
@@ -117,9 +118,16 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
 
     const usersSeries = this.usersMonthlySeries();
     const servicesSeries = this.servicesMonthlySeries();
+    if (!this.hasChartData()) {
+      this.chart?.destroy();
+      this.chart = null;
+      return;
+    }
+
     const chartMax = this.resolveYAxisMax([...usersSeries, ...servicesSeries]);
 
     if (this.chart) {
+      this.chart.data.labels = this.chartLabels();
       this.chart.data.datasets[0].data = usersSeries;
       this.chart.data.datasets[1].data = servicesSeries;
       if (this.chart.options.scales?.['y']) {
@@ -133,7 +141,7 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
     this.chart = new Chart(this.chartCanvas.nativeElement, {
       type: 'line',
       data: {
-        labels: this.months,
+        labels: this.chartLabels(),
         datasets: [
           {
             label: 'Usuários',

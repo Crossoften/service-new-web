@@ -61,7 +61,7 @@
                 <th scope="col">Email</th>
                 <th scope="col">Telefone</th>
                 <th scope="col">Serviços</th>
-                <th scope="col">Rating</th>
+                <th scope="col">Ranking</th>
                 <th scope="col">Status</th>
                 <th scope="col" class="col-actions" aria-label="Ações"></th>
               </tr>
@@ -81,13 +81,17 @@
                   <td>{{ sup.phone }}</td>
                   <td>{{ sup.totalServices }}</td>
                   <td>
-                    <span class="rating-value">
-                      <i class="bi bi-star-fill" aria-hidden="true"></i>
-                      {{ sup.averageRating != null ? (sup.averageRating | number: '1.1-1') : 'N/D' }}
+                    <span class="ranking-badge">
+                      {{ sup.ranking != null ? '#' + sup.ranking : 'N/D' }}
                     </span>
                   </td>
                   <td>
-                    <span class="status-badge" [ngClass]="getStatusClass(sup.status)">
+                    <span
+                      class="status-badge"
+                      [class.active]="sup.status === 'Active'"
+                      [class.pending]="sup.status === 'Pending'"
+                      [class.inactive]="sup.status === 'Inactive'"
+                    >
                       {{ getStatusLabel(sup.status) }}
                     </span>
                   </td>

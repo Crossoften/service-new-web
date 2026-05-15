@@ -55,7 +55,7 @@ export interface ServiceClientItem {
   clientName: string;
   clientFileUrl: string | null;
   status: string;
-  value: number;
+  value: number | null;
   createdAt: string;
   finishedAt: string | null;
 }
@@ -122,13 +122,13 @@ export interface AdminServiceApiDetail {
 
 export interface ServiceClientApiItem {
   workId: number;
-  serviceDate: string;
+  serviceDate: string | null;
   createdAt: string;
   clientName: string;
-  clientFileUrl: string;
-  totalValue: number;
+  clientFileUrl: string | null;
+  totalValue: number | null;
   status: string;
-  hasReview: boolean;
+  reviewType?: string | null;
 }
 
 export interface AdminServiceApiListResponse {

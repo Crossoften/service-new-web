@@ -33,6 +33,12 @@
 
       @if (isLoading()) {
         <app-loading-skeleton [variant]="'table'" [count]="10"></app-loading-skeleton>
+      } @else if (hasError()) {
+        <app-error-state
+          [title]="'Erro ao carregar colaboradores'"
+          [description]="'Nao foi possivel buscar os admins do Portal Gerencial. Tente novamente.'"
+          (retry)="loadCollaborators()"
+        ></app-error-state>
       } @else if (!collaborators().length) {
         <app-empty-state
           [title]="'Nenhum colaborador encontrado'"

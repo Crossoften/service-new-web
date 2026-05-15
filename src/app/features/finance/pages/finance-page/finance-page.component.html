@@ -3,224 +3,115 @@
 
   <main class="main-content">
     <div class="page-wrapper">
-
       <p class="breadcrumb-label">FINANCEIRO</p>
       <h1 class="page-title">Financeiro</h1>
 
-      <!-- Action Buttons -->
       <div class="action-bar">
         <div class="modal-buttons">
-          <button class="btn-modal" type="button" (click)="openRatesModal(ratesModalTpl)">
+          <button class="btn-modal" type="button" (click)="openPlatformModal(platformModalTpl)">
             <i class="bi bi-percent" aria-hidden="true"></i>
-            Porcentagem Fornecedores
+            Comissao influencers
           </button>
-          <button class="btn-modal" type="button" (click)="openCommissionsModal(commissionsModalTpl)">
+          <button class="btn-modal btn-modal--disabled" type="button" disabled>
+            <i class="bi bi-building" aria-hidden="true"></i>
+            Porcentagem fornecedores
+          </button>
+          <button class="btn-modal btn-modal--disabled" type="button" disabled>
             <i class="bi bi-people-fill" aria-hidden="true"></i>
-            Comissão de Parceiros
+            Comissao parceiros
           </button>
-          <button class="btn-modal" type="button" (click)="openCreatePlanModal(planModalTpl)">
+          <button class="btn-modal btn-modal--disabled" type="button" disabled>
             <i class="bi bi-plus-lg" aria-hidden="true"></i>
-            Novo Plano
+            Novo plano
           </button>
         </div>
       </div>
 
-      <!-- Plans Table -->
-      @if (isLoadingPlans()) {
-        <app-loading-skeleton [variant]="'table'" [count]="5"></app-loading-skeleton>
-      } @else if (hasPlansError()) {
-        <app-empty-state
-          [title]="'Erro ao carregar planos'"
-          [description]="'Não foi possível buscar os dados. Tente novamente.'"
-          [icon]="'bi-exclamation-circle'"
-        ></app-empty-state>
-      } @else if (!plans().length) {
-        <app-empty-state
-          [title]="'Nenhum plano encontrado'"
-          [description]="'Crie um novo plano para começar.'"
-          [icon]="'bi-graph-up'"
-        ></app-empty-state>
-      } @else {
+      @if (isLoadingPlatform()) {
+        <app-loading-skeleton [variant]="'card'" [count]="1"></app-loading-skeleton>
+      } @else if (hasPlatformError()) {
+        <app-error-state
+          [title]="'Erro ao carregar configuracoes financeiras'"
+          [description]="'Nao foi possivel buscar /v1/admin-settings/platform.'"
+          (retry)="loadPlatformSettings()"
+        ></app-error-state>
+      } @else if (platformSettings()) {
         <div class="table-wrapper">
-          <table class="finance-table" aria-label="Planos de assinatura">
+          <table class="finance-table" aria-label="Configuracoes financeiras do Portal Gerencial">
             <thead>
               <tr>
-                <th scope="col">Nome</th>
-                <th scope="col">Descrição</th>
+                <th scope="col">Parametro</th>
                 <th scope="col">Valor</th>
-                <th scope="col">Intervalo</th>
-                <th scope="col" class="col-actions" aria-label="Ações"></th>
+                <th scope="col">Atualizado em</th>
+                <th scope="col" class="col-actions" aria-label="Acoes"></th>
               </tr>
             </thead>
             <tbody>
-              @for (plan of plans(); track plan.id) {
-                <tr>
-                  <td class="td-bold">{{ plan.name }}</td>
-                  <td>{{ plan.description }}</td>
-                  <td class="td-value">{{ formatCurrency(plan.price) }}</td>
-                  <td>{{ formatInterval(plan.interval) }}</td>
-                  <td class="col-actions">
-                    <div class="col-actions-inline">
-                      <button class="btn-icon-sm" type="button" (click)="openEditPlanModal(plan, planModalTpl)" aria-label="Editar plano">
-                        <i class="bi bi-pencil" aria-hidden="true"></i>
-                      </button>
-                      <button class="btn-icon-sm btn-danger" type="button" (click)="deletePlan(plan.id)" aria-label="Excluir plano">
-                        <i class="bi bi-trash" aria-hidden="true"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
+              <tr>
+                <td class="td-bold">Comissao global de influencers</td>
+                <td class="td-value">{{ formatPercent(platformSettings()?.influencerCommissionRate) }}</td>
+                <td>{{ formatDate(platformSettings()?.updatedAt) }}</td>
+                <td class="col-actions">
+                  <button class="btn-icon-sm" type="button" (click)="openPlatformModal(platformModalTpl)" aria-label="Editar comissao global de influencers">
+                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                  </button>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
+      } @else {
+        <app-empty-state
+          [title]="'Configuracoes financeiras nao retornadas'"
+          [description]="'O endpoint do Portal Gerencial respondeu sem dados para configuracoes globais.'"
+          [icon]="'bi-gear'"
+        ></app-empty-state>
       }
 
+      <section class="contract-notice" aria-label="Pendencias de contrato financeiro">
+        <h2>Itens nao integrados por ausencia de endpoint Portal Gerencial</h2>
+        <ul>
+          <li>Planos, plano semestral, meses bonus e preco mensal estao documentados em <strong>Planos</strong>, nao em Portal Gerencial.</li>
+          <li>Porcentagem de fornecedores e comissao de parceiros nao possuem endpoint documentado no Portal Gerencial.</li>
+        </ul>
+      </section>
     </div>
   </main>
 </div>
 
-<!-- ── Modal: Porcentagem Fornecedores ──────────────────────────────────── -->
-<ng-template #ratesModalTpl let-modal>
+<ng-template #platformModalTpl>
   <div class="modal-card">
     <div class="modal-card-header">
-      <h4 class="modal-title">Porcentagem Fornecedores</h4>
+      <h4 class="modal-title">Comissao global de influencers</h4>
       <button class="modal-close" type="button" (click)="dismissModal()" aria-label="Fechar">
         <i class="bi bi-x-lg" aria-hidden="true"></i>
       </button>
     </div>
 
-    <div class="modal-card-body" [formGroup]="ratesForm">
-      <table class="modal-table" formArrayName="rates">
-        <thead>
-          <tr>
-            <th>Categoria</th>
-            <th>Porcentagem</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (ctrl of ratesArray.controls; track $index) {
-            <tr [formGroupName]="$index">
-              <td>{{ ctrl.get('category')?.value }}</td>
-              <td>
-                <div class="pct-input-wrap">
-                  <input type="number" class="pct-input" formControlName="percentage" min="0" max="100" />
-                  <span class="pct-sign">%</span>
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-
-    <div class="modal-card-footer">
-      <button class="btn-cancel" type="button" (click)="dismissModal()">CANCELAR</button>
-      <button
-        class="btn-save"
-        type="button"
-        [disabled]="isSavingModal() || !hasSupplierRatesEndpoint"
-        title="Endpoint Portal Gerencial nao documentado"
-        (click)="saveRates()"
-      >
-        @if (isSavingModal()) { <span class="spinner-border spinner-border-sm me-2"></span> }
-        SALVAR
-      </button>
-    </div>
-  </div>
-</ng-template>
-
-<!-- ── Modal: Comissão Parceiros ─────────────────────────────────────────── -->
-<ng-template #commissionsModalTpl let-modal>
-  <div class="modal-card">
-    <div class="modal-card-header">
-      <h4 class="modal-title">Comissão Parceiros</h4>
-      <button class="modal-close" type="button" (click)="dismissModal()" aria-label="Fechar">
-        <i class="bi bi-x-lg" aria-hidden="true"></i>
-      </button>
-    </div>
-
-    <div class="modal-card-body" [formGroup]="commissionsForm">
-      <table class="modal-table" formArrayName="commissions">
-        <thead>
-          <tr>
-            <th>Nome Parceiro</th>
-            <th>Porcentagem</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (ctrl of commissionsArray.controls; track $index) {
-            <tr [formGroupName]="$index">
-              <td>{{ ctrl.get('name')?.value }}</td>
-              <td>
-                <div class="pct-input-wrap">
-                  <input type="number" class="pct-input" formControlName="percentage" min="0" max="100" />
-                  <span class="pct-sign">%</span>
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-
-    <div class="modal-card-footer">
-      <button class="btn-cancel" type="button" (click)="dismissModal()">CANCELAR</button>
-      <button
-        class="btn-save"
-        type="button"
-        [disabled]="isSavingModal() || !hasPartnerCommissionsEndpoint"
-        title="Endpoint Portal Gerencial nao documentado"
-        (click)="saveCommissions()"
-      >
-        @if (isSavingModal()) { <span class="spinner-border spinner-border-sm me-2"></span> }
-        SALVAR
-      </button>
-    </div>
-  </div>
-</ng-template>
-
-<!-- ── Modal: Plano ───────────────────────────────────────────────────────── -->
-<ng-template #planModalTpl let-modal>
-  <div class="modal-card">
-    <div class="modal-card-header">
-      <h4 class="modal-title">{{ editingPlan() ? 'Editar Plano' : 'Novo Plano' }}</h4>
-      <button class="modal-close" type="button" (click)="dismissModal()" aria-label="Fechar">
-        <i class="bi bi-x-lg" aria-hidden="true"></i>
-      </button>
-    </div>
-
-    <div class="modal-card-body" [formGroup]="planForm">
+    <div class="modal-card-body" [formGroup]="platformForm">
       <div class="form-group">
-        <label class="form-label" for="plan-name">Nome</label>
-        <input id="plan-name" type="text" class="form-control" formControlName="name" placeholder="Nome do plano" />
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="plan-desc">Descrição</label>
-        <input id="plan-desc" type="text" class="form-control" formControlName="description" placeholder="Descrição" />
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="plan-price">Valor (R$)</label>
-        <input id="plan-price" type="number" class="form-control" formControlName="price" min="0" step="0.01" />
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="plan-interval">Intervalo</label>
-        <select id="plan-interval" class="form-control" formControlName="interval">
-          <option value="Month">Mensal</option>
-          <option value="Quarter">Trimestral</option>
-          <option value="Year">Anual</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="plan-interval-count">Quantidade de intervalos</label>
-        <input id="plan-interval-count" type="number" class="form-control" formControlName="intervalCount" min="1" step="1" />
+        <label class="form-label" for="influencer-commission-rate">Percentual</label>
+        <div class="pct-input-wrap">
+          <input
+            id="influencer-commission-rate"
+            type="number"
+            class="pct-input pct-input--wide"
+            formControlName="influencerCommissionRate"
+            min="0"
+            max="100"
+            step="0.01"
+          />
+          <span class="pct-sign">%</span>
+        </div>
       </div>
     </div>
 
     <div class="modal-card-footer">
-      <button class="btn-cancel" type="button" (click)="dismissModal()">CANCELAR</button>
-      <button class="btn-save" type="button" [disabled]="isSavingPlan()" (click)="savePlan()">
-        @if (isSavingPlan()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+      <button class="btn-cancel" type="button" (click)="dismissModal()" [disabled]="isSavingPlatform()">CANCELAR</button>
+      <button class="btn-save" type="button" [disabled]="isSavingPlatform()" (click)="savePlatformSettings()">
+        @if (isSavingPlatform()) {
+          <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+        }
         SALVAR
       </button>
     </div>

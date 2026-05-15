@@ -44,6 +44,10 @@
               <strong>{{ user()?.openServices ?? 0 }}</strong>
             </div>
             <div class="info-item">
+              <span class="info-label">Tipo</span>
+              <strong>{{ getProfileTypeLabel(user()?.profileType) }}</strong>
+            </div>
+            <div class="info-item">
               <span class="info-label">Celular</span>
               <strong>{{ user()?.phone }}</strong>
             </div>
@@ -53,7 +57,7 @@
             </div>
             <div class="info-item">
               <span class="info-label">Data de nascimento</span>
-              <strong>N/D</strong>
+              <strong>{{ formatBirthDate(user()?.birthDate) }}</strong>
             </div>
           </div>
 

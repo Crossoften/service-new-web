@@ -94,7 +94,12 @@
                     </span>
                   </td>
                   <td>
-                    <span class="status-badge" [ngClass]="getStatusClass(inf.status)">
+                    <span
+                      class="status-badge"
+                      [class.active]="inf.status === 'Active'"
+                      [class.pending]="inf.status === 'Pending'"
+                      [class.inactive]="inf.status === 'Inactive'"
+                    >
                       {{ getStatusLabel(inf.status) }}
                     </span>
                   </td>

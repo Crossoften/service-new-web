@@ -6,7 +6,7 @@ import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar
 import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/loading-skeleton.component';
 import { ToastService } from '@core/services/toast.service';
 import { UsersService } from '../../services/users.service';
-import { AdminUser, AdminUserStatus } from '../../models/user.model';
+import { AdminUser, AdminUserProfileType, AdminUserStatus } from '../../models/user.model';
 
 type UserStatus = AdminUserStatus;
 
@@ -28,10 +28,15 @@ export class UserDetailComponent implements OnInit {
   readonly isLoading = signal(false);
 
   ngOnInit(): void {
+    const navigationState = history.state as { user?: AdminUser };
+    if (navigationState.user?.id === Number(this.id)) {
+      this.user.set(navigationState.user);
+    }
+
     this.isLoading.set(true);
     this.usersService.getUserById(Number(this.id)).subscribe({
-      next: (user) => {
-        this.user.set(user);
+      next: (loadedUser) => {
+        this.user.set(this.mergeWithExistingUser(loadedUser));
         this.isLoading.set(false);
       },
       error: () => {
@@ -39,6 +44,23 @@ export class UserDetailComponent implements OnInit {
         this.isLoading.set(false);
       },
     });
+  }
+
+  private mergeWithExistingUser(loadedUser: AdminUser): AdminUser {
+    const existingUser = this.user();
+
+    if (!existingUser) {
+      return loadedUser;
+    }
+
+    return {
+      ...loadedUser,
+      profileType:
+        loadedUser.profileType !== 'Unknown'
+          ? loadedUser.profileType
+          : existingUser.profileType,
+      birthDate: loadedUser.birthDate ?? existingUser.birthDate,
+    };
   }
 
   get avatarInitials(): string {
@@ -60,6 +82,36 @@ export class UserDetailComponent implements OnInit {
       default:
         return 'Inativo';
     }
+  }
+
+  getProfileTypeLabel(profileType: AdminUserProfileType | undefined): string {
+    switch (profileType) {
+      case 'Client':
+        return 'Cliente';
+      case 'Supplier':
+        return 'Fornecedor';
+      case 'Influencer':
+        return 'Influencer';
+      case 'Partner':
+        return 'Parceiro';
+      case 'Delivery':
+        return 'Entregador';
+      default:
+        return 'N/D';
+    }
+  }
+
+  formatBirthDate(value: string | null | undefined): string {
+    if (!value) {
+      return 'N/D';
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return 'N/D';
+    }
+
+    return date.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
   }
 
   onBack(): void {
