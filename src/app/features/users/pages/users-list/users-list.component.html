@@ -29,7 +29,7 @@
             class="search-input"
             placeholder="Buscar por nome, email, telefone ou documento"
             [formControl]="searchControl"
-            aria-label="Buscar usuarios"
+            aria-label="Buscar usuários"
           />
         </div>
         <button class="btn-filter" type="button" aria-label="Filtrar">
@@ -58,7 +58,7 @@
         ></app-empty-state>
       } @else {
         <div class="table-wrapper">
-          <table class="users-table" aria-label="Lista de usuarios">
+          <table class="users-table" aria-label="Lista de usuários">
             <thead>
               <tr>
                 <th scope="col">Nome</th>
@@ -67,7 +67,7 @@
                 <th scope="col">Celular</th>
                 <th scope="col">Serviços</th>
                 <th scope="col">Status</th>
-                <th scope="col" class="col-actions" aria-label="Acoes"></th>
+                <th scope="col" class="col-actions" aria-label="Ações"></th>
               </tr>
             </thead>
             <tbody>
@@ -114,7 +114,7 @@
                         (click)="$event.stopPropagation()"
                         (keydown.enter)="$event.stopPropagation()"
                         (keydown.space)="$event.stopPropagation()"
-                        [attr.aria-label]="'Acoes para ' + user.name"
+                        [attr.aria-label]="'Ações para ' + user.name"
                       >
                         <i class="bi bi-three-dots" aria-hidden="true"></i>
                       </button>

@@ -4,7 +4,7 @@
   <main class="main-content">
     <div class="page-wrapper">
       <p class="breadcrumb-label">CONFIGURACOES</p>
-      <h1 class="page-title">Configuracoes</h1>
+      <h1 class="page-title">Configurações</h1>
 
       <div class="toolbar">
         <div class="search-box">
@@ -36,13 +36,13 @@
       } @else if (hasError()) {
         <app-error-state
           [title]="'Erro ao carregar colaboradores'"
-          [description]="'Nao foi possivel buscar os admins do Portal Gerencial. Tente novamente.'"
+          [description]="'Não foi possível buscar os admins do Portal Gerencial. Tente novamente.'"
           (retry)="loadCollaborators()"
         ></app-error-state>
       } @else if (!collaborators().length) {
         <app-empty-state
           [title]="'Nenhum colaborador encontrado'"
-          [description]="'A API nao retornou admins para os filtros atuais.'"
+          [description]="'A API não retornou admins para os filtros atuais.'"
           [icon]="'bi-person-badge'"
         ></app-empty-state>
       } @else {
@@ -55,7 +55,7 @@
                 <th scope="col">Email</th>
                 <th scope="col">Acesso</th>
                 <th scope="col">Status</th>
-                <th scope="col" class="col-actions" aria-label="Acoes"></th>
+                <th scope="col" class="col-actions" aria-label="Ações"></th>
               </tr>
             </thead>
             <tbody>
@@ -85,7 +85,7 @@
                         class="btn-actions"
                         type="button"
                         ngbDropdownToggle
-                        [attr.aria-label]="'Acoes para ' + col.name"
+                        [attr.aria-label]="'Ações para ' + col.name"
                       >
                         <i class="bi bi-three-dots" aria-hidden="true"></i>
                       </button>

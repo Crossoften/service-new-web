@@ -7,7 +7,7 @@ export const SERVICES_ROUTES: Routes = [
       import('./pages/services-list/services-list.component').then(
         (m) => m.ServicesListComponent
       ),
-    data: { title: 'Servicos' },
+    data: { title: 'Serviços' },
   },
   {
     path: ':id',

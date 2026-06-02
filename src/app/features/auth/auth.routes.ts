@@ -37,7 +37,7 @@ export const AUTH_ROUTES: Routes = [
       import('./pages/privacy-policy/privacy-policy-page.component').then(
         (m) => m.PrivacyPolicyPageComponent
       ),
-    data: { title: 'Politicas de Privacidade' },
+    data: { title: 'Políticas de Privacidade' },
   },
   {
     path: 'contact',

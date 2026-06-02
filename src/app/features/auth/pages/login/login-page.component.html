@@ -11,7 +11,7 @@
 
       <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <h1>Seja bem vindo(a)!</h1>
-        <p>Acesse com suas credenciais reais para consumir o backend documentado.</p>
+        <p>Acesse o portal gerencial com seu e-mail e senha cadastrados.</p>
 
         <div class="status-chip" [class.up]="apiStatusState() === 'up'" [class.down]="apiStatusState() === 'down'">
           <i
@@ -68,13 +68,13 @@
     </article>
 
     <figure class="illustration-panel">
-      <img src="/assets/login-illustration.svg" alt="Ilustracao de pessoas e engrenagens" />
+      <img src="/assets/login-illustration.svg" alt="Ilustração de pessoas e engrenagens" />
     </figure>
   </section>
 
   <footer class="login-footer">
     <a routerLink="/auth/terms-of-use"><strong>TERMOS DE USO</strong></a>
-    <a routerLink="/auth/privacy-policy"><strong>POLITICAS DE PRIVACIDADE</strong></a>
+    <a routerLink="/auth/privacy-policy"><strong>POLÍTICA DE PRIVACIDADE</strong></a>
     <a routerLink="/auth/contact"><strong>CONTATO</strong></a>
   </footer>
 </main>

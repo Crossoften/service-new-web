@@ -13,7 +13,7 @@
           <input
             type="text"
             class="search-input"
-            placeholder="Buscar por nome do servico"
+            placeholder="Buscar por nome do serviço"
             [formControl]="searchControl"
             aria-label="Buscar serviços"
           />
@@ -39,7 +39,7 @@
       } @else if (!services().length) {
         <app-empty-state
           [title]="'Nenhum serviço encontrado'"
-          [description]="'Nenhum servico cadastrado no ambiente atual para os filtros informados.'"
+          [description]="'Nenhum serviço cadastrado no ambiente atual para os filtros informados.'"
           [icon]="'bi-grid'"
         ></app-empty-state>
       } @else {
@@ -72,9 +72,13 @@
                   <td>{{ service.provider.name }}</td>
                   <td>{{ formatPrice(service.price) }}</td>
                   <td>
-                    <span class="rating-value">
+                    <span
+                      class="rating-value"
+                      [attr.aria-label]="service.positiveReviews + ' avaliações positivas, ' + service.negativeReviews + ' avaliações negativas e ' + service.totalRatings + ' avaliações no total'"
+                    >
                       <i class="bi bi-star-fill" aria-hidden="true"></i>
                       {{ service.totalRatings }}
+                      <small class="review-breakdown">+{{ service.positiveReviews }} / -{{ service.negativeReviews }}</small>
                     </span>
                   </td>
                   <td>{{ service.totalWorks ?? 'N/D' }}</td>

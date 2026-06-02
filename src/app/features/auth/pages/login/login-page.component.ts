@@ -33,7 +33,7 @@ export class LoginPageComponent implements OnInit {
         this.apiStatusState.set('up');
       },
       error: () => {
-        this.apiStatusMessage.set('Backend indisponivel no momento');
+        this.apiStatusMessage.set('Backend indisponível no momento');
         this.apiStatusState.set('down');
       },
     });

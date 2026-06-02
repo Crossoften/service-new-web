@@ -26,6 +26,8 @@ export interface AdminServiceListItem {
   price: number;
   averageRating: number | null;
   totalRatings: number;
+  positiveReviews: number;
+  negativeReviews: number;
   totalWorks: number | null;
   status: AdminServiceStatus;
   fileUrl: string | null;
@@ -43,6 +45,8 @@ export interface AdminService {
   price: number;
   averageRating: number | null;
   totalRatings: number;
+  positiveReviews: number;
+  negativeReviews: number;
   totalWorks: number | null;
   status: AdminServiceStatus;
   fileUrl: string | null;

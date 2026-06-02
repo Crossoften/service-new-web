@@ -66,7 +66,7 @@ export class AuthApiService {
           const normalized = response.trim();
 
           if (!normalized) {
-            return 'Status indisponivel';
+            return 'Status indisponível';
           }
 
           if (normalized.startsWith('{')) {

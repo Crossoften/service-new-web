@@ -5,7 +5,7 @@ export const USERS_ROUTES: Routes = [
     path: '',
     loadComponent: () =>
       import('./pages/users-list/users-list.component').then((m) => m.UsersListComponent),
-    data: { title: 'Usuarios' },
+    data: { title: 'Usuários' },
   },
   {
     path: 'influencers',

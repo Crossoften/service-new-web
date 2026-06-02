@@ -8,7 +8,7 @@
       } @else if (hasError()) {
         <div class="error-state">
           <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
-          <p>Nao foi possivel carregar os dados do dashboard. Verifique a conexao com a API.</p>
+          <p>Não foi possível carregar os dados do dashboard. Verifique a conexão com a API.</p>
         </div>
       } @else {
         <section class="stats-grid" aria-label="Resumo do dashboard">
@@ -28,7 +28,7 @@
           }
         </section>
 
-        <section class="chart-card" aria-label="Grafico do dashboard">
+        <section class="chart-card" aria-label="Gráfico do dashboard">
           <div class="chart-header">
             <h2>Usuarios x Servicos</h2>
             <div class="chart-legend" aria-label="Legenda do grafico">
@@ -45,13 +45,13 @@
 
           @if (hasChartData()) {
             <div class="chart-wrap">
-              <canvas #chartCanvas aria-label="Grafico mensal de usuarios e servicos"></canvas>
+              <canvas #chartCanvas aria-label="Gráfico mensal de usuários e serviços"></canvas>
             </div>
           } @else {
             <div class="chart-empty-state">
               <i class="bi bi-bar-chart" aria-hidden="true"></i>
-              <strong>Grafico mensal indisponivel</strong>
-              <span>A API retornou a serie mensal vazia para usuarios e servicos.</span>
+              <strong>Gráfico mensal indisponível</strong>
+              <span>A API retornou a série mensal vazia para usuários e serviços.</span>
             </div>
           }
         </section>

@@ -42,10 +42,10 @@ const ALL_PERMISSION_OPTIONS: Array<{
   value: CollaboratorPermission;
 }> = [
   { key: 'permDashboard', label: 'Dashboard', value: 'Dashboard' },
-  { key: 'permSettings', label: 'Configuracoes', value: 'Settings' },
-  { key: 'permServices', label: 'Servicos', value: 'Services' },
+  { key: 'permSettings', label: 'Configurações', value: 'Settings' },
+  { key: 'permServices', label: 'Serviços', value: 'Services' },
   { key: 'permFinancial', label: 'Financeiro', value: 'Financial' },
-  { key: 'permUsers', label: 'Usuarios', value: 'Users' },
+  { key: 'permUsers', label: 'Usuários', value: 'Users' },
 ];
 
 @Component({

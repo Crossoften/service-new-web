@@ -12,19 +12,19 @@
       <h1>Termos de Uso</h1>
       <p class="last-updated">
         @if (text()) {
-          Ultima atualizacao: {{ text()?.updatedAt | date: "MMMM 'de' y" : '' : 'pt-BR' }}
+          Última atualização: {{ text()?.updatedAt | date: "MMMM 'de' y" : '' : 'pt-BR' }}
         } @else {
-          Ultima atualizacao indisponivel
+          Última atualização indisponível
         }
       </p>
 
       <div class="legal-content">
         @if (isLoading()) {
-          <p>Carregando conteudo...</p>
+          <p>Carregando conteúdo...</p>
         } @else if (text()?.text) {
           <div [innerHTML]="text()?.text || ''"></div>
         } @else {
-          <p>Nao foi possivel carregar os termos de uso no momento.</p>
+          <p>Não foi possível carregar os termos de uso no momento.</p>
         }
       </div>
 

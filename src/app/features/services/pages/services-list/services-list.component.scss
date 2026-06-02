@@ -199,6 +199,20 @@
 
 // ─── Rating ─────────────────────────────────────────────────────────────────
 
+.rating-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #5d1395;
+  font-weight: 700;
+}
+
+.review-breakdown {
+  color: #555;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
 .rating {
   display: flex;
   align-items: center;

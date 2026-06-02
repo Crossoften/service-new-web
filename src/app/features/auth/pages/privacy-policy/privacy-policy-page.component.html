@@ -9,22 +9,22 @@
         ></object>
       </header>
 
-      <h1>Politicas de Privacidade</h1>
+      <h1>Políticas de Privacidade</h1>
       <p class="last-updated">
         @if (text()) {
-          Ultima atualizacao: {{ text()?.updatedAt | date: "MMMM 'de' y" : '' : 'pt-BR' }}
+          Última atualização: {{ text()?.updatedAt | date: "MMMM 'de' y" : '' : 'pt-BR' }}
         } @else {
-          Ultima atualizacao indisponivel
+          Última atualização indisponível
         }
       </p>
 
       <div class="legal-content">
         @if (isLoading()) {
-          <p>Carregando conteudo...</p>
+          <p>Carregando conteúdo...</p>
         } @else if (text()?.text) {
           <div [innerHTML]="text()?.text || ''"></div>
         } @else {
-          <p>Nao foi possivel carregar a politica de privacidade no momento.</p>
+          <p>Não foi possível carregar a política de privacidade no momento.</p>
         }
       </div>
 

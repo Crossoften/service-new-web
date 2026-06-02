@@ -20,7 +20,7 @@ export class ContractGapPageComponent {
   get summary(): string {
     return (
       this.route.snapshot.data['summary'] ||
-      'O backend documentado ainda nao disponibiliza endpoints para esta area da aplicacao.'
+      'O backend documentado ainda não disponibiliza endpoints para esta área da aplicação.'
     );
   }
 

@@ -16,7 +16,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
       switch (error.status) {
         case 0:
-          toastService.showError('Erro de conexao. Verifique sua internet.');
+          toastService.showError('Erro de conexão. Verifique sua internet.');
           break;
 
         case 400:
@@ -34,7 +34,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           break;
 
         case 404:
-          toastService.showError('Recurso nao encontrado.');
+          toastService.showError('Recurso não encontrado.');
           break;
 
         case 500:
