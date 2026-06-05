@@ -1,15 +1,21 @@
-import { Component, OnDestroy, OnInit, TemplateRef, ViewChild, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, TemplateRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar.component';
 import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/loading-skeleton.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { ErrorStateComponent } from '@shared/components/error-state/error-state.component';
 import { FinanceService } from '../../services/finance.service';
-import { CreatePlanPayload, Plan, PlatformSettings, UpdatePlanPayload } from '../../models/finance.model';
+import {
+  CreatePlanPayload,
+  FinanceServiceListItem,
+  Plan,
+  PlatformSettings,
+  UpdatePlanPayload,
+} from '../../models/finance.model';
 
 type FeedbackModalState = {
   title: string;
@@ -45,6 +51,30 @@ export class FinancePageComponent implements OnInit, OnDestroy {
   readonly hasPlatformError = signal(false);
   readonly isSavingPlatform = signal(false);
 
+  readonly financeServices = signal<FinanceServiceListItem[]>([]);
+  readonly totalFinanceServices = signal(0);
+  readonly financeServicesCurrentPage = signal(1);
+  readonly financeServicesPageSize = signal(10);
+  readonly isLoadingFinanceServices = signal(false);
+  readonly hasFinanceServicesError = signal(false);
+  readonly serviceSearchControl = new FormControl('', { nonNullable: true });
+  readonly financeServicesTotalPages = computed(() =>
+    Math.max(1, Math.ceil(this.totalFinanceServices() / this.financeServicesPageSize()))
+  );
+  readonly financeServicesPaginationInfo = computed(() => {
+    if (this.totalFinanceServices() === 0) {
+      return '0 itens';
+    }
+
+    const start = (this.financeServicesCurrentPage() - 1) * this.financeServicesPageSize() + 1;
+    const end = Math.min(
+      this.financeServicesCurrentPage() * this.financeServicesPageSize(),
+      this.totalFinanceServices()
+    );
+
+    return `${start}-${end} de ${this.totalFinanceServices()} itens`;
+  });
+
   readonly plans = signal<Plan[]>([]);
   readonly totalPlans = signal(0);
   readonly isLoadingPlans = signal(false);
@@ -65,6 +95,14 @@ export class FinancePageComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadPlatformSettings();
     this.loadPlans();
+    this.loadFinanceServices();
+
+    this.serviceSearchControl.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.financeServicesCurrentPage.set(1);
+        this.loadFinanceServices();
+      });
   }
 
   ngOnDestroy(): void {
@@ -106,6 +144,41 @@ export class FinancePageComponent implements OnInit, OnDestroy {
           this.isLoadingPlans.set(false);
         },
       });
+  }
+
+  loadFinanceServices(): void {
+    this.isLoadingFinanceServices.set(true);
+    this.hasFinanceServicesError.set(false);
+
+    const search = this.serviceSearchControl.value.trim();
+
+    this.financeService
+      .getFinanceServices({
+        take: this.financeServicesPageSize(),
+        skip: this.financeServicesCurrentPage(),
+        ...(search ? { search } : {}),
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.financeServices.set(response.services ?? []);
+          this.totalFinanceServices.set(response.totalRecords ?? response.services?.length ?? 0);
+          this.isLoadingFinanceServices.set(false);
+        },
+        error: () => {
+          this.hasFinanceServicesError.set(true);
+          this.isLoadingFinanceServices.set(false);
+        },
+      });
+  }
+
+  onFinanceServicesPageChange(page: number): void {
+    if (page < 1 || page > this.financeServicesTotalPages()) {
+      return;
+    }
+
+    this.financeServicesCurrentPage.set(page);
+    this.loadFinanceServices();
   }
 
   openPlatformModal(templateRef: TemplateRef<unknown>): void {
@@ -189,8 +262,8 @@ export class FinancePageComponent implements OnInit, OnDestroy {
           this.isSavingPlan.set(false);
           this.activeModalRef?.close();
           this.showFeedbackModal({
-            title: 'Plano atualizado',
-            description: 'As informações do plano foram salvas com sucesso.',
+            title: 'Assinatura atualizada',
+            description: 'As informações da assinatura foram salvas com sucesso.',
             icon: 'bi-check2-circle',
             variant: 'success',
           });
@@ -217,8 +290,8 @@ export class FinancePageComponent implements OnInit, OnDestroy {
           this.confirmationModalRef?.close();
           this.activeModalRef?.close();
           this.showFeedbackModal({
-            title: 'Plano cadastrado',
-            description: 'O novo plano foi cadastrado com sucesso.',
+            title: 'Assinatura cadastrada',
+            description: 'A nova assinatura foi cadastrada com sucesso.',
             icon: 'bi-check2-circle',
             variant: 'success',
           });
@@ -258,8 +331,8 @@ export class FinancePageComponent implements OnInit, OnDestroy {
           this.planToDelete.set(null);
           this.confirmationModalRef?.close();
           this.showFeedbackModal({
-            title: 'Plano removido',
-            description: 'O plano selecionado foi removido com sucesso.',
+            title: 'Assinatura removida',
+            description: 'A assinatura selecionada foi removida com sucesso.',
             icon: 'bi-check2-circle',
             variant: 'success',
           });
@@ -341,6 +414,14 @@ export class FinancePageComponent implements OnInit, OnDestroy {
 
   planStatusLabel(plan: Plan): string {
     return plan.isActive ? 'Ativo' : 'Inativo';
+  }
+
+  serviceStatusLabel(service: FinanceServiceListItem): string {
+    return service.isActive ? 'Ativo' : 'Desativado';
+  }
+
+  financeServicesRangeLabel(): string {
+    return this.financeServicesPaginationInfo();
   }
 
   formatPayloadInterval(payload: CreatePlanPayload | null): string {

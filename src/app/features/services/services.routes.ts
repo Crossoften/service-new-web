@@ -15,6 +15,6 @@ export const SERVICES_ROUTES: Routes = [
       import('./pages/service-detail/service-detail.component').then(
         (m) => m.ServiceDetailComponent
       ),
-    data: { title: 'Detalhes do Servico' },
+    data: { title: 'Detalhes do serviço' },
   },
 ];

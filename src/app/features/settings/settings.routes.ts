@@ -7,7 +7,7 @@ export const SETTINGS_ROUTES: Routes = [
       import('./pages/collaborators-list/collaborators-list.component').then(
         (m) => m.CollaboratorsListComponent
       ),
-    data: { title: 'Configuracao' },
+    data: { title: 'Configuração' },
   },
   {
     path: 'api',

@@ -6,90 +6,41 @@
       <p class="breadcrumb-label">FINANCEIRO</p>
       <h1 class="page-title">Financeiro</h1>
 
-      <div class="action-bar">
-        <div class="modal-buttons">
-          <button class="btn-modal" type="button" (click)="openPlatformModal(platformModalTpl)">
-            <i class="bi bi-percent" aria-hidden="true"></i>
-            Comissão de influenciadores
+      <div class="finance-toolbar" aria-label="Ações financeiras">
+        <div class="search-field">
+          <i class="bi bi-search" aria-hidden="true"></i>
+          <label class="visually-hidden" for="finance-service-search">Buscar serviço financeiro</label>
+          <input
+            id="finance-service-search"
+            type="search"
+            [formControl]="serviceSearchControl"
+            placeholder="Buscar"
+            aria-label="Buscar por nome do serviço"
+          />
+        </div>
+
+        <button class="filter-button" type="button" disabled aria-label="Filtros financeiros indisponíveis">
+          <i class="bi bi-funnel" aria-hidden="true"></i>
+        </button>
+
+        <div class="toolbar-actions">
+          <button class="btn-modal btn-modal--disabled" type="button" disabled>
+            Porcentagem de fornecedores
           </button>
           <button class="btn-modal btn-modal--disabled" type="button" disabled>
-            <i class="bi bi-building" aria-hidden="true"></i>
-            Porcentagem fornecedores
-          </button>
-          <button class="btn-modal btn-modal--disabled" type="button" disabled>
-            <i class="bi bi-people-fill" aria-hidden="true"></i>
-            Comissão de parceiros
+            Comissões de parceiros
           </button>
           <button class="btn-modal" type="button" (click)="openCreatePlanModal(planModalTpl)">
-            <i class="bi bi-plus-lg" aria-hidden="true"></i>
-            Novo plano
+            Nova assinatura
           </button>
         </div>
       </div>
 
-      <section class="finance-section" aria-labelledby="platform-settings-title">
-        <div class="section-heading">
-          <div>
-            <h2 id="platform-settings-title">Configurações da plataforma</h2>
-            <p>Parâmetros financeiros globais retornados pela API.</p>
-          </div>
-        </div>
-
-        @if (isLoadingPlatform()) {
-          <app-loading-skeleton [variant]="'card'" [count]="1"></app-loading-skeleton>
-        } @else if (hasPlatformError()) {
-          <app-error-state
-            [title]="'Erro ao carregar configurações financeiras'"
-            [description]="'Não foi possível carregar as configurações globais da plataforma.'"
-            (retry)="loadPlatformSettings()"
-          ></app-error-state>
-        } @else if (platformSettings()) {
-          <div class="table-wrapper table-wrapper--compact">
-            <table class="finance-table" aria-label="Configurações financeiras do Portal Gerencial">
-              <thead>
-                <tr>
-                  <th scope="col">Parâmetro</th>
-                  <th scope="col">Valor</th>
-                  <th scope="col">Atualizado em</th>
-                  <th scope="col" class="col-actions" aria-label="Ações"></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="td-bold">Comissão global de influenciadores</td>
-                  <td class="td-value">{{ formatPercent(platformSettings()?.influencerCommissionRate) }}</td>
-                  <td>{{ formatDate(platformSettings()?.updatedAt) }}</td>
-                  <td class="col-actions">
-                    <button
-                      class="btn-icon-sm"
-                      type="button"
-                      (click)="openPlatformModal(platformModalTpl)"
-                      aria-label="Editar comissão global de influenciadores"
-                    >
-                      <i class="bi bi-pencil" aria-hidden="true"></i>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        } @else {
-          <app-empty-state
-            [title]="'Configurações financeiras não retornadas'"
-            [description]="'A API não retornou dados para as configurações globais.'"
-            [icon]="'bi-gear'"
-          ></app-empty-state>
-        }
-      </section>
-
-      <section class="finance-section" aria-labelledby="plans-title">
-        <div class="section-heading">
-          <div>
-            <h2 id="plans-title">Planos de assinatura</h2>
-            <p>Planos cadastrados pelo endpoint de planos, sem valores fixos na interface.</p>
-          </div>
+      <section class="finance-section finance-section--plans" aria-labelledby="plans-title">
+        <div class="finance-section-header">
+          <h2 id="plans-title">Assinaturas</h2>
           @if (totalPlans() > 0) {
-            <span class="section-count">{{ totalPlans() }} plano(s)</span>
+            <span>{{ totalPlans() }} assinatura(s)</span>
           }
         </div>
 
@@ -97,64 +48,49 @@
           <app-loading-skeleton [variant]="'table'" [count]="4"></app-loading-skeleton>
         } @else if (hasPlansError()) {
           <app-error-state
-            [title]="'Erro ao carregar planos'"
-            [description]="'Não foi possível carregar os planos cadastrados.'"
+            [title]="'Erro ao carregar assinaturas'"
+            [description]="'Não foi possível carregar as assinaturas. Tente novamente.'"
             (retry)="loadPlans()"
           ></app-error-state>
         } @else if (plans().length > 0) {
           <div class="table-wrapper">
-            <table class="finance-table" aria-label="Planos de assinatura cadastrados">
+            <table class="finance-table" aria-label="Lista de assinaturas">
               <thead>
                 <tr>
-                  <th scope="col">Plano</th>
+                  <th scope="col">Assinatura</th>
                   <th scope="col">Preço</th>
-                  <th scope="col">Ciclo</th>
-                  <th scope="col">Custo mensal</th>
+                  <th scope="col">Renovação</th>
+                  <th scope="col">Valor mensal</th>
                   <th scope="col">Status</th>
-                  <th scope="col">Atualizado em</th>
                   <th scope="col" class="col-actions" aria-label="Ações"></th>
                 </tr>
               </thead>
               <tbody>
                 @for (plan of plans(); track plan.id) {
                   <tr>
-                    <td>
-                      <div class="plan-name">{{ plan.name }}</div>
-                      <div class="plan-description">{{ plan.description || 'Sem descrição informada' }}</div>
-                    </td>
-                    <td class="td-value">{{ formatCurrency(plan.price) }}</td>
+                    <td class="td-name">{{ plan.name }}</td>
+                    <td>{{ formatCurrency(plan.price) }}</td>
                     <td>{{ formatInterval(plan) }}</td>
                     <td>{{ formatCurrency(plan.monthlyPrice) }}</td>
-                    <td>
-                      <span class="status-badge" [class.active]="plan.isActive" [class.inactive]="!plan.isActive">
-                        {{ planStatusLabel(plan) }}
-                      </span>
-                    </td>
-                    <td>{{ formatDate(plan.updatedAt) }}</td>
+                    <td>{{ planStatusLabel(plan) }}</td>
                     <td class="col-actions">
-                      <div class="col-actions-inline">
-                        <button
-                          class="btn-icon-sm"
-                          type="button"
-                          (click)="openEditPlanModal(plan, planModalTpl)"
-                          [attr.aria-label]="'Editar plano ' + plan.name"
-                        >
-                          <i class="bi bi-pencil" aria-hidden="true"></i>
-                        </button>
-                        <button
-                          class="btn-icon-sm btn-danger"
-                          type="button"
-                          (click)="openDeletePlanModal(plan, deletePlanConfirmModalTpl)"
-                          [disabled]="isDeletingPlanId() === plan.id"
-                          [attr.aria-label]="'Remover plano ' + plan.name"
-                        >
-                          @if (isDeletingPlanId() === plan.id) {
-                            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                          } @else {
-                            <i class="bi bi-trash" aria-hidden="true"></i>
-                          }
-                        </button>
-                      </div>
+                      <button
+                        class="btn-table-action"
+                        type="button"
+                        (click)="openEditPlanModal(plan, planModalTpl)"
+                        [attr.aria-label]="'Editar assinatura ' + plan.name"
+                      >
+                        <i class="bi bi-pencil" aria-hidden="true"></i>
+                      </button>
+                      <button
+                        class="btn-table-action btn-table-action--danger"
+                        type="button"
+                        (click)="openDeletePlanModal(plan, deletePlanConfirmModalTpl)"
+                        [disabled]="isDeletingPlanId() === plan.id"
+                        [attr.aria-label]="'Remover assinatura ' + plan.name"
+                      >
+                        <i class="bi bi-trash3" aria-hidden="true"></i>
+                      </button>
                     </td>
                   </tr>
                 }
@@ -163,9 +99,94 @@
           </div>
         } @else {
           <app-empty-state
-            [title]="'Nenhum plano cadastrado'"
-            [description]="'Cadastre o primeiro plano de assinatura para exibi-lo nesta tela.'"
+            [title]="'Nenhuma assinatura cadastrada'"
+            [description]="'Cadastre uma assinatura para que ela apareça nesta lista.'"
             [icon]="'bi-credit-card'"
+          ></app-empty-state>
+        }
+      </section>
+
+      <section class="finance-section finance-section--figma" aria-labelledby="finance-services-title">
+        <h2 id="finance-services-title" class="visually-hidden">Serviços financeiros</h2>
+
+        @if (isLoadingFinanceServices()) {
+          <app-loading-skeleton [variant]="'table'" [count]="8"></app-loading-skeleton>
+        } @else if (hasFinanceServicesError()) {
+          <app-error-state
+            [title]="'Erro ao carregar serviços financeiros'"
+            [description]="'Não foi possível carregar os serviços. Tente novamente.'"
+            (retry)="loadFinanceServices()"
+          ></app-error-state>
+        } @else if (financeServices().length > 0) {
+          <div class="table-wrapper table-wrapper--figma">
+            <table class="finance-table finance-table--figma" aria-label="Lista de serviços financeiros">
+              <thead>
+                <tr>
+                  <th scope="col">Serviço <i class="bi bi-caret-down-fill" aria-hidden="true"></i></th>
+                  <th scope="col">Categoria <i class="bi bi-caret-down-fill" aria-hidden="true"></i></th>
+                  <th scope="col">Valor <i class="bi bi-caret-down-fill" aria-hidden="true"></i></th>
+                  <th scope="col">Valor da plataforma <i class="bi bi-caret-down-fill" aria-hidden="true"></i></th>
+                  <th scope="col">Avaliação <i class="bi bi-caret-down-fill" aria-hidden="true"></i></th>
+                  <th scope="col">Status <i class="bi bi-caret-down-fill" aria-hidden="true"></i></th>
+                  <th scope="col" class="col-actions" aria-label="Ações"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (service of financeServices(); track service.id) {
+                  <tr>
+                    <td class="td-name">{{ service.name }}</td>
+                    <td>{{ service.category.name || 'N/D' }}</td>
+                    <td>{{ formatCurrency(service.price) }}</td>
+                    <td>N/D</td>
+                    <td>
+                      <span
+                        class="review-summary"
+                        [attr.aria-label]="service.positiveReviews + ' avaliações positivas, ' + service.negativeReviews + ' avaliações negativas e ' + service.totalReviews + ' no total'"
+                      >
+                        <i class="bi bi-hand-thumbs-up review-summary__positive" aria-hidden="true"></i>
+                        <strong>{{ service.positiveReviews }}</strong>
+                        <i class="bi bi-hand-thumbs-down review-summary__negative" aria-hidden="true"></i>
+                        <strong>{{ service.negativeReviews }}</strong>
+                        <i class="bi bi-briefcase review-summary__total" aria-hidden="true"></i>
+                        <strong>{{ service.totalReviews }}</strong>
+                      </span>
+                    </td>
+                    <td>{{ serviceStatusLabel(service) }}</td>
+                    <td class="col-actions"><i class="bi bi-three-dots" aria-hidden="true"></i></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-footer" aria-live="polite">
+            <span>{{ financeServicesRangeLabel() }}</span>
+            <div class="pagination-controls">
+              <button
+                class="btn-page"
+                type="button"
+                [disabled]="financeServicesCurrentPage() === 1"
+                (click)="onFinanceServicesPageChange(financeServicesCurrentPage() - 1)"
+                aria-label="Página anterior"
+              >
+                <i class="bi bi-chevron-left" aria-hidden="true"></i>
+              </button>
+              <button
+                class="btn-page"
+                type="button"
+                [disabled]="financeServicesCurrentPage() >= financeServicesTotalPages()"
+                (click)="onFinanceServicesPageChange(financeServicesCurrentPage() + 1)"
+                aria-label="Próxima página"
+              >
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+        } @else {
+          <app-empty-state
+            [title]="'Nenhum serviço encontrado'"
+            [description]="'Nenhum serviço foi encontrado para os filtros informados.'"
+            [icon]="'bi-cash-coin'"
           ></app-empty-state>
         }
       </section>
@@ -173,49 +194,10 @@
   </main>
 </div>
 
-<ng-template #platformModalTpl>
-  <div class="modal-card">
-    <div class="modal-card-header">
-      <h4 class="modal-title">Comissão global de influenciadores</h4>
-      <button class="modal-close" type="button" (click)="dismissModal()" aria-label="Fechar">
-        <i class="bi bi-x-lg" aria-hidden="true"></i>
-      </button>
-    </div>
-
-    <div class="modal-card-body" [formGroup]="platformForm">
-      <div class="form-group">
-        <label class="form-label" for="influencer-commission-rate">Percentual</label>
-        <div class="pct-input-wrap">
-          <input
-            id="influencer-commission-rate"
-            type="number"
-            class="pct-input pct-input--wide"
-            formControlName="influencerCommissionRate"
-            min="0"
-            max="100"
-            step="0.01"
-          />
-          <span class="pct-sign">%</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-card-footer">
-      <button class="btn-cancel" type="button" (click)="dismissModal()" [disabled]="isSavingPlatform()">CANCELAR</button>
-      <button class="btn-save" type="button" [disabled]="isSavingPlatform()" (click)="savePlatformSettings()">
-        @if (isSavingPlatform()) {
-          <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-        }
-        SALVAR
-      </button>
-    </div>
-  </div>
-</ng-template>
-
 <ng-template #planModalTpl>
   <div class="modal-card">
     <div class="modal-card-header">
-      <h4 class="modal-title">{{ selectedPlan() ? 'Editar plano' : 'Novo plano' }}</h4>
+      <h4 class="modal-title">{{ selectedPlan() ? 'Editar assinatura' : 'Nova assinatura' }}</h4>
       <button class="modal-close" type="button" (click)="dismissModal()" aria-label="Fechar">
         <i class="bi bi-x-lg" aria-hidden="true"></i>
       </button>
@@ -224,13 +206,13 @@
     <div class="modal-card-body" [formGroup]="planForm">
       <div class="plan-form-grid">
         <div class="form-group">
-          <label class="form-label" for="plan-name">Nome do plano</label>
-          <input id="plan-name" type="text" class="form-control" formControlName="name" placeholder="Ex.: Plano mensal" />
+          <label class="form-label" for="plan-name">Nome da assinatura</label>
+          <input id="plan-name" type="text" class="form-control" formControlName="name" placeholder="Ex.: Assinatura mensal" />
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="plan-slug">Identificador</label>
-          <input id="plan-slug" type="text" class="form-control" formControlName="slug" placeholder="Ex.: plano-mensal" />
+          <label class="form-label" for="plan-slug">Código da assinatura</label>
+          <input id="plan-slug" type="text" class="form-control" formControlName="slug" placeholder="Ex.: assinatura-mensal" />
         </div>
 
         <div class="form-group plan-form-grid__full">
@@ -240,7 +222,7 @@
             class="form-control"
             rows="3"
             formControlName="description"
-            placeholder="Descreva o benefício do plano"
+            placeholder="Descreva o benefício da assinatura"
           ></textarea>
         </div>
 
@@ -278,7 +260,7 @@
         <label class="toggle-card" for="plan-is-active">
           <input id="plan-is-active" type="checkbox" formControlName="isActive" />
           <span>
-            <strong>Plano ativo</strong>
+            <strong>Assinatura ativa</strong>
             <small>Disponível para contratação.</small>
           </span>
         </label>
@@ -304,7 +286,7 @@
     </div>
 
     <div class="modal-card-header confirmation-header">
-      <h4 class="modal-title">Confirmar novo plano</h4>
+      <h4 class="modal-title">Confirmar nova assinatura</h4>
       <button
         class="modal-close"
         type="button"
@@ -318,13 +300,13 @@
 
     <div class="modal-card-body confirmation-body">
       <p class="confirmation-text">
-        Revise as informações abaixo antes de cadastrar o plano. A criação será enviada para a API
-        somente após a confirmação.
+        Revise as informações abaixo antes de cadastrar a assinatura. Ela será cadastrada somente
+        após a confirmação.
       </p>
 
       <dl class="confirmation-summary">
         <div>
-          <dt>Plano</dt>
+          <dt>Assinatura</dt>
           <dd>{{ pendingPlanPayload()?.name || 'N/D' }}</dd>
         </div>
         <div>
@@ -368,7 +350,7 @@
     </div>
 
     <div class="modal-card-header confirmation-header">
-      <h4 class="modal-title">Remover plano?</h4>
+      <h4 class="modal-title">Remover assinatura?</h4>
       <button
         class="modal-close"
         type="button"
@@ -382,12 +364,12 @@
 
     <div class="modal-card-body confirmation-body">
       <p class="confirmation-text">
-        Esta ação removerá o plano selecionado. Confira as informações abaixo antes de confirmar.
+        Esta ação removerá a assinatura selecionada. Confira as informações abaixo antes de confirmar.
       </p>
 
       <dl class="confirmation-summary confirmation-summary--danger">
         <div>
-          <dt>Plano</dt>
+          <dt>Assinatura</dt>
           <dd>{{ planToDelete()?.name || 'N/D' }}</dd>
         </div>
         <div>

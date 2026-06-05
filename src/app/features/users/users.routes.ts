@@ -27,6 +27,6 @@ export const USERS_ROUTES: Routes = [
     path: ':id',
     loadComponent: () =>
       import('./pages/user-detail/user-detail.component').then((m) => m.UserDetailComponent),
-    data: { title: 'Detalhes do Usuario' },
+    data: { title: 'Detalhes do usuário' },
   },
 ];

@@ -25,10 +25,10 @@ export class SidebarComponent {
 
   readonly navItems: NavItem[] = [
     { label: 'DASHBOARD', icon: 'bi-display', route: '/dashboard', implemented: true },
-    { label: 'USUARIOS', icon: 'bi-briefcase', route: '/users', implemented: true },
-    { label: 'SERVICOS', icon: 'bi-grid', route: '/services', implemented: true },
+    { label: 'USUÁRIOS', icon: 'bi-briefcase', route: '/users', implemented: true },
+    { label: 'SERVIÇOS', icon: 'bi-grid', route: '/services', implemented: true },
     { label: 'FINANCEIRO', icon: 'bi-graph-up', route: '/finance', implemented: true },
-    { label: 'CONFIGURACAO', icon: 'bi-gear', route: '/settings', implemented: true },
+    { label: 'CONFIGURAÇÃO', icon: 'bi-gear', route: '/settings', implemented: true },
   ];
 
   isActive(route: string): boolean {
@@ -38,7 +38,7 @@ export class SidebarComponent {
   onNavClick(item: NavItem, event: MouseEvent): void {
     event.preventDefault();
     if (!item.implemented) {
-      this.toastService.showInfo('Este modulo esta em desenvolvimento.');
+      this.toastService.showInfo('Este módulo está em desenvolvimento.');
       return;
     }
 
