@@ -1,0 +1,96 @@
+name: Deploy guto Frontend
+
+on:
+  push:
+    branches: [ Davi-Correia-integration ]
+
+concurrency:
+  group: deploy-service-new-frontend
+  cancel-in-progress: true
+
+env:
+  PROJECT_PATH: "/var/www/html/service-new"
+  BASE_HREF: "/service-new/"
+  SHEETS_TAB_NAME: "service-new"
+  SHEETS_COMPONENT: "web"
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar Dependências (Resiliente)
+        shell: bash
+        run: |
+          npm config set registry https://registry.npmjs.org/
+          npm config set fetch-retries 10
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
+          npm config set fetch-timeout 300000
+          npm config set maxsockets 5
+          for attempt in 1 2 3; do
+            echo "Instalando dependências, tentativa ${attempt}/3..."
+            if npm install --include=dev --include=optional --no-audit --no-fund --prefer-offline --legacy-peer-deps; then
+              if node -e "require.resolve('esbuild')"; then
+                exit 0
+              fi
+              echo "Instalação terminou, mas o pacote esbuild não foi encontrado."
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "Falha ao instalar dependências após 3 tentativas."
+              exit 1
+            fi
+            rm -rf node_modules
+            npm cache verify || true
+            sleep $((attempt * 30))
+          done
+      - name: Build do Angular
+        shell: bash
+        run: |
+          rm -rf dist
+          npm run build -- --configuration production --base-href ${{ env.BASE_HREF }}
+      - name: Listar pasta dist
+        run: |
+          echo "🔍 Verificando estrutura da pasta dist:"
+          find dist -maxdepth 3 -type d
+      - name: Preparar Pasta de Destino
+        run: |
+          sudo mkdir -p ${{ env.PROJECT_PATH }}
+          sudo chown -R $(whoami):$(whoami) ${{ env.PROJECT_PATH }}
+      - name: Mover Arquivos (Localização Automática)
+        run: |
+          BUILD_FOLDER=$(find dist -name index.html -exec dirname {} \; | head -n 1)
+          if [ -z "$BUILD_FOLDER" ]; then
+            echo "❌ ERRO: index.html não encontrado na pasta dist!"
+            exit 1
+          fi
+          echo "📦 Pasta de build detectada: $BUILD_FOLDER"
+          echo "🚀 Sincronizando com ${{ env.PROJECT_PATH }}..."
+          rsync -av --delete "$BUILD_FOLDER/" ${{ env.PROJECT_PATH }}/
+      - name: Verificar Deploy
+        run: |
+          echo "✅ Arquivos no destino:"
+          ls -F ${{ env.PROJECT_PATH }} | head -n 5
+      - name: Notificar Planilha Gestão
+        if: success()
+        run: |
+          curl -L -X POST "https://script.google.com/macros/s/AKfycbwxN-2CW9_3oZBF2TNm-Bj6ffM5rE7WuybyRDOKNsKtobYUFsr-1aiViHiMKQKX_5-ceA/exec" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "tabName": "${{ env.SHEETS_TAB_NAME }}",
+            "component": "${{ env.SHEETS_COMPONENT }}",
+            "url": "${{ github.event.head_commit.url }}",
+            "sha": "${{ github.sha }}",
+            "user": "${{ github.actor }}"
+          }'
