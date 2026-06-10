@@ -1,5 +1,10 @@
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
-import { provideRouter, withComponentInputBinding, withViewTransitions } from '@angular/router';
+import {
+  provideRouter,
+  withComponentInputBinding,
+  withHashLocation,
+  withViewTransitions,
+} from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
@@ -12,6 +17,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(
       routes,
       withComponentInputBinding(),
+      withHashLocation(),
       withViewTransitions({
         onViewTransitionCreated: () => {},
       })
