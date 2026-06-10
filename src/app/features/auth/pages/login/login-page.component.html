@@ -3,7 +3,7 @@
     <article class="login-panel">
       <header class="brand">
         <object
-          data="/assets/service-logo-official.svg"
+          data="assets/service-logo-official.svg"
           type="image/svg+xml"
           aria-label="Logo Service"
         ></object>
@@ -13,7 +13,11 @@
         <h1>Seja bem vindo(a)!</h1>
         <p>Acesse o portal gerencial com seu e-mail e senha cadastrados.</p>
 
-        <div class="status-chip" [class.up]="apiStatusState() === 'up'" [class.down]="apiStatusState() === 'down'">
+        <div
+          class="status-chip"
+          [class.up]="apiStatusState() === 'up'"
+          [class.down]="apiStatusState() === 'down'"
+        >
           <i
             class="bi"
             [class.bi-check-circle-fill]="apiStatusState() === 'up'"
@@ -48,11 +52,7 @@
           />
         </div>
 
-        <a
-          class="forgot-link"
-          routerLink="/auth/forgot-password"
-          aria-label="Esqueceu sua senha"
-        >
+        <a class="forgot-link" routerLink="/auth/forgot-password" aria-label="Esqueceu sua senha">
           Esqueceu a senha? <b>Clique aqui!</b>
         </a>
 
@@ -68,7 +68,7 @@
     </article>
 
     <figure class="illustration-panel">
-      <img src="/assets/login-illustration.svg" alt="Ilustração de pessoas e engrenagens" />
+      <img src="assets/login-illustration.svg" alt="Ilustração de pessoas e engrenagens" />
     </figure>
   </section>
 
