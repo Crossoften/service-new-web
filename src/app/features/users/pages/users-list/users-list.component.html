@@ -11,11 +11,23 @@
           <i class="bi bi-people" aria-hidden="true"></i>
           Usuários
         </button>
-        <button class="type-tab" role="tab" aria-selected="false" type="button" (click)="goToInfluencers()">
+        <button
+          class="type-tab"
+          role="tab"
+          aria-selected="false"
+          type="button"
+          (click)="goToInfluencers()"
+        >
           <i class="bi bi-star" aria-hidden="true"></i>
           Influencers
         </button>
-        <button class="type-tab" role="tab" aria-selected="false" type="button" (click)="goToSuppliers()">
+        <button
+          class="type-tab"
+          role="tab"
+          aria-selected="false"
+          type="button"
+          (click)="goToSuppliers()"
+        >
           <i class="bi bi-building" aria-hidden="true"></i>
           Fornecedores
         </button>
@@ -81,8 +93,8 @@
                   (keydown.space)="navigateToDetail(user.id); $event.preventDefault()"
                   [attr.aria-label]="'Abrir detalhes de ' + user.name"
                 >
-                  <td class="td-name">{{ user.name }}</td>
-                  <td>
+                  <td class="td-name" data-label="Nome">{{ user.name }}</td>
+                  <td data-label="Tipo">
                     <span
                       class="profile-badge"
                       [class.client]="user.profileType === 'Client'"
@@ -92,10 +104,10 @@
                       {{ getProfileTypeLabel(user.profileType) }}
                     </span>
                   </td>
-                  <td>{{ user.email }}</td>
-                  <td>{{ user.phone }}</td>
-                  <td>{{ user.openServices }}</td>
-                  <td>
+                  <td data-label="Email">{{ user.email }}</td>
+                  <td data-label="Celular">{{ user.phone }}</td>
+                  <td data-label="Serviços">{{ user.openServices }}</td>
+                  <td data-label="Status">
                     <span
                       class="status-badge"
                       [class.active]="user.status === 'Active'"

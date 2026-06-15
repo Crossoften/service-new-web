@@ -125,6 +125,7 @@
   flex: 1;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
   padding: 1.2rem 1.2rem 0.8rem;
 }
 
@@ -184,6 +185,10 @@
   position: relative;
   flex: 1;
   min-height: 480px;
+}
+
+.chart-wrap canvas {
+  display: block;
 }
 
 .chart-empty-state {
@@ -248,10 +253,77 @@
 
 @media (max-width: 768px) {
   .page-wrapper {
-    padding: 1.25rem 1rem 1.5rem;
+    padding: 1.2rem 0.9rem calc(3rem + env(safe-area-inset-bottom));
+  }
+
+  .stats-grid {
+    gap: 0.85rem;
+  }
+
+  .stat-card {
+    min-height: 104px;
+    padding: 1.15rem;
+  }
+
+  .stat-icon {
+    width: 46px;
+    height: 46px;
+  }
+
+  .stat-value {
+    font-size: clamp(1.55rem, 9vw, 2rem);
+  }
+
+  .stat-label {
+    font-size: 0.86rem;
   }
 
   .chart-wrap {
-    min-height: 260px;
+    min-height: 280px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-card {
+    align-items: flex-start;
+    gap: 0.9rem;
+  }
+
+  .stat-copy {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .chart-card {
+    border-radius: 1.2rem;
+    padding: 1rem 0.85rem 0.7rem;
+  }
+
+  .chart-header {
+    gap: 0.45rem;
+    margin-bottom: 0.15rem;
+  }
+
+  .chart-header h2 {
+    font-size: 0.95rem;
+  }
+
+  .chart-legend {
+    gap: 0.85rem;
+  }
+
+  .legend-item {
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .legend-dot {
+    width: 7px;
+    height: 7px;
+  }
+
+  .chart-wrap {
+    min-height: 230px;
+    margin-inline: -0.1rem;
   }
 }

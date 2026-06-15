@@ -249,9 +249,39 @@
 }
 
 @media (max-width: 576px) {
+  .login-page {
+    padding: 0.75rem;
+  }
+
   .login-panel {
     min-height: auto;
-    padding: 1.5rem;
+    padding: 1.25rem;
     border-radius: 1rem;
+  }
+
+  .brand {
+    margin-bottom: 1rem;
+  }
+
+  .brand object {
+    width: 158px;
+    height: 122px;
+  }
+
+  .login-footer {
+    gap: 0.85rem;
+    padding-top: 1rem;
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .login-panel {
+    padding: 1rem;
+  }
+
+  .brand object {
+    width: 146px;
+    height: 112px;
   }
 }

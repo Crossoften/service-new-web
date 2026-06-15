@@ -38,7 +38,7 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
 
   private readonly dashboardService = inject(DashboardService);
 
-  private chart: Chart | null = null;
+  private chart: Chart<'line'> | null = null;
   private viewReady = false;
 
   readonly isLoading = signal(true);
@@ -63,9 +63,10 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
       },
       {
         label: 'Valor em caixa',
-        value: c?.totalCashValue != null
-          ? c.totalCashValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-          : 'N/D',
+        value:
+          c?.totalCashValue != null
+            ? c.totalCashValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+            : 'N/D',
         icon: 'bi-graph-up',
         unavailable: c?.totalCashValue == null,
       },
@@ -84,7 +85,9 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
     return data.months.map((m) => m.services ?? 0);
   });
 
-  readonly chartLabels = computed<string[]>(() => this.chartData()?.months.map((m) => m.month) ?? []);
+  readonly chartLabels = computed<string[]>(
+    () => this.chartData()?.months.map((m) => m.month) ?? []
+  );
   readonly hasChartData = computed(() => this.chartLabels().length > 0);
 
   ngOnInit(): void {
@@ -125,11 +128,16 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
     }
 
     const chartMax = this.resolveYAxisMax([...usersSeries, ...servicesSeries]);
+    const isMobile = this.isMobileChart();
 
     if (this.chart) {
       this.chart.data.labels = this.chartLabels();
       this.chart.data.datasets[0].data = usersSeries;
       this.chart.data.datasets[1].data = servicesSeries;
+      this.chart.data.datasets[0].borderWidth = isMobile ? 3 : 4;
+      this.chart.data.datasets[1].borderWidth = isMobile ? 3 : 4;
+      this.chart.data.datasets[0].pointRadius = isMobile ? 3 : 4;
+      this.chart.data.datasets[1].pointRadius = isMobile ? 3 : 4;
       if (this.chart.options.scales?.['y']) {
         this.chart.options.scales['y']['max'] = chartMax;
         this.chart.options.scales['y']['suggestedMax'] = chartMax;
@@ -148,25 +156,27 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
             data: usersSeries,
             borderColor: '#8a2be2',
             backgroundColor: 'rgba(138, 43, 226, 0.12)',
-            borderWidth: 4,
-            tension: 0.45,
-            pointRadius: 4,
-            pointHoverRadius: 5,
+            borderWidth: isMobile ? 3 : 4,
+            tension: 0.38,
+            pointRadius: isMobile ? 3 : 4,
+            pointHoverRadius: isMobile ? 4 : 5,
             pointBackgroundColor: '#8a2be2',
-            pointBorderColor: '#8a2be2',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
           },
           {
             label: 'Serviços',
             data: servicesSeries,
-            borderColor: '#7a7a7a',
-            backgroundColor: 'rgba(122, 122, 122, 0.08)',
-            borderWidth: 4,
-            tension: 0.45,
+            borderColor: '#363636',
+            backgroundColor: 'rgba(54, 54, 54, 0.08)',
+            borderWidth: isMobile ? 3 : 4,
+            tension: 0.38,
             spanGaps: false,
-            pointRadius: 4,
-            pointHoverRadius: 5,
-            pointBackgroundColor: '#111111',
-            pointBorderColor: '#111111',
+            pointRadius: isMobile ? 3 : 4,
+            pointHoverRadius: isMobile ? 4 : 5,
+            pointBackgroundColor: '#363636',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
           },
         ],
       },
@@ -179,31 +189,46 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
           tooltip: {
             backgroundColor: 'rgba(255,255,255,0.97)',
             titleColor: '#1a1a1a',
-            bodyColor: '#5f5f5f',
-            borderColor: '#e0e0e0',
+            bodyColor: '#374151',
+            borderColor: 'rgba(17, 24, 39, 0.08)',
             borderWidth: 1,
-            padding: 10,
-            cornerRadius: 8,
+            padding: 12,
+            cornerRadius: 12,
             displayColors: true,
+            boxPadding: 4,
+            titleFont: { size: 11, weight: 700 },
+            bodyFont: { size: 11, weight: 500 },
           },
         },
-        interaction: { mode: 'nearest', intersect: false },
+        interaction: { mode: 'index', intersect: false },
+        layout: { padding: { top: 8, right: isMobile ? 2 : 10, bottom: 0, left: 0 } },
         scales: {
           x: {
-            grid: { color: '#efefef' },
+            grid: { display: false },
             border: { display: false },
-            ticks: { color: '#4b5563', font: { size: 10, weight: 500 } },
+            ticks: {
+              autoSkip: false,
+              maxRotation: 0,
+              minRotation: 0,
+              color: '#6b7280',
+              padding: 8,
+              font: { size: isMobile ? 9 : 10, weight: 700 },
+              callback: (_value, index) =>
+                isMobile && index % 2 !== 0 ? '' : this.chartLabels()[index],
+            },
           },
           y: {
             min: 0,
             max: chartMax,
             suggestedMax: chartMax,
-            grid: { color: '#efefef' },
+            grid: { color: 'rgba(17, 24, 39, 0.06)' },
             border: { display: false },
             ticks: {
-              stepSize: Math.max(1, Math.ceil(chartMax / 5)),
-              color: '#4b5563',
-              font: { size: 10 },
+              maxTicksLimit: isMobile ? 4 : 6,
+              stepSize: Math.max(1, Math.ceil(chartMax / (isMobile ? 3 : 5))),
+              color: '#6b7280',
+              padding: 6,
+              font: { size: isMobile ? 9 : 10, weight: 600 },
             },
           },
         },
@@ -215,5 +240,9 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
     const maxValue = Math.max(...values, 0);
     const normalized = Math.ceil(maxValue / 10) * 10;
     return Math.max(10, normalized || 10);
+  }
+
+  private isMobileChart(): boolean {
+    return typeof window !== 'undefined' && window.innerWidth <= 480;
   }
 }

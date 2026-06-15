@@ -61,15 +61,15 @@
             <tbody>
               @for (col of collaborators(); track col.id) {
                 <tr>
-                  <td class="td-cod">{{ col.code }}</td>
-                  <td class="td-name">{{ col.name }}</td>
-                  <td>{{ col.email }}</td>
-                  <td>
+                  <td class="td-cod" data-label="Código">{{ col.code }}</td>
+                  <td class="td-name" data-label="Nome">{{ col.name }}</td>
+                  <td data-label="Email">{{ col.email }}</td>
+                  <td data-label="Acesso">
                     <span class="role-badge" [class.master]="col.role === 'Master'">
                       {{ col.role }}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="Status">
                     <span
                       class="status-badge"
                       [class.active]="col.status === 'Active'"

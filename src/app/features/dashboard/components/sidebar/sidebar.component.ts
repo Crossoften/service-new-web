@@ -6,6 +6,7 @@ import { ToastService } from '@core/services/toast.service';
 
 interface NavItem {
   label: string;
+  shortLabel: string;
   icon: string;
   route: string;
   implemented: boolean;
@@ -24,11 +25,41 @@ export class SidebarComponent {
   private readonly authApiService = inject(AuthApiService);
 
   readonly navItems: NavItem[] = [
-    { label: 'DASHBOARD', icon: 'bi-display', route: '/dashboard', implemented: true },
-    { label: 'USUÁRIOS', icon: 'bi-briefcase', route: '/users', implemented: true },
-    { label: 'SERVIÇOS', icon: 'bi-grid', route: '/services', implemented: true },
-    { label: 'FINANCEIRO', icon: 'bi-graph-up', route: '/finance', implemented: true },
-    { label: 'CONFIGURAÇÃO', icon: 'bi-gear', route: '/settings', implemented: true },
+    {
+      label: 'DASHBOARD',
+      shortLabel: 'Início',
+      icon: 'bi-display',
+      route: '/dashboard',
+      implemented: true,
+    },
+    {
+      label: 'USUÁRIOS',
+      shortLabel: 'Usuários',
+      icon: 'bi-briefcase',
+      route: '/users',
+      implemented: true,
+    },
+    {
+      label: 'SERVIÇOS',
+      shortLabel: 'Serviços',
+      icon: 'bi-grid',
+      route: '/services',
+      implemented: true,
+    },
+    {
+      label: 'FINANCEIRO',
+      shortLabel: 'Finanças',
+      icon: 'bi-graph-up',
+      route: '/finance',
+      implemented: true,
+    },
+    {
+      label: 'CONFIGURAÇÃO',
+      shortLabel: 'Ajustes',
+      icon: 'bi-gear',
+      route: '/settings',
+      implemented: true,
+    },
   ];
 
   isActive(route: string): boolean {

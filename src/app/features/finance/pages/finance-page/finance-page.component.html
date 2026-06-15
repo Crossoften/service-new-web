@@ -9,7 +9,9 @@
       <div class="finance-toolbar" aria-label="Ações financeiras">
         <div class="search-field">
           <i class="bi bi-search" aria-hidden="true"></i>
-          <label class="visually-hidden" for="finance-service-search">Buscar serviço financeiro</label>
+          <label class="visually-hidden" for="finance-service-search"
+            >Buscar serviço financeiro</label
+          >
           <input
             id="finance-service-search"
             type="search"
@@ -19,7 +21,12 @@
           />
         </div>
 
-        <button class="filter-button" type="button" disabled aria-label="Filtros financeiros indisponíveis">
+        <button
+          class="filter-button"
+          type="button"
+          disabled
+          aria-label="Filtros financeiros indisponíveis"
+        >
           <i class="bi bi-funnel" aria-hidden="true"></i>
         </button>
 
@@ -68,11 +75,11 @@
               <tbody>
                 @for (plan of plans(); track plan.id) {
                   <tr>
-                    <td class="td-name">{{ plan.name }}</td>
-                    <td>{{ formatCurrency(plan.price) }}</td>
-                    <td>{{ formatInterval(plan) }}</td>
-                    <td>{{ formatCurrency(plan.monthlyPrice) }}</td>
-                    <td>{{ planStatusLabel(plan) }}</td>
+                    <td class="td-name" data-label="Assinatura">{{ plan.name }}</td>
+                    <td data-label="Preço">{{ formatCurrency(plan.price) }}</td>
+                    <td data-label="Renovação">{{ formatInterval(plan) }}</td>
+                    <td data-label="Valor mensal">{{ formatCurrency(plan.monthlyPrice) }}</td>
+                    <td data-label="Status">{{ planStatusLabel(plan) }}</td>
                     <td class="col-actions">
                       <button
                         class="btn-table-action"
@@ -106,7 +113,10 @@
         }
       </section>
 
-      <section class="finance-section finance-section--figma" aria-labelledby="finance-services-title">
+      <section
+        class="finance-section finance-section--figma"
+        aria-labelledby="finance-services-title"
+      >
         <h2 id="finance-services-title" class="visually-hidden">Serviços financeiros</h2>
 
         @if (isLoadingFinanceServices()) {
@@ -119,39 +129,67 @@
           ></app-error-state>
         } @else if (financeServices().length > 0) {
           <div class="table-wrapper table-wrapper--figma">
-            <table class="finance-table finance-table--figma" aria-label="Lista de serviços financeiros">
+            <table
+              class="finance-table finance-table--figma"
+              aria-label="Lista de serviços financeiros"
+            >
               <thead>
                 <tr>
-                  <th scope="col">Serviço <i class="bi bi-caret-down-fill" aria-hidden="true"></i></th>
-                  <th scope="col">Categoria <i class="bi bi-caret-down-fill" aria-hidden="true"></i></th>
-                  <th scope="col">Valor <i class="bi bi-caret-down-fill" aria-hidden="true"></i></th>
-                  <th scope="col">Valor da plataforma <i class="bi bi-caret-down-fill" aria-hidden="true"></i></th>
-                  <th scope="col">Avaliação <i class="bi bi-caret-down-fill" aria-hidden="true"></i></th>
-                  <th scope="col">Status <i class="bi bi-caret-down-fill" aria-hidden="true"></i></th>
+                  <th scope="col">
+                    Serviço <i class="bi bi-caret-down-fill" aria-hidden="true"></i>
+                  </th>
+                  <th scope="col">
+                    Categoria <i class="bi bi-caret-down-fill" aria-hidden="true"></i>
+                  </th>
+                  <th scope="col">
+                    Valor <i class="bi bi-caret-down-fill" aria-hidden="true"></i>
+                  </th>
+                  <th scope="col">
+                    Valor da plataforma <i class="bi bi-caret-down-fill" aria-hidden="true"></i>
+                  </th>
+                  <th scope="col">
+                    Avaliação <i class="bi bi-caret-down-fill" aria-hidden="true"></i>
+                  </th>
+                  <th scope="col">
+                    Status <i class="bi bi-caret-down-fill" aria-hidden="true"></i>
+                  </th>
                   <th scope="col" class="col-actions" aria-label="Ações"></th>
                 </tr>
               </thead>
               <tbody>
                 @for (service of financeServices(); track service.id) {
                   <tr>
-                    <td class="td-name">{{ service.name }}</td>
-                    <td>{{ service.category.name || 'N/D' }}</td>
-                    <td>{{ formatCurrency(service.price) }}</td>
-                    <td>N/D</td>
-                    <td>
+                    <td class="td-name" data-label="Serviço">{{ service.name }}</td>
+                    <td data-label="Categoria">{{ service.category.name || 'N/D' }}</td>
+                    <td data-label="Valor">{{ formatCurrency(service.price) }}</td>
+                    <td data-label="Valor da plataforma">N/D</td>
+                    <td data-label="Avaliação">
                       <span
                         class="review-summary"
-                        [attr.aria-label]="service.positiveReviews + ' avaliações positivas, ' + service.negativeReviews + ' avaliações negativas e ' + service.totalReviews + ' no total'"
+                        [attr.aria-label]="
+                          service.positiveReviews +
+                          ' avaliações positivas, ' +
+                          service.negativeReviews +
+                          ' avaliações negativas e ' +
+                          service.totalReviews +
+                          ' no total'
+                        "
                       >
-                        <i class="bi bi-hand-thumbs-up review-summary__positive" aria-hidden="true"></i>
+                        <i
+                          class="bi bi-hand-thumbs-up review-summary__positive"
+                          aria-hidden="true"
+                        ></i>
                         <strong>{{ service.positiveReviews }}</strong>
-                        <i class="bi bi-hand-thumbs-down review-summary__negative" aria-hidden="true"></i>
+                        <i
+                          class="bi bi-hand-thumbs-down review-summary__negative"
+                          aria-hidden="true"
+                        ></i>
                         <strong>{{ service.negativeReviews }}</strong>
                         <i class="bi bi-briefcase review-summary__total" aria-hidden="true"></i>
                         <strong>{{ service.totalReviews }}</strong>
                       </span>
                     </td>
-                    <td>{{ serviceStatusLabel(service) }}</td>
+                    <td data-label="Status">{{ serviceStatusLabel(service) }}</td>
                     <td class="col-actions"><i class="bi bi-three-dots" aria-hidden="true"></i></td>
                   </tr>
                 }
@@ -207,12 +245,24 @@
       <div class="plan-form-grid">
         <div class="form-group">
           <label class="form-label" for="plan-name">Nome da assinatura</label>
-          <input id="plan-name" type="text" class="form-control" formControlName="name" placeholder="Ex.: Assinatura mensal" />
+          <input
+            id="plan-name"
+            type="text"
+            class="form-control"
+            formControlName="name"
+            placeholder="Ex.: Assinatura mensal"
+          />
         </div>
 
         <div class="form-group">
           <label class="form-label" for="plan-slug">Código da assinatura</label>
-          <input id="plan-slug" type="text" class="form-control" formControlName="slug" placeholder="Ex.: assinatura-mensal" />
+          <input
+            id="plan-slug"
+            type="text"
+            class="form-control"
+            formControlName="slug"
+            placeholder="Ex.: assinatura-mensal"
+          />
         </div>
 
         <div class="form-group plan-form-grid__full">
@@ -230,7 +280,14 @@
           <label class="form-label" for="plan-price">Preço</label>
           <div class="currency-input-wrap currency-input-wrap--wide">
             <span class="currency-sign">R$</span>
-            <input id="plan-price" type="number" class="form-control" formControlName="price" min="0" step="0.01" />
+            <input
+              id="plan-price"
+              type="number"
+              class="form-control"
+              formControlName="price"
+              min="0"
+              step="0.01"
+            />
           </div>
         </div>
 
@@ -244,17 +301,38 @@
 
         <div class="form-group">
           <label class="form-label" for="plan-interval-count">Quantidade de ciclos</label>
-          <input id="plan-interval-count" type="number" class="form-control" formControlName="intervalCount" min="1" step="1" />
+          <input
+            id="plan-interval-count"
+            type="number"
+            class="form-control"
+            formControlName="intervalCount"
+            min="1"
+            step="1"
+          />
         </div>
 
         <div class="form-group">
           <label class="form-label" for="plan-bonus-months">Meses bônus</label>
-          <input id="plan-bonus-months" type="number" class="form-control" formControlName="bonusMonths" min="0" step="1" />
+          <input
+            id="plan-bonus-months"
+            type="number"
+            class="form-control"
+            formControlName="bonusMonths"
+            min="0"
+            step="1"
+          />
         </div>
 
         <div class="form-group">
           <label class="form-label" for="plan-sort-order">Ordem de exibição</label>
-          <input id="plan-sort-order" type="number" class="form-control" formControlName="sortOrder" min="0" step="1" />
+          <input
+            id="plan-sort-order"
+            type="number"
+            class="form-control"
+            formControlName="sortOrder"
+            min="0"
+            step="1"
+          />
         </div>
 
         <label class="toggle-card" for="plan-is-active">
@@ -268,8 +346,15 @@
     </div>
 
     <div class="modal-card-footer">
-      <button class="btn-cancel" type="button" (click)="dismissModal()" [disabled]="isSavingPlan()">CANCELAR</button>
-      <button class="btn-save" type="button" [disabled]="isSavingPlan()" (click)="savePlan(createPlanConfirmModalTpl)">
+      <button class="btn-cancel" type="button" (click)="dismissModal()" [disabled]="isSavingPlan()">
+        CANCELAR
+      </button>
+      <button
+        class="btn-save"
+        type="button"
+        [disabled]="isSavingPlan()"
+        (click)="savePlan(createPlanConfirmModalTpl)"
+      >
         @if (isSavingPlan()) {
           <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
         }
@@ -333,7 +418,12 @@
       >
         VOLTAR
       </button>
-      <button class="btn-save" type="button" [disabled]="isSavingPlan()" (click)="confirmCreatePlan()">
+      <button
+        class="btn-save"
+        type="button"
+        [disabled]="isSavingPlan()"
+        (click)="confirmCreatePlan()"
+      >
         @if (isSavingPlan()) {
           <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
         }
@@ -364,7 +454,8 @@
 
     <div class="modal-card-body confirmation-body">
       <p class="confirmation-text">
-        Esta ação removerá a assinatura selecionada. Confira as informações abaixo antes de confirmar.
+        Esta ação removerá a assinatura selecionada. Confira as informações abaixo antes de
+        confirmar.
       </p>
 
       <dl class="confirmation-summary confirmation-summary--danger">
@@ -419,7 +510,12 @@
 
     <div class="modal-card-header confirmation-header">
       <h4 class="modal-title">{{ feedbackModal()?.title }}</h4>
-      <button class="modal-close" type="button" (click)="dismissFeedbackModal()" aria-label="Fechar mensagem">
+      <button
+        class="modal-close"
+        type="button"
+        (click)="dismissFeedbackModal()"
+        aria-label="Fechar mensagem"
+      >
         <i class="bi bi-x-lg" aria-hidden="true"></i>
       </button>
     </div>
