@@ -3,8 +3,8 @@
 
   <main class="main-content">
     <div class="page-wrapper">
-      <p class="breadcrumb-label">CONFIGURACOES</p>
-      <h1 class="page-title">{{ isEditing ? 'Editar Colaborador' : 'Novo Colaborador' }}</h1>
+      <p class="breadcrumb-label">CONFIGURAÇÕES</p>
+      <h1 class="page-title">{{ isEditing ? 'Editar colaborador' : 'Novo colaborador' }}</h1>
 
       @if (isLoading()) {
         <app-loading-skeleton [variant]="'card'" [count]="1"></app-loading-skeleton>
@@ -13,7 +13,7 @@
           <form [formGroup]="form" (ngSubmit)="onSave()" novalidate>
             <div class="form-row-3">
               <div class="form-group form-group--small">
-                <label class="form-label" for="col-code">Codigo</label>
+                <label class="form-label" for="col-code">Código</label>
                 <input
                   id="col-code"
                   type="text"
@@ -34,7 +34,7 @@
                   placeholder="Nome do colaborador"
                 />
                 @if (isFieldInvalid('name')) {
-                  <div class="invalid-feedback">Nome e obrigatorio.</div>
+                  <div class="invalid-feedback">Nome é obrigatório.</div>
                 }
               </div>
 
@@ -49,7 +49,7 @@
                   placeholder="CPF ou CNPJ"
                 />
                 @if (isFieldInvalid('document')) {
-                  <div class="invalid-feedback">Documento e obrigatorio.</div>
+                  <div class="invalid-feedback">Documento é obrigatório.</div>
                 }
               </div>
             </div>
@@ -71,7 +71,7 @@
                   />
                 </div>
                 @if (isFieldInvalid('email')) {
-                  <div class="invalid-feedback">Email invalido.</div>
+                  <div class="invalid-feedback">E-mail inválido.</div>
                 }
               </div>
 
@@ -103,12 +103,12 @@
                     class="form-control form-control--icon"
                     [class.is-invalid]="isFieldInvalid('password')"
                     formControlName="password"
-                    placeholder="Maximo de 8 caracteres"
+                    placeholder="Máximo de 8 caracteres"
                   />
                 </div>
                 @if (isFieldInvalid('password')) {
                   <div class="invalid-feedback">
-                    {{ isEditing ? 'Se informada, a senha deve ter entre 4 e 8 caracteres.' : 'Senha obrigatoria com 4 a 8 caracteres.' }}
+                    {{ isEditing ? 'Se informada, a senha deve ter entre 4 e 8 caracteres.' : 'Senha obrigatória com 4 a 8 caracteres.' }}
                   </div>
                 }
               </div>
@@ -136,7 +136,7 @@
             }
 
             <div class="form-group">
-              <label class="form-label">Permissoes</label>
+              <label class="form-label">Permissões</label>
               <div class="modules-grid">
                 @for (permission of permissionOptions(); track permission.value) {
                   <div class="module-toggle">
@@ -148,10 +148,6 @@
                   </div>
                 }
               </div>
-              <p class="helper-text">
-                As permissoes exibidas foram conciliadas com o endpoint
-                <strong>/v1/admin-settings/all-permissions</strong>.
-              </p>
             </div>
 
             <div class="form-actions">

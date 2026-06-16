@@ -25,9 +25,9 @@ export interface AdminServiceListItem {
   provider: AdminServiceProvider;
   price: number;
   averageRating: number | null;
-  totalRatings: number;
-  positiveReviews: number;
-  negativeReviews: number;
+  totalRatings: number | null;
+  positiveReviews: number | null;
+  negativeReviews: number | null;
   totalWorks: number | null;
   status: AdminServiceStatus;
   fileUrl: string | null;
@@ -44,9 +44,9 @@ export interface AdminService {
   provider: AdminServiceProvider;
   price: number;
   averageRating: number | null;
-  totalRatings: number;
-  positiveReviews: number;
-  negativeReviews: number;
+  totalRatings: number | null;
+  positiveReviews: number | null;
+  negativeReviews: number | null;
   totalWorks: number | null;
   status: AdminServiceStatus;
   fileUrl: string | null;
@@ -99,9 +99,10 @@ export interface AdminServiceApiListItem {
   category: AdminServiceCategory;
   provider: AdminServiceProvider;
   price: number;
-  positiveReviews: number;
-  negativeReviews: number;
-  totalReviews: number;
+  positiveReviews?: number | null;
+  negativeReviews?: number | null;
+  totalReviews?: number | null;
+  totalWorks?: number | null;
   isActive: boolean;
 }
 
@@ -116,10 +117,10 @@ export interface AdminServiceApiDetail {
   isActive: boolean;
   category: AdminServiceCategory;
   provider: AdminServiceProvider;
-  positiveReviews: number;
-  negativeReviews: number;
-  totalReviews: number;
-  totalWorks: number;
+  positiveReviews?: number | null;
+  negativeReviews?: number | null;
+  totalReviews?: number | null;
+  totalWorks?: number | null;
   createdAt: string;
   updatedAt: string;
 }

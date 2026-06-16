@@ -3,7 +3,6 @@
 
   <main class="main-content">
     <div class="page-wrapper">
-
       <p class="breadcrumb-label">FORNECEDORES</p>
       <h1 class="page-title">Fornecedores</h1>
 
@@ -11,11 +10,14 @@
         <app-loading-skeleton [variant]="'card'" [count]="1"></app-loading-skeleton>
       } @else if (supplier()) {
         <div class="detail-card">
-
           <div class="detail-header">
             <div class="avatar-wrap">
               @if (supplier()?.fileUrl) {
-                <img [src]="supplier()!.fileUrl" [alt]="'Foto de ' + supplier()!.name" class="avatar-img" />
+                <img
+                  [src]="supplier()!.fileUrl"
+                  [alt]="'Foto de ' + supplier()!.name"
+                  class="avatar-img"
+                />
               } @else {
                 <div class="avatar-initials" aria-hidden="true">{{ avatarInitials }}</div>
               }
@@ -33,7 +35,7 @@
                 </div>
                 <div class="info-item">
                   <span class="info-label">Celular</span>
-                  <span class="info-value">{{ supplier()!.phone }}</span>
+                  <span class="info-value">{{ supplier()!.phone || 'Não informado' }}</span>
                 </div>
                 <div class="info-item">
                   <span class="info-label">Email</span>
@@ -43,7 +45,7 @@
                   <span class="info-label">Avaliação</span>
                   <span class="info-value rating-value">
                     <i class="bi bi-star-fill" aria-hidden="true"></i>
-                    {{ supplier()!.averageRating ?? 'N/D' }}
+                    {{ supplier()!.averageRating ?? 'Não informado' }}
                   </span>
                 </div>
                 <div class="info-item">
@@ -71,7 +73,7 @@
             @if (isLoadingHistory()) {
               <app-loading-skeleton [variant]="'table'" [count]="5"></app-loading-skeleton>
             } @else if (!history().length) {
-              <p class="empty-hint">Nenhum histórico encontrado.</p>
+              <p class="empty-hint">Nenhum histórico retornado para este fornecedor.</p>
             } @else {
               <div class="history-list">
                 @for (item of history(); track item.id) {
@@ -90,10 +92,22 @@
 
               <div class="pagination-bar">
                 <div class="pagination-controls">
-                  <button class="btn-page" type="button" [disabled]="currentPage() === 1" (click)="onPageChange(currentPage() - 1)" aria-label="Anterior">
+                  <button
+                    class="btn-page"
+                    type="button"
+                    [disabled]="currentPage() === 1"
+                    (click)="onPageChange(currentPage() - 1)"
+                    aria-label="Anterior"
+                  >
                     <i class="bi bi-chevron-left" aria-hidden="true"></i>
                   </button>
-                  <button class="btn-page" type="button" [disabled]="currentPage() >= totalPages" (click)="onPageChange(currentPage() + 1)" aria-label="Próxima">
+                  <button
+                    class="btn-page"
+                    type="button"
+                    [disabled]="currentPage() >= totalPages"
+                    (click)="onPageChange(currentPage() + 1)"
+                    aria-label="Próxima"
+                  >
                     <i class="bi bi-chevron-right" aria-hidden="true"></i>
                   </button>
                 </div>
@@ -104,10 +118,8 @@
           <div class="form-actions">
             <button type="button" class="btn-cancel" (click)="onBack()">CANCELAR</button>
           </div>
-
         </div>
       }
-
     </div>
   </main>
 </div>

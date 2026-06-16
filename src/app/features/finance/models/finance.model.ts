@@ -39,42 +39,6 @@ export interface PlanFilters {
   skip?: number;
 }
 
-export interface FinanceServiceCategory {
-  id: number;
-  name: string;
-}
-
-export interface FinanceServiceProvider {
-  id: number;
-  name: string;
-}
-
-export interface FinanceServiceListItem {
-  id: number;
-  name: string;
-  type: string;
-  category: FinanceServiceCategory;
-  provider: FinanceServiceProvider;
-  price: number;
-  positiveReviews: number;
-  negativeReviews: number;
-  totalReviews: number;
-  isActive: boolean;
-}
-
-export interface FinanceServicesResponse {
-  services: FinanceServiceListItem[];
-  currentPage: number;
-  totalPages: number;
-  totalRecords: number;
-}
-
-export interface FinanceServiceFilters {
-  search?: string;
-  take?: number;
-  skip?: number;
-}
-
 export interface CreatePlanPayload {
   name: string;
   slug: string;

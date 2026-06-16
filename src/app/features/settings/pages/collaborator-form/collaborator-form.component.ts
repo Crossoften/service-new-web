@@ -116,7 +116,7 @@ export class CollaboratorFormComponent implements OnInit {
     const permissions = this.getSelectedPermissions();
 
     if (!permissions.length) {
-      this.toastService.showError('Selecione ao menos uma permissao.');
+      this.toastService.showError('Selecione ao menos uma permissão.');
       return;
     }
 

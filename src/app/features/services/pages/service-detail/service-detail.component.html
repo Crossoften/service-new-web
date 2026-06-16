@@ -3,7 +3,6 @@
 
   <main class="main-content">
     <div class="page-wrapper">
-
       <p class="breadcrumb-label">SERVIÇOS</p>
       <h1 class="page-title">Detalhes do Serviço</h1>
 
@@ -11,7 +10,6 @@
         <app-loading-skeleton [variant]="'card'" [count]="1"></app-loading-skeleton>
       } @else if (service()) {
         <div class="detail-card">
-
           <!-- Service Info Header -->
           <div class="service-header">
             <div class="service-icon-wrap">
@@ -31,19 +29,25 @@
             <div class="service-ratings">
               <div class="rating-chip">
                 <i class="bi bi-star-fill" aria-hidden="true"></i>
-                {{ service()!.totalRatings }}
+                {{ formatReviewTotal(service()!.totalRatings) }}
               </div>
-              <div class="rating-chip" [attr.aria-label]="service()!.positiveReviews + ' avaliações positivas'">
+              <div
+                class="rating-chip"
+                [attr.aria-label]="service()!.positiveReviews + ' avaliações positivas'"
+              >
                 <i class="bi bi-hand-thumbs-up-fill" aria-hidden="true"></i>
-                {{ service()!.positiveReviews }}
+                {{ formatMetric(service()!.positiveReviews, '0') }}
               </div>
-              <div class="rating-chip" [attr.aria-label]="service()!.negativeReviews + ' avaliações negativas'">
+              <div
+                class="rating-chip"
+                [attr.aria-label]="service()!.negativeReviews + ' avaliações negativas'"
+              >
                 <i class="bi bi-hand-thumbs-down-fill" aria-hidden="true"></i>
-                {{ service()!.negativeReviews }}
+                {{ formatMetric(service()!.negativeReviews, '0') }}
               </div>
               <div class="rating-chip">
                 <i class="bi bi-bag-fill" aria-hidden="true"></i>
-                {{ service()!.totalWorks ?? 'N/D' }}
+                {{ formatMetric(service()!.totalWorks) }}
               </div>
             </div>
             <span
@@ -67,7 +71,7 @@
             @if (isLoadingClients()) {
               <app-loading-skeleton [variant]="'table'" [count]="5"></app-loading-skeleton>
             } @else if (!clients().length) {
-              <p class="empty-hint">Nenhum cliente encontrado.</p>
+              <p class="empty-hint">Nenhum cliente retornado para este serviço.</p>
             } @else {
               <div class="table-wrapper">
                 <table class="bookings-table" aria-label="Clientes do serviço">
@@ -95,10 +99,22 @@
               <div class="pagination-bar">
                 <span class="pagination-info">{{ paginationInfo }}</span>
                 <div class="pagination-controls">
-                  <button class="btn-page" type="button" [disabled]="currentPage() === 1" (click)="onPageChange(currentPage() - 1)" aria-label="Anterior">
+                  <button
+                    class="btn-page"
+                    type="button"
+                    [disabled]="currentPage() === 1"
+                    (click)="onPageChange(currentPage() - 1)"
+                    aria-label="Anterior"
+                  >
                     <i class="bi bi-chevron-left" aria-hidden="true"></i>
                   </button>
-                  <button class="btn-page" type="button" [disabled]="currentPage() >= totalPages" (click)="onPageChange(currentPage() + 1)" aria-label="Próxima">
+                  <button
+                    class="btn-page"
+                    type="button"
+                    [disabled]="currentPage() >= totalPages"
+                    (click)="onPageChange(currentPage() + 1)"
+                    aria-label="Próxima"
+                  >
                     <i class="bi bi-chevron-right" aria-hidden="true"></i>
                   </button>
                 </div>
@@ -110,10 +126,8 @@
           <div class="form-actions">
             <button type="button" class="btn-cancel" (click)="onBack()">VOLTAR</button>
           </div>
-
         </div>
       }
-
     </div>
   </main>
 </div>

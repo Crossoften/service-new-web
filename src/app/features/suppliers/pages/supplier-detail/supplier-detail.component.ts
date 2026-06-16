@@ -48,17 +48,19 @@ export class SupplierDetailComponent implements OnInit {
 
   loadHistory(): void {
     this.isLoadingHistory.set(true);
-    this.suppliersService.getSupplierHistory(Number(this.id), {
-      take: this.pageSize,
-      skip: this.currentPage(),
-    }).subscribe({
-      next: (res) => {
-        this.history.set(res.history);
-        this.historyTotal.set(res.count);
-        this.isLoadingHistory.set(false);
-      },
-      error: () => this.isLoadingHistory.set(false),
-    });
+    this.suppliersService
+      .getSupplierHistory(Number(this.id), {
+        take: this.pageSize,
+        skip: this.currentPage(),
+      })
+      .subscribe({
+        next: (res) => {
+          this.history.set(res.history);
+          this.historyTotal.set(res.count);
+          this.isLoadingHistory.set(false);
+        },
+        error: () => this.isLoadingHistory.set(false),
+      });
   }
 
   onPageChange(page: number): void {
@@ -81,7 +83,7 @@ export class SupplierDetailComponent implements OnInit {
 
   formatCurrency(value: number | null): string {
     if (value == null) {
-      return 'N/D';
+      return 'Não informado';
     }
 
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -89,17 +91,23 @@ export class SupplierDetailComponent implements OnInit {
 
   getStatusLabel(status: string): string {
     switch (status) {
-      case 'Active': return 'Ativo';
-      case 'Pending': return 'Pendente';
-      default: return 'Inativo';
+      case 'Active':
+        return 'Ativo';
+      case 'Pending':
+        return 'Pendente';
+      default:
+        return 'Inativo';
     }
   }
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'Active': return 'badge-active';
-      case 'Pending': return 'badge-pending';
-      default: return 'badge-inactive';
+      case 'Active':
+        return 'badge-active';
+      case 'Pending':
+        return 'badge-pending';
+      default:
+        return 'badge-inactive';
     }
   }
 

@@ -112,28 +112,40 @@ export class UsersListComponent implements OnInit, OnDestroy {
 
   getStatusLabel(status: AdminUserStatus): string {
     switch (status) {
-      case 'Active': return 'Ativo';
-      case 'Pending': return 'Pendente';
-      default: return 'Inativo';
+      case 'Active':
+        return 'Ativo';
+      case 'Pending':
+        return 'Pendente';
+      default:
+        return 'Inativo';
     }
   }
 
   getStatusClass(status: AdminUserStatus): string {
     switch (status) {
-      case 'Active': return 'badge-active';
-      case 'Pending': return 'badge-pending';
-      default: return 'badge-inactive';
+      case 'Active':
+        return 'badge-active';
+      case 'Pending':
+        return 'badge-pending';
+      default:
+        return 'badge-inactive';
     }
   }
 
   getProfileTypeLabel(profileType: AdminUserProfileType): string {
     switch (profileType) {
-      case 'Client': return 'Cliente';
-      case 'Supplier': return 'Fornecedor';
-      case 'Influencer': return 'Influencer';
-      case 'Partner': return 'Parceiro';
-      case 'Delivery': return 'Entregador';
-      default: return 'N/D';
+      case 'Client':
+        return 'Cliente';
+      case 'Supplier':
+        return 'Fornecedor';
+      case 'Influencer':
+        return 'Influencer';
+      case 'Partner':
+        return 'Parceiro';
+      case 'Delivery':
+        return 'Entregador';
+      default:
+        return 'Não informado';
     }
   }
 }

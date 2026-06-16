@@ -40,7 +40,7 @@ export class UserDetailComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: () => {
-        this.toastService.showError('Erro ao carregar usuario.');
+        this.toastService.showError('Erro ao carregar usuário.');
         this.isLoading.set(false);
       },
     });
@@ -56,9 +56,7 @@ export class UserDetailComponent implements OnInit {
     return {
       ...loadedUser,
       profileType:
-        loadedUser.profileType !== 'Unknown'
-          ? loadedUser.profileType
-          : existingUser.profileType,
+        loadedUser.profileType !== 'Unknown' ? loadedUser.profileType : existingUser.profileType,
       birthDate: loadedUser.birthDate ?? existingUser.birthDate,
     };
   }
@@ -97,18 +95,18 @@ export class UserDetailComponent implements OnInit {
       case 'Delivery':
         return 'Entregador';
       default:
-        return 'N/D';
+        return 'Não informado';
     }
   }
 
   formatBirthDate(value: string | null | undefined): string {
     if (!value) {
-      return 'N/D';
+      return 'Não informado';
     }
 
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
-      return 'N/D';
+      return 'Não informado';
     }
 
     return date.toLocaleDateString('pt-BR', { timeZone: 'UTC' });

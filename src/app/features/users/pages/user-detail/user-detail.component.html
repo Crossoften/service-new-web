@@ -13,7 +13,11 @@
           <div class="detail-header">
             <div class="avatar-wrap">
               @if (user()?.fileUrl) {
-                <img [src]="user()!.fileUrl!" [alt]="'Foto de ' + user()!.name" class="avatar-img" />
+                <img
+                  [src]="user()!.fileUrl!"
+                  [alt]="'Foto de ' + user()!.name"
+                  class="avatar-img"
+                />
               } @else {
                 <div class="avatar-initials" aria-hidden="true">{{ avatarInitials }}</div>
               }
@@ -34,14 +38,13 @@
                   {{ getStatusLabel(user()!.status) }}
                 </span>
               </div>
-
-              </div>
+            </div>
           </div>
 
           <div class="info-grid">
             <div class="info-item">
               <span class="info-label">Serviços abertos</span>
-              <strong>{{ user()?.openServices ?? 0 }}</strong>
+              <strong>{{ user()?.openServices ?? 'Não informado' }}</strong>
             </div>
             <div class="info-item">
               <span class="info-label">Tipo</span>
@@ -49,16 +52,18 @@
             </div>
             <div class="info-item">
               <span class="info-label">Celular</span>
-              <strong>{{ user()?.phone }}</strong>
+              <strong>{{ user()?.phone || 'Não informado' }}</strong>
             </div>
             <div class="info-item">
               <span class="info-label">Email</span>
               <strong>{{ user()?.email }}</strong>
             </div>
-            <div class="info-item">
-              <span class="info-label">Data de nascimento</span>
-              <strong>{{ formatBirthDate(user()?.birthDate) }}</strong>
-            </div>
+            @if (user()?.birthDate) {
+              <div class="info-item">
+                <span class="info-label">Data de nascimento</span>
+                <strong>{{ formatBirthDate(user()?.birthDate) }}</strong>
+              </div>
+            }
           </div>
 
           <div class="form-actions">

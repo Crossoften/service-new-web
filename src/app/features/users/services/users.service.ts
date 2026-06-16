@@ -17,7 +17,9 @@ import {
 export class UsersService {
   constructor(private readonly apiService: ApiService) {}
 
-  getUsers(params: AdminUserListParams): Observable<{ users: AdminUser[]; pages: number; count: number }> {
+  getUsers(
+    params: AdminUserListParams
+  ): Observable<{ users: AdminUser[]; pages: number; count: number }> {
     const query: Record<string, string | number> = {
       take: params.take ?? 10,
     };
@@ -25,15 +27,13 @@ export class UsersService {
     if (params.search) query['search'] = params.search;
     if (params.status) query['status'] = params.status;
 
-    return this.apiService
-      .get<AdminUserApiListResponse>('/v1/admin-users', query)
-      .pipe(
-        map((res) => ({
-          users: res.users.map((u) => this.mapUserFromList(u)),
-          pages: res.totalPages,
-          count: res.totalRecords,
-        }))
-      );
+    return this.apiService.get<AdminUserApiListResponse>('/v1/admin-users', query).pipe(
+      map((res) => ({
+        users: res.users.map((u) => this.mapUserFromList(u)),
+        pages: res.totalPages,
+        count: res.totalRecords,
+      }))
+    );
   }
 
   getUserById(id: number): Observable<AdminUser> {
@@ -47,12 +47,12 @@ export class UsersService {
       id: item.id,
       name: item.name,
       email: item.email,
-      phone: item.phone || '-',
+      phone: item.phone || null,
       code: `#${String(item.id).padStart(3, '0')}`,
       role: 'User' as AdminUserRole,
       profileType: this.mapProfileType(item.profileType),
       status: this.mapStatus(item.status),
-      openServices: item.openServices ?? 0,
+      openServices: item.openServices ?? null,
       birthDate: item.birthDate ?? null,
       fileUrl: item.fileUrl || null,
       fileKey: null,
@@ -66,12 +66,12 @@ export class UsersService {
       id: item.id,
       name: item.name,
       email: item.email,
-      phone: item.phone || '-',
+      phone: item.phone || null,
       code: `#${String(item.id).padStart(3, '0')}`,
       role: 'User' as AdminUserRole,
       profileType: this.mapProfileType(item.profileType),
       status: this.mapStatus(item.status),
-      openServices: item.openServices ?? 0,
+      openServices: item.openServices ?? null,
       birthDate: item.birthDate ?? null,
       fileUrl: item.fileUrl || null,
       fileKey: item.fileKey || null,

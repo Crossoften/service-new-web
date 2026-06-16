@@ -3,8 +3,6 @@ import { Observable } from 'rxjs';
 import { ApiService } from '@core/services/api.service';
 import {
   CreatePlanPayload,
-  FinanceServiceFilters,
-  FinanceServicesResponse,
   Plan,
   PlanFilters,
   PlansResponse,
@@ -19,13 +17,6 @@ export class FinanceService {
 
   getPlatformSettings(): Observable<PlatformSettings> {
     return this.apiService.get<PlatformSettings>('/v1/admin-settings/platform');
-  }
-
-  getFinanceServices(filters: FinanceServiceFilters = {}): Observable<FinanceServicesResponse> {
-    return this.apiService.get<FinanceServicesResponse>(
-      '/v1/admin-services',
-      this.toQueryParams(filters)
-    );
   }
 
   updatePlatformSettings(payload: UpdatePlatformSettingsPayload): Observable<PlatformSettings> {

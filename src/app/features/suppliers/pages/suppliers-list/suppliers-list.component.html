@@ -3,16 +3,27 @@
 
   <main class="main-content">
     <div class="page-wrapper">
-
       <p class="breadcrumb-label">USUÁRIOS</p>
       <h1 class="page-title">Fornecedores</h1>
 
       <div class="type-tabs" role="tablist" aria-label="Tipo de usuário">
-        <button class="type-tab" role="tab" aria-selected="false" type="button" (click)="goToUsers()">
+        <button
+          class="type-tab"
+          role="tab"
+          aria-selected="false"
+          type="button"
+          (click)="goToUsers()"
+        >
           <i class="bi bi-people" aria-hidden="true"></i>
           Usuários
         </button>
-        <button class="type-tab" role="tab" aria-selected="false" type="button" (click)="goToInfluencers()">
+        <button
+          class="type-tab"
+          role="tab"
+          aria-selected="false"
+          type="button"
+          (click)="goToInfluencers()"
+        >
           <i class="bi bi-star" aria-hidden="true"></i>
           Influencers
         </button>
@@ -78,11 +89,11 @@
                 >
                   <td class="td-name">{{ sup.name }}</td>
                   <td>{{ sup.email }}</td>
-                  <td>{{ sup.phone }}</td>
+                  <td>{{ sup.phone || 'Não informado' }}</td>
                   <td>{{ sup.totalServices }}</td>
                   <td>
                     <span class="ranking-badge">
-                      {{ sup.ranking != null ? '#' + sup.ranking : 'N/D' }}
+                      {{ sup.ranking != null ? '#' + sup.ranking : 'Não informado' }}
                     </span>
                   </td>
                   <td>
@@ -143,7 +154,6 @@
           </div>
         </div>
       }
-
     </div>
   </main>
 </div>

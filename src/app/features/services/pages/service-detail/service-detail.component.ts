@@ -48,17 +48,19 @@ export class ServiceDetailComponent implements OnInit {
 
   loadClients(): void {
     this.isLoadingClients.set(true);
-    this.servicesService.getServiceClients(Number(this.id), {
-      take: this.pageSize,
-      skip: this.currentPage(),
-    }).subscribe({
-      next: (res) => {
-        this.clients.set(res.clients);
-        this.clientsTotal.set(res.count);
-        this.isLoadingClients.set(false);
-      },
-      error: () => this.isLoadingClients.set(false),
-    });
+    this.servicesService
+      .getServiceClients(Number(this.id), {
+        take: this.pageSize,
+        skip: this.currentPage(),
+      })
+      .subscribe({
+        next: (res) => {
+          this.clients.set(res.clients);
+          this.clientsTotal.set(res.count);
+          this.isLoadingClients.set(false);
+        },
+        error: () => this.isLoadingClients.set(false),
+      });
   }
 
   onPageChange(page: number): void {
@@ -80,23 +82,38 @@ export class ServiceDetailComponent implements OnInit {
 
   formatCurrency(value: number | null): string {
     if (value == null) {
-      return 'N/D';
+      return 'Não informado';
     }
 
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
+  formatMetric(value: number | null, emptyLabel = 'Não informado'): string {
+    return value == null ? emptyLabel : String(value);
+  }
+
+  formatReviewTotal(value: number | null): string {
+    if (value == null) {
+      return 'Não informado';
+    }
+
+    return value === 0 ? 'Sem avaliações' : String(value);
+  }
+
   formatDate(str: string): string {
-    if (!str) return '-';
+    if (!str) return 'Não informado';
     const [y, m, d] = str.slice(0, 10).split('-');
     return `${d}/${m}/${y}`;
   }
 
   getStatusLabel(status: string): string {
     switch (status) {
-      case 'Active': return 'Ativo';
-      case 'Pending': return 'Pendente';
-      default: return 'Inativo';
+      case 'Active':
+        return 'Ativo';
+      case 'Pending':
+        return 'Pendente';
+      default:
+        return 'Inativo';
     }
   }
 

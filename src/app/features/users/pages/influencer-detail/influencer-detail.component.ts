@@ -50,23 +50,33 @@ export class InfluencerDetailComponent implements OnInit {
   }
 
   formatCurrency(value: number | null): string {
-    if (value == null) return 'N/D';
+    if (value == null) return 'Não informado';
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  formatCount(value: number | null): string {
+    return value == null ? 'Não informado' : String(value);
   }
 
   getStatusLabel(status: string): string {
     switch (status) {
-      case 'Active': return 'Ativo';
-      case 'Pending': return 'Pendente';
-      default: return 'Inativo';
+      case 'Active':
+        return 'Ativo';
+      case 'Pending':
+        return 'Pendente';
+      default:
+        return 'Inativo';
     }
   }
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'Active': return 'badge-active';
-      case 'Pending': return 'badge-pending';
-      default: return 'badge-inactive';
+      case 'Active':
+        return 'badge-active';
+      case 'Pending':
+        return 'badge-pending';
+      default:
+        return 'badge-inactive';
     }
   }
 

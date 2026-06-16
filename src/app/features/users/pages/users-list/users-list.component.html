@@ -105,8 +105,8 @@
                     </span>
                   </td>
                   <td data-label="Email">{{ user.email }}</td>
-                  <td data-label="Celular">{{ user.phone }}</td>
-                  <td data-label="Serviços">{{ user.openServices }}</td>
+                  <td data-label="Celular">{{ user.phone || 'Não informado' }}</td>
+                  <td data-label="Serviços">{{ user.openServices ?? 'Não informado' }}</td>
                   <td data-label="Status">
                     <span
                       class="status-badge"

@@ -3,7 +3,6 @@
 
   <main class="main-content">
     <div class="page-wrapper">
-
       <p class="breadcrumb-label">USUÁRIOS</p>
       <h1 class="page-title">Influencers</h1>
 
@@ -11,11 +10,14 @@
         <app-loading-skeleton [variant]="'card'" [count]="1"></app-loading-skeleton>
       } @else if (influencer()) {
         <div class="detail-card">
-
           <div class="detail-header">
             <div class="avatar-wrap">
               @if (influencer()?.fileUrl) {
-                <img [src]="influencer()!.fileUrl" [alt]="'Foto de ' + influencer()!.name" class="avatar-img" />
+                <img
+                  [src]="influencer()!.fileUrl"
+                  [alt]="'Foto de ' + influencer()!.name"
+                  class="avatar-img"
+                />
               } @else {
                 <div class="avatar-initials" aria-hidden="true">{{ avatarInitials }}</div>
               }
@@ -29,7 +31,7 @@
                 </div>
                 <div class="info-item">
                   <span class="info-label">Celular</span>
-                  <span class="info-value">{{ influencer()!.phone }}</span>
+                  <span class="info-value">{{ influencer()!.phone || 'Não informado' }}</span>
                 </div>
                 <div class="info-item">
                   <span class="info-label">Email</span>
@@ -61,19 +63,25 @@
               </div>
               <div class="referral-stat">
                 <i class="bi bi-currency-dollar stat-icon" aria-hidden="true"></i>
-                <span class="stat-label">Total de valores da plataforma</span>
-                <span class="stat-value">{{ formatCurrency(influencer()!.stats.totalPlatformValue) }}</span>
+                <span class="stat-label">Indicações pagantes</span>
+                <span class="stat-value">{{ formatCount(influencer()!.stats.totalPaying) }}</span>
               </div>
               <div class="referral-stat">
                 <i class="bi bi-cash-coin stat-icon" aria-hidden="true"></i>
                 <span class="stat-label">Comissão acumulada</span>
-                <span class="stat-value">{{ formatCurrency(influencer()!.stats.accumulatedCommission) }}</span>
+                <span class="stat-value">{{
+                  formatCurrency(influencer()!.stats.accumulatedCommission)
+                }}</span>
               </div>
               <div class="referral-stat">
                 <i class="bi bi-trophy stat-icon" aria-hidden="true"></i>
                 <span class="stat-label">Posição no ranking</span>
                 <span class="stat-value">
-                  {{ influencer()!.stats.rankingPosition != null ? '#' + influencer()!.stats.rankingPosition : 'N/D' }}
+                  {{
+                    influencer()!.stats.rankingPosition != null
+                      ? '#' + influencer()!.stats.rankingPosition
+                      : 'Não informado'
+                  }}
                 </span>
               </div>
             </div>
@@ -82,10 +90,8 @@
           <div class="form-actions">
             <button type="button" class="btn-cancel" (click)="onBack()">CANCELAR</button>
           </div>
-
         </div>
       }
-
     </div>
   </main>
 </div>

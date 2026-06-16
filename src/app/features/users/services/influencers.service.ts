@@ -15,7 +15,9 @@ import {
 export class InfluencersService {
   constructor(private readonly apiService: ApiService) {}
 
-  getInfluencers(params: AdminInfluencerListParams): Observable<{ influencers: AdminInfluencer[]; pages: number; count: number }> {
+  getInfluencers(
+    params: AdminInfluencerListParams
+  ): Observable<{ influencers: AdminInfluencer[]; pages: number; count: number }> {
     const query: Record<string, string | number> = {
       take: params.take ?? 10,
     };
@@ -23,15 +25,13 @@ export class InfluencersService {
     if (params.search) query['search'] = params.search;
     if (params.status) query['status'] = params.status;
 
-    return this.apiService
-      .get<AdminInfluencerApiListResponse>('/v1/admin-influencers', query)
-      .pipe(
-        map((res) => ({
-          influencers: res.influencers.map((i) => this.mapInfluencerFromList(i)),
-          pages: res.totalPages,
-          count: res.totalRecords,
-        }))
-      );
+    return this.apiService.get<AdminInfluencerApiListResponse>('/v1/admin-influencers', query).pipe(
+      map((res) => ({
+        influencers: res.influencers.map((i) => this.mapInfluencerFromList(i)),
+        pages: res.totalPages,
+        count: res.totalRecords,
+      }))
+    );
   }
 
   getInfluencerById(id: number): Observable<AdminInfluencer> {
@@ -45,7 +45,7 @@ export class InfluencersService {
       id: item.id,
       name: item.name,
       email: item.email,
-      phone: item.phone || '-',
+      phone: item.phone || null,
       code: `#${String(item.id).padStart(3, '0')}`,
       status: this.mapStatus(item.status),
       fileUrl: item.fileUrl || null,
@@ -56,10 +56,9 @@ export class InfluencersService {
       effectiveCommissionRate: null,
       stats: {
         totalReferrals: item.totalReferrals ?? 0,
-        totalPlatformValue: null,
+        totalPaying: null,
         accumulatedCommission: null,
         rankingPosition: item.ranking ?? null,
-        downloads: null,
       },
       createdAt: '',
       updatedAt: '',
@@ -71,7 +70,7 @@ export class InfluencersService {
       id: item.id,
       name: item.name,
       email: item.email,
-      phone: item.phone || '-',
+      phone: item.phone || null,
       code: `#${String(item.id).padStart(3, '0')}`,
       status: this.mapStatus(item.status),
       fileUrl: item.fileUrl || null,
@@ -82,10 +81,9 @@ export class InfluencersService {
       effectiveCommissionRate: item.effectiveCommissionRate ?? null,
       stats: {
         totalReferrals: item.stats?.totalReferrals ?? 0,
-        totalPlatformValue: item.stats?.totalPaying ?? null,
+        totalPaying: item.stats?.totalPaying ?? null,
         accumulatedCommission: item.stats?.accumulatedCommission ?? null,
         rankingPosition: item.stats?.rankingPosition ?? null,
-        downloads: null,
       },
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,

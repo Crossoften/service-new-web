@@ -4,13 +4,13 @@ export interface AdminInfluencerListItem {
   id: number;
   name: string;
   email: string;
-  phone: string;
+  phone: string | null;
   code: string;
   status: AdminInfluencerStatus;
   fileUrl: string | null;
   fileKey: string | null;
   totalReferrals: number;
-  totalPlatformValue: number | null;
+  totalPaying: number | null;
   accumulatedCommission: number | null;
   rankingPosition: number | null;
   createdAt: string;
@@ -19,17 +19,16 @@ export interface AdminInfluencerListItem {
 
 export interface AdminInfluencerStats {
   totalReferrals: number;
-  totalPlatformValue: number | null;
+  totalPaying: number | null;
   accumulatedCommission: number | null;
   rankingPosition: number | null;
-  downloads: number | null;
 }
 
 export interface AdminInfluencer {
   id: number;
   name: string;
   email: string;
-  phone: string;
+  phone: string | null;
   code: string;
   status: AdminInfluencerStatus;
   fileUrl: string | null;

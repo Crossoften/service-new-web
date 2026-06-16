@@ -3,12 +3,17 @@
 
   <main class="main-content">
     <div class="page-wrapper">
-
       <p class="breadcrumb-label">USUÁRIOS</p>
       <h1 class="page-title">Influencers</h1>
 
       <div class="type-tabs" role="tablist" aria-label="Tipo de usuário">
-        <button class="type-tab" role="tab" aria-selected="false" type="button" (click)="goToUsers()">
+        <button
+          class="type-tab"
+          role="tab"
+          aria-selected="false"
+          type="button"
+          (click)="goToUsers()"
+        >
           <i class="bi bi-people" aria-hidden="true"></i>
           Usuários
         </button>
@@ -16,7 +21,13 @@
           <i class="bi bi-star" aria-hidden="true"></i>
           Influencers
         </button>
-        <button class="type-tab" role="tab" aria-selected="false" type="button" (click)="goToSuppliers()">
+        <button
+          class="type-tab"
+          role="tab"
+          aria-selected="false"
+          type="button"
+          (click)="goToSuppliers()"
+        >
           <i class="bi bi-building" aria-hidden="true"></i>
           Fornecedores
         </button>
@@ -79,18 +90,22 @@
                 >
                   <td class="td-name">{{ inf.name }}</td>
                   <td>{{ inf.email }}</td>
-                  <td>{{ inf.phone }}</td>
+                  <td>{{ inf.phone || 'Não informado' }}</td>
                   <td>{{ inf.stats.totalReferrals }}</td>
                   <td>
                     @if (inf.stats.accumulatedCommission != null) {
                       {{ inf.stats.accumulatedCommission | currency: 'BRL' : 'symbol' : '1.2-2' }}
                     } @else {
-                      N/D
+                      Não informado
                     }
                   </td>
                   <td>
                     <span class="ranking-badge">
-                      {{ inf.stats.rankingPosition != null ? '#' + inf.stats.rankingPosition : 'N/D' }}
+                      {{
+                        inf.stats.rankingPosition != null
+                          ? '#' + inf.stats.rankingPosition
+                          : 'Não informado'
+                      }}
                     </span>
                   </td>
                   <td>
@@ -151,7 +166,6 @@
           </div>
         </div>
       }
-
     </div>
   </main>
 </div>

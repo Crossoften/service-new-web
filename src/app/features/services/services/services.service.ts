@@ -20,7 +20,9 @@ import {
 export class ServicesService {
   constructor(private readonly apiService: ApiService) {}
 
-  getServices(params: AdminServiceListParams): Observable<{ services: AdminService[]; pages: number; count: number }> {
+  getServices(
+    params: AdminServiceListParams
+  ): Observable<{ services: AdminService[]; pages: number; count: number }> {
     const query: Record<string, string | number | boolean> = {
       take: params.take ?? 10,
     };
@@ -32,15 +34,13 @@ export class ServicesService {
     if (params.type) query['type'] = params.type;
     if (params.categoryId) query['categoryId'] = params.categoryId;
 
-    return this.apiService
-      .get<AdminServiceApiListResponse>('/v1/admin-services', query)
-      .pipe(
-        map((res) => ({
-          services: res.services.map((s) => this.mapServiceFromList(s)),
-          pages: res.totalPages,
-          count: res.totalRecords,
-        }))
-      );
+    return this.apiService.get<AdminServiceApiListResponse>('/v1/admin-services', query).pipe(
+      map((res) => ({
+        services: res.services.map((s) => this.mapServiceFromList(s)),
+        pages: res.totalPages,
+        count: res.totalRecords,
+      }))
+    );
   }
 
   getServiceById(id: number): Observable<AdminService> {
@@ -49,7 +49,10 @@ export class ServicesService {
       .pipe(map((s) => this.mapServiceFromDetail(s)));
   }
 
-  getServiceClients(id: number, params: AdminServiceClientsParams): Observable<AdminServiceClientsResponse> {
+  getServiceClients(
+    id: number,
+    params: AdminServiceClientsParams
+  ): Observable<AdminServiceClientsResponse> {
     const query: Record<string, string | number> = {
       take: params.take ?? 10,
     };
@@ -76,10 +79,10 @@ export class ServicesService {
       provider: item.provider,
       price: item.price,
       averageRating: null,
-      totalRatings: item.totalReviews ?? 0,
-      positiveReviews: item.positiveReviews ?? 0,
-      negativeReviews: item.negativeReviews ?? 0,
-      totalWorks: null,
+      totalRatings: item.totalReviews ?? null,
+      positiveReviews: item.positiveReviews ?? null,
+      negativeReviews: item.negativeReviews ?? null,
+      totalWorks: item.totalWorks ?? null,
       status: item.isActive ? 'Active' : 'Inactive',
       fileUrl: null,
       createdAt: '',
@@ -97,10 +100,10 @@ export class ServicesService {
       provider: item.provider,
       price: item.price,
       averageRating: null,
-      totalRatings: item.totalReviews ?? 0,
-      positiveReviews: item.positiveReviews ?? 0,
-      negativeReviews: item.negativeReviews ?? 0,
-      totalWorks: item.totalWorks ?? 0,
+      totalRatings: item.totalReviews ?? null,
+      positiveReviews: item.positiveReviews ?? null,
+      negativeReviews: item.negativeReviews ?? null,
+      totalWorks: item.totalWorks ?? null,
       status: item.isActive ? 'Active' : 'Inactive',
       fileUrl: item.imageUrl || null,
       createdAt: item.createdAt,

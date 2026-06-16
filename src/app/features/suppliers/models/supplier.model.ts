@@ -4,7 +4,7 @@ export interface AdminProviderListItem {
   id: number;
   name: string;
   email: string;
-  phone: string;
+  phone: string | null;
   code: string;
   status: AdminProviderStatus;
   fileUrl: string | null;
@@ -20,7 +20,7 @@ export interface AdminProvider {
   id: number;
   name: string;
   email: string;
-  phone: string;
+  phone: string | null;
   code: string;
   status: AdminProviderStatus;
   fileUrl: string | null;

@@ -94,10 +94,6 @@ export class CollaboratorsListComponent implements OnInit, OnDestroy {
     this.router.navigate(['/settings/new']);
   }
 
-  openApiTools(): void {
-    this.router.navigate(['/settings/api']);
-  }
-
   editCollaborator(id: number): void {
     this.router.navigate(['/settings', id]);
   }

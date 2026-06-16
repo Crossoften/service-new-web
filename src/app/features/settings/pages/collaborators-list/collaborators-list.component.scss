@@ -55,17 +55,6 @@
   &:hover { background: #6906a8; }
 }
 
-.btn-tools {
-  display: inline-flex; align-items: center; gap: 0.4rem;
-  padding: 0.5rem 1rem;
-  background: transparent; color: #8308d2;
-  border: 1px solid rgba(131, 8, 210, 0.2);
-  border-radius: 0.5rem; font-size: 0.78rem; font-weight: 700;
-  letter-spacing: 0.04em; cursor: pointer; white-space: nowrap;
-
-  &:hover { background: rgba(131, 8, 210, 0.06); }
-}
-
 .table-wrapper {
   background: #fff; border-radius: 1rem;
   box-shadow: 0 2px 16px rgba(0,0,0,0.06);

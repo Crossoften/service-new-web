@@ -12,12 +12,12 @@ export interface AdminUser {
   id: number;
   name: string;
   email: string;
-  phone: string;
+  phone: string | null;
   code: string;
   role: AdminUserRole;
   profileType: AdminUserProfileType;
   status: AdminUserStatus;
-  openServices: number;
+  openServices: number | null;
   birthDate: string | null;
   fileUrl: string | null;
   fileKey: string | null;
@@ -29,12 +29,12 @@ export interface AdminUserListItem {
   id: number;
   name: string;
   email: string;
-  phone: string;
+  phone: string | null;
   code: string;
   role: AdminUserRole;
   profileType: AdminUserProfileType;
   status: AdminUserStatus;
-  openServices: number;
+  openServices: number | null;
   birthDate: string | null;
   fileUrl: string | null;
   fileKey: string | null;
@@ -62,7 +62,7 @@ export interface AdminUserApiListItem {
   email: string;
   phone: string | null;
   status: string;
-  openServices: number;
+  openServices?: number | null;
   birthDate: string | null;
   profileType: string;
   fileUrl: string | null;
@@ -75,7 +75,7 @@ export interface AdminUserApiDetail {
   phone: string | null;
   document: string | null;
   status: string;
-  openServices: number;
+  openServices?: number | null;
   fileUrl: string | null;
   fileKey: string | null;
   birthDate: string | null;

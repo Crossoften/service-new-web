@@ -95,6 +95,30 @@ export class ServicesListComponent implements OnInit, OnDestroy {
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
+  getReviewsLabel(service: AdminService): string {
+    if (service.totalRatings == null) {
+      return 'Não informado';
+    }
+
+    if (service.totalRatings === 0) {
+      return 'Sem avaliações';
+    }
+
+    return String(service.totalRatings);
+  }
+
+  getReviewBreakdownLabel(service: AdminService): string {
+    if (service.positiveReviews == null || service.negativeReviews == null) {
+      return '';
+    }
+
+    return `+${service.positiveReviews} / -${service.negativeReviews}`;
+  }
+
+  getWorksLabel(service: AdminService): string {
+    return service.totalWorks == null ? 'Disponível no detalhe' : String(service.totalWorks);
+  }
+
   navigateToDetail(id: number): void {
     this.router.navigate(['/services', id]);
   }
@@ -105,17 +129,23 @@ export class ServicesListComponent implements OnInit, OnDestroy {
 
   getStatusLabel(status: AdminServiceStatus): string {
     switch (status) {
-      case 'Active': return 'Ativo';
-      case 'Pending': return 'Pendente';
-      default: return 'Inativo';
+      case 'Active':
+        return 'Ativo';
+      case 'Pending':
+        return 'Pendente';
+      default:
+        return 'Inativo';
     }
   }
 
   getStatusClass(status: AdminServiceStatus): string {
     switch (status) {
-      case 'Active': return 'badge-active';
-      case 'Pending': return 'badge-pending';
-      default: return 'badge-inactive';
+      case 'Active':
+        return 'badge-active';
+      case 'Pending':
+        return 'badge-pending';
+      default:
+        return 'badge-inactive';
     }
   }
 }
