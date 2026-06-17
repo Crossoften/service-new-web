@@ -244,6 +244,118 @@
   margin: 0;
 }
 
+.modal-subtitle {
+  margin: 0.35rem 0 0;
+  color: #666;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.rates-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.9fr);
+  gap: 1rem;
+}
+
+.rates-list {
+  display: grid;
+  gap: 0.75rem;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.rate-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  width: 100%;
+  padding: 0.85rem;
+  border: 1px solid #ece4f4;
+  border-radius: 0.85rem;
+  background: #fff;
+  color: #111;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
+
+  &:hover,
+  &--active {
+    border-color: rgba(131, 8, 210, 0.4);
+    background: #fbf7ff;
+    box-shadow: 0 8px 22px rgba(131, 8, 210, 0.08);
+  }
+
+  strong,
+  small {
+    display: block;
+  }
+
+  strong {
+    font-size: 0.9rem;
+  }
+
+  small {
+    margin-top: 0.15rem;
+    color: #666;
+    font-size: 0.76rem;
+  }
+}
+
+.rate-pill {
+  flex-shrink: 0;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: #f0e3fa;
+  color: #5d1395;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.rate-editor {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  min-height: 220px;
+  padding: 1rem;
+  border: 1px solid #f0e3fa;
+  border-radius: 0.9rem;
+  background: #fbf7ff;
+
+  h5 {
+    margin: 0;
+    color: #111;
+    font-size: 1rem;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 0;
+    color: #666;
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  .btn-save {
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+}
+
+.rate-editor--empty {
+  place-items: center;
+  text-align: center;
+
+  i {
+    color: #8308d2;
+    font-size: 2rem;
+  }
+}
+
 .modal-close {
   background: none;
   border: none;
@@ -523,7 +635,8 @@ textarea.form-control {
 }
 
 @media (max-width: 900px) {
-  .plan-form-grid {
+  .plan-form-grid,
+  .rates-layout {
     grid-template-columns: 1fr;
   }
   .toolbar-actions {

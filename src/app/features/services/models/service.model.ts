@@ -24,6 +24,8 @@ export interface AdminServiceListItem {
   category: AdminServiceCategory;
   provider: AdminServiceProvider;
   price: number;
+  platformFeeRate: number | null;
+  platformValueReceived: number | null;
   averageRating: number | null;
   totalRatings: number | null;
   positiveReviews: number | null;
@@ -43,6 +45,8 @@ export interface AdminService {
   category: AdminServiceCategory;
   provider: AdminServiceProvider;
   price: number;
+  platformFeeRate: number | null;
+  platformValueReceived: number | null;
   averageRating: number | null;
   totalRatings: number | null;
   positiveReviews: number | null;
@@ -99,6 +103,10 @@ export interface AdminServiceApiListItem {
   category: AdminServiceCategory;
   provider: AdminServiceProvider;
   price: number;
+  platformFeeRate?: number | null;
+  platformValueReceived?: number | null;
+  platformValue?: number | null;
+  imageUrl?: string | null;
   positiveReviews?: number | null;
   negativeReviews?: number | null;
   totalReviews?: number | null;
@@ -112,6 +120,8 @@ export interface AdminServiceApiDetail {
   type: string;
   registrationCode: string;
   price: number;
+  platformFeeRate?: number | null;
+  platformValueReceived?: number | null;
   description: string;
   imageUrl: string | null;
   isActive: boolean;

@@ -8,10 +8,18 @@
 
       <div class="finance-toolbar" aria-label="Ações financeiras">
         <div class="toolbar-actions">
-          <button class="btn-modal btn-modal--disabled" type="button" disabled>
+          <button
+            class="btn-modal"
+            type="button"
+            (click)="openProviderPercentageModal(providerPercentageModalTpl)"
+          >
             Porcentagem de fornecedores
           </button>
-          <button class="btn-modal btn-modal--disabled" type="button" disabled>
+          <button
+            class="btn-modal"
+            type="button"
+            (click)="openPartnerCommissionModal(partnerCommissionModalTpl)"
+          >
             Comissões de parceiros
           </button>
           <button class="btn-modal" type="button" (click)="openCreatePlanModal(planModalTpl)">
@@ -92,6 +100,200 @@
     </div>
   </main>
 </div>
+
+<ng-template #providerPercentageModalTpl>
+  <div class="modal-card finance-rates-modal">
+    <div class="modal-card-header">
+      <div>
+        <h4 class="modal-title">Porcentagem de fornecedores</h4>
+        <p class="modal-subtitle">
+          Ajuste a taxa da plataforma por categoria. O repasse do fornecedor é calculado
+          automaticamente.
+        </p>
+      </div>
+      <button class="modal-close" type="button" (click)="dismissModal()" aria-label="Fechar">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="modal-card-body">
+      @if (isLoadingServiceCategories()) {
+        <app-loading-skeleton [variant]="'table'" [count]="4"></app-loading-skeleton>
+      } @else if (hasServiceCategoriesError()) {
+        <app-error-state
+          [title]="'Erro ao carregar categorias'"
+          [description]="'Não foi possível carregar as taxas por categoria. Tente novamente.'"
+          (retry)="loadServiceCategories()"
+        ></app-error-state>
+      } @else if (serviceCategories().length > 0) {
+        <div class="rates-layout">
+          <div class="rates-list" aria-label="Categorias de serviço">
+            @for (category of serviceCategories(); track category.id) {
+              <button
+                class="rate-card"
+                type="button"
+                [class.rate-card--active]="selectedServiceCategory()?.id === category.id"
+                (click)="selectServiceCategory(category)"
+              >
+                <span>
+                  <strong>{{ category.name }}</strong>
+                  <small>Fornecedor: {{ formatProviderRate(category) }}</small>
+                </span>
+                <span class="rate-pill"
+                  >Plataforma: {{ formatPercent(category.platformFeeRate) }}</span
+                >
+              </button>
+            }
+          </div>
+
+          @if (selectedServiceCategory()) {
+            <form class="rate-editor" [formGroup]="serviceCategoryRateForm">
+              <h5>{{ selectedServiceCategory()?.name }}</h5>
+              <p>Informe a porcentagem que fica com a plataforma nesta categoria.</p>
+              <div class="form-group">
+                <label class="form-label" for="category-platform-rate"
+                  >Taxa da plataforma (%)</label
+                >
+                <input
+                  id="category-platform-rate"
+                  class="form-control"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  formControlName="platformFeeRate"
+                />
+              </div>
+              <button
+                class="btn-save"
+                type="button"
+                [disabled]="isSavingServiceCategory()"
+                (click)="saveServiceCategoryRate()"
+              >
+                @if (isSavingServiceCategory()) {
+                  <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                }
+                SALVAR PORCENTAGEM
+              </button>
+            </form>
+          } @else {
+            <div class="rate-editor rate-editor--empty">
+              <i class="bi bi-percent" aria-hidden="true"></i>
+              <p>Selecione uma categoria para alterar a taxa da plataforma.</p>
+            </div>
+          }
+        </div>
+      } @else {
+        <app-empty-state
+          [title]="'Nenhuma categoria encontrada'"
+          [description]="'Cadastre categorias de serviço para configurar o repasse por categoria.'"
+          [icon]="'bi-percent'"
+        ></app-empty-state>
+      }
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #partnerCommissionModalTpl>
+  <div class="modal-card finance-rates-modal">
+    <div class="modal-card-header">
+      <div>
+        <h4 class="modal-title">Comissões de parceiros</h4>
+        <p class="modal-subtitle">
+          Defina uma comissão exclusiva para influencers ou mantenha a taxa global.
+        </p>
+      </div>
+      <button class="modal-close" type="button" (click)="dismissModal()" aria-label="Fechar">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="modal-card-body">
+      @if (isLoadingPartnerCommissions()) {
+        <app-loading-skeleton [variant]="'table'" [count]="4"></app-loading-skeleton>
+      } @else if (hasPartnerCommissionsError()) {
+        <app-error-state
+          [title]="'Erro ao carregar parceiros'"
+          [description]="'Não foi possível carregar as comissões dos parceiros. Tente novamente.'"
+          (retry)="loadPartnerCommissions()"
+        ></app-error-state>
+      } @else if (partnerCommissions().length > 0) {
+        <div class="rates-layout">
+          <div class="rates-list" aria-label="Influencers parceiros">
+            @for (partner of partnerCommissions(); track partner.id) {
+              <button
+                class="rate-card"
+                type="button"
+                [class.rate-card--active]="selectedPartnerCommission()?.id === partner.id"
+                (click)="selectPartnerCommission(partner)"
+              >
+                <span>
+                  <strong>{{ partner.name }}</strong>
+                  <small>{{ partner.email }}</small>
+                </span>
+                <span class="rate-pill">{{ partnerCommissionLabel(partner) }}</span>
+              </button>
+            }
+          </div>
+
+          @if (selectedPartnerCommission()) {
+            <form class="rate-editor" [formGroup]="partnerCommissionForm">
+              <h5>{{ selectedPartnerCommission()?.name }}</h5>
+              <p>Envie uma taxa específica ou marque para usar a comissão global da plataforma.</p>
+              <label class="toggle-card" for="partner-use-global-rate">
+                <input
+                  id="partner-use-global-rate"
+                  type="checkbox"
+                  formControlName="useGlobalRate"
+                />
+                <span>
+                  <strong>Usar comissão global</strong>
+                  <small>Remove a taxa exclusiva deste influencer.</small>
+                </span>
+              </label>
+              <div class="form-group">
+                <label class="form-label" for="partner-commission-rate"
+                  >Comissão exclusiva (%)</label
+                >
+                <input
+                  id="partner-commission-rate"
+                  class="form-control"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  formControlName="commissionRate"
+                />
+              </div>
+              <button
+                class="btn-save"
+                type="button"
+                [disabled]="isSavingPartnerCommission()"
+                (click)="savePartnerCommission()"
+              >
+                @if (isSavingPartnerCommission()) {
+                  <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                }
+                SALVAR COMISSÃO
+              </button>
+            </form>
+          } @else {
+            <div class="rate-editor rate-editor--empty">
+              <i class="bi bi-stars" aria-hidden="true"></i>
+              <p>Selecione um parceiro para ajustar a comissão.</p>
+            </div>
+          }
+        </div>
+      } @else {
+        <app-empty-state
+          [title]="'Nenhum parceiro encontrado'"
+          [description]="'Quando houver influencers cadastrados, eles aparecerão nesta lista.'"
+          [icon]="'bi-stars'"
+        ></app-empty-state>
+      }
+    </div>
+  </div>
+</ng-template>
 
 <ng-template #planModalTpl>
   <div class="modal-card">

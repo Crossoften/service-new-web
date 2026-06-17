@@ -51,7 +51,9 @@
   margin-bottom: 1.25rem;
 }
 
-.toolbar-spacer { flex: 1; }
+.toolbar-spacer {
+  flex: 1;
+}
 
 .btn-toggle-view {
   display: inline-flex;
@@ -65,18 +67,55 @@
   font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   letter-spacing: 0.02em;
   white-space: nowrap;
 
-  &:hover { background: #8308d2; color: #fff; }
+  &:hover {
+    background: #8308d2;
+    color: #fff;
+  }
 }
 
-.td-name { font-weight: 600; color: #111; }
+.td-name {
+  font-weight: 600;
+  color: #111;
+}
+
+.service-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  img,
+  .service-image-placeholder {
+    width: 42px;
+    height: 42px;
+    border-radius: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  img {
+    object-fit: cover;
+    border: 1px solid #f0f0f0;
+  }
+}
+
+.service-image-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5ecfb;
+  color: #8308d2;
+}
 
 .clickable-row {
   cursor: pointer;
-  &:hover { background: #faf5ff !important; }
+  &:hover {
+    background: #faf5ff !important;
+  }
 }
 
 .search-box {
@@ -128,7 +167,10 @@
   color: #1a1a1a;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
 
   &:hover {
     background: rgba(131, 8, 210, 0.08);
@@ -286,7 +328,9 @@
   background: transparent;
   color: #1a1a1a;
   cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
   font-size: 1.1rem;
 
   &:hover {
@@ -330,7 +374,9 @@
   background: #fff;
   color: #1a1a1a;
   cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
 
   &:hover:not(:disabled) {
     background: var(--color-primary);

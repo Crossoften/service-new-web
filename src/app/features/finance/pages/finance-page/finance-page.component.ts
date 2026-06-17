@@ -1,4 +1,12 @@
-import { Component, OnDestroy, OnInit, TemplateRef, ViewChild, inject, signal } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  TemplateRef,
+  ViewChild,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
@@ -11,8 +19,10 @@ import { ErrorStateComponent } from '@shared/components/error-state/error-state.
 import { FinanceService } from '../../services/finance.service';
 import {
   CreatePlanPayload,
+  FinanceInfluencerCommission,
   Plan,
   PlatformSettings,
+  ServiceCategoryFinance,
   UpdatePlanPayload,
 } from '../../models/finance.model';
 
@@ -50,6 +60,18 @@ export class FinancePageComponent implements OnInit, OnDestroy {
   readonly hasPlatformError = signal(false);
   readonly isSavingPlatform = signal(false);
 
+  readonly serviceCategories = signal<ServiceCategoryFinance[]>([]);
+  readonly isLoadingServiceCategories = signal(false);
+  readonly hasServiceCategoriesError = signal(false);
+  readonly selectedServiceCategory = signal<ServiceCategoryFinance | null>(null);
+  readonly isSavingServiceCategory = signal(false);
+
+  readonly partnerCommissions = signal<FinanceInfluencerCommission[]>([]);
+  readonly isLoadingPartnerCommissions = signal(false);
+  readonly hasPartnerCommissionsError = signal(false);
+  readonly selectedPartnerCommission = signal<FinanceInfluencerCommission | null>(null);
+  readonly isSavingPartnerCommission = signal(false);
+
   readonly plans = signal<Plan[]>([]);
   readonly totalPlans = signal(0);
   readonly isLoadingPlans = signal(false);
@@ -62,6 +84,8 @@ export class FinancePageComponent implements OnInit, OnDestroy {
   readonly feedbackModal = signal<FeedbackModalState | null>(null);
 
   platformForm!: FormGroup;
+  serviceCategoryRateForm!: FormGroup;
+  partnerCommissionForm!: FormGroup;
   planForm!: FormGroup;
   private activeModalRef: NgbModalRef | null = null;
   private confirmationModalRef: NgbModalRef | null = null;
@@ -81,16 +105,19 @@ export class FinancePageComponent implements OnInit, OnDestroy {
     this.isLoadingPlatform.set(true);
     this.hasPlatformError.set(false);
 
-    this.financeService.getPlatformSettings().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (settings) => {
-        this.platformSettings.set(settings);
-        this.isLoadingPlatform.set(false);
-      },
-      error: () => {
-        this.hasPlatformError.set(true);
-        this.isLoadingPlatform.set(false);
-      },
-    });
+    this.financeService
+      .getPlatformSettings()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (settings) => {
+          this.platformSettings.set(settings);
+          this.isLoadingPlatform.set(false);
+        },
+        error: () => {
+          this.hasPlatformError.set(true);
+          this.isLoadingPlatform.set(false);
+        },
+      });
   }
 
   loadPlans(): void {
@@ -122,6 +149,156 @@ export class FinancePageComponent implements OnInit, OnDestroy {
     });
 
     this.activeModalRef = this.modal.open(templateRef, { centered: true, size: 'md' });
+  }
+
+  openProviderPercentageModal(templateRef: TemplateRef<unknown>): void {
+    this.selectedServiceCategory.set(null);
+    this.loadServiceCategories();
+    this.activeModalRef = this.modal.open(templateRef, { centered: true, size: 'lg' });
+  }
+
+  loadServiceCategories(): void {
+    this.isLoadingServiceCategories.set(true);
+    this.hasServiceCategoriesError.set(false);
+
+    this.financeService
+      .getServiceCategories()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (categories) => {
+          this.serviceCategories.set(categories ?? []);
+          this.isLoadingServiceCategories.set(false);
+        },
+        error: () => {
+          this.hasServiceCategoriesError.set(true);
+          this.isLoadingServiceCategories.set(false);
+        },
+      });
+  }
+
+  selectServiceCategory(category: ServiceCategoryFinance): void {
+    this.selectedServiceCategory.set(category);
+    this.serviceCategoryRateForm = this.fb.group({
+      platformFeeRate: [
+        category.platformFeeRate,
+        [Validators.required, Validators.min(0), Validators.max(100)],
+      ],
+    });
+  }
+
+  saveServiceCategoryRate(): void {
+    const category = this.selectedServiceCategory();
+    if (!category) {
+      return;
+    }
+
+    if (this.serviceCategoryRateForm.invalid) {
+      this.serviceCategoryRateForm.markAllAsTouched();
+      return;
+    }
+
+    this.isSavingServiceCategory.set(true);
+    this.financeService
+      .updateServiceCategoryPlatformFeeRate(category.id, {
+        platformFeeRate: Number(this.serviceCategoryRateForm.value.platformFeeRate),
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (updatedCategory) => {
+          this.serviceCategories.update((categories) =>
+            categories.map((item) => (item.id === updatedCategory.id ? updatedCategory : item))
+          );
+          this.selectedServiceCategory.set(updatedCategory);
+          this.isSavingServiceCategory.set(false);
+          this.showFeedbackModal({
+            title: 'Porcentagem atualizada',
+            description: 'A taxa da plataforma para esta categoria foi salva com sucesso.',
+            icon: 'bi-check2-circle',
+            variant: 'success',
+          });
+        },
+        error: () => this.isSavingServiceCategory.set(false),
+      });
+  }
+
+  openPartnerCommissionModal(templateRef: TemplateRef<unknown>): void {
+    this.selectedPartnerCommission.set(null);
+    this.loadPartnerCommissions();
+    this.activeModalRef = this.modal.open(templateRef, { centered: true, size: 'lg' });
+  }
+
+  loadPartnerCommissions(): void {
+    this.isLoadingPartnerCommissions.set(true);
+    this.hasPartnerCommissionsError.set(false);
+
+    this.financeService
+      .getInfluencerCommissions()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (partners) => {
+          this.partnerCommissions.set(partners ?? []);
+          this.isLoadingPartnerCommissions.set(false);
+        },
+        error: () => {
+          this.hasPartnerCommissionsError.set(true);
+          this.isLoadingPartnerCommissions.set(false);
+        },
+      });
+  }
+
+  selectPartnerCommission(partner: FinanceInfluencerCommission): void {
+    this.selectedPartnerCommission.set(partner);
+    this.partnerCommissionForm = this.fb.group({
+      commissionRate: [
+        partner.commissionRate ?? partner.effectiveCommissionRate ?? 0,
+        [Validators.min(0), Validators.max(100)],
+      ],
+      useGlobalRate: [partner.commissionRate == null],
+    });
+  }
+
+  savePartnerCommission(): void {
+    const partner = this.selectedPartnerCommission();
+    if (!partner) {
+      return;
+    }
+
+    if (this.partnerCommissionForm.invalid) {
+      this.partnerCommissionForm.markAllAsTouched();
+      return;
+    }
+
+    const useGlobalRate = Boolean(this.partnerCommissionForm.value.useGlobalRate);
+    const commissionRateValue = Number(this.partnerCommissionForm.value.commissionRate);
+    const commissionRate = useGlobalRate ? null : String(commissionRateValue);
+
+    this.isSavingPartnerCommission.set(true);
+    this.financeService
+      .updateInfluencerCommission(partner.id, { commissionRate })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          const updatedPartner: FinanceInfluencerCommission = {
+            ...partner,
+            commissionRate: useGlobalRate ? null : commissionRateValue,
+            effectiveCommissionRate: useGlobalRate
+              ? partner.effectiveCommissionRate
+              : commissionRateValue,
+          };
+          this.partnerCommissions.update((partners) =>
+            partners.map((item) => (item.id === partner.id ? updatedPartner : item))
+          );
+          this.selectedPartnerCommission.set(updatedPartner);
+          this.isSavingPartnerCommission.set(false);
+          this.showFeedbackModal({
+            title: 'Comissão atualizada',
+            description: 'A comissão do parceiro foi salva com sucesso.',
+            icon: 'bi-check2-circle',
+            variant: 'success',
+          });
+        },
+        error: () => this.isSavingPartnerCommission.set(false),
+      });
   }
 
   savePlatformSettings(): void {
@@ -309,6 +486,22 @@ export class FinancePageComponent implements OnInit, OnDestroy {
     }
 
     return `${value.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`;
+  }
+
+  formatProviderRate(category: ServiceCategoryFinance): string {
+    return this.formatPercent(100 - Number(category.platformFeeRate ?? 0));
+  }
+
+  partnerCommissionLabel(partner: FinanceInfluencerCommission): string {
+    if (partner.commissionRate != null) {
+      return `${this.formatPercent(partner.commissionRate)} exclusiva`;
+    }
+
+    if (partner.effectiveCommissionRate != null) {
+      return `${this.formatPercent(partner.effectiveCommissionRate)} global`;
+    }
+
+    return 'Taxa global';
   }
 
   formatDate(value: string | null | undefined): string {

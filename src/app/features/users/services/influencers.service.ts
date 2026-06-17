@@ -52,8 +52,8 @@ export class InfluencersService {
       fileKey: null,
       birthDate: null,
       referralCode: null,
-      commissionRate: null,
-      effectiveCommissionRate: null,
+      commissionRate: item.commissionRate ?? null,
+      effectiveCommissionRate: item.effectiveCommissionRate ?? null,
       stats: {
         totalReferrals: item.totalReferrals ?? 0,
         totalPaying: null,

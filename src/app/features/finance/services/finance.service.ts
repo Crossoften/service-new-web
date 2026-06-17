@@ -1,14 +1,21 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ApiService } from '@core/services/api.service';
 import {
   CreatePlanPayload,
+  FinanceInfluencerCommission,
+  FinanceInfluencerCommissionApiItem,
+  FinanceInfluencerCommissionApiResponse,
   Plan,
   PlanFilters,
   PlansResponse,
   PlatformSettings,
+  ServiceCategoryFinance,
+  UpdateInfluencerCommissionPayload,
   UpdatePlanPayload,
   UpdatePlatformSettingsPayload,
+  UpdateServiceCategoryPlatformFeePayload,
 } from '../models/finance.model';
 
 @Injectable({ providedIn: 'root' })
@@ -21,6 +28,36 @@ export class FinanceService {
 
   updatePlatformSettings(payload: UpdatePlatformSettingsPayload): Observable<PlatformSettings> {
     return this.apiService.patch<PlatformSettings>('/v1/admin-settings/platform', payload);
+  }
+
+  getServiceCategories(): Observable<ServiceCategoryFinance[]> {
+    return this.apiService.get<ServiceCategoryFinance[]>('/v1/admin-categories/services');
+  }
+
+  updateServiceCategoryPlatformFeeRate(
+    id: number,
+    payload: UpdateServiceCategoryPlatformFeePayload
+  ): Observable<ServiceCategoryFinance> {
+    return this.apiService.patch<ServiceCategoryFinance>(
+      `/v1/admin-categories/services/${id}/platform-fee-rate`,
+      payload
+    );
+  }
+
+  getInfluencerCommissions(): Observable<FinanceInfluencerCommission[]> {
+    return this.apiService
+      .get<FinanceInfluencerCommissionApiResponse>('/v1/admin-influencers', {
+        take: 50,
+        skip: 1,
+      })
+      .pipe(map((res) => res.influencers.map((item) => this.mapInfluencerCommission(item))));
+  }
+
+  updateInfluencerCommission(
+    id: number,
+    payload: UpdateInfluencerCommissionPayload
+  ): Observable<void> {
+    return this.apiService.patch<void>(`/v1/admin-influencers/${id}/commission`, payload);
   }
 
   getPlans(filters: PlanFilters = {}): Observable<PlansResponse> {
@@ -45,6 +82,23 @@ export class FinanceService {
 
   deletePlan(id: number): Observable<{ message?: string }> {
     return this.apiService.delete<{ message?: string }>(`/v1/plans/${id}`);
+  }
+
+  private mapInfluencerCommission(
+    item: FinanceInfluencerCommissionApiItem
+  ): FinanceInfluencerCommission {
+    return {
+      id: item.id,
+      name: item.name,
+      email: item.email,
+      phone: item.phone || null,
+      fileUrl: item.fileUrl || null,
+      totalReferrals: item.totalReferrals ?? 0,
+      rankingPosition: item.ranking ?? null,
+      commissionRate: item.commissionRate ?? null,
+      effectiveCommissionRate: item.effectiveCommissionRate ?? null,
+      status: item.status,
+    };
   }
 
   private toQueryParams(filters: PlanFilters): Record<string, string | number | boolean> {

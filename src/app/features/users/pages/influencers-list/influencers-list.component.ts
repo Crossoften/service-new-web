@@ -53,29 +53,37 @@ export class InfluencersListComponent implements OnInit, OnDestroy {
     this.loadInfluencers();
     this.searchControl.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
-      .subscribe(() => { this.currentPage.set(1); this.loadInfluencers(); });
+      .subscribe(() => {
+        this.currentPage.set(1);
+        this.loadInfluencers();
+      });
   }
 
-  ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   loadInfluencers(): void {
     this.isLoading.set(true);
     this.hasError.set(false);
-    this.influencersService.getInfluencers({
-      take: this.pageSize(),
-      skip: this.currentPage(),
-      search: this.searchControl.value ?? undefined,
-    }).subscribe({
-      next: (result) => {
-        this.influencers.set(result.influencers);
-        this.total.set(result.count);
-        this.isLoading.set(false);
-      },
-      error: () => {
-        this.hasError.set(true);
-        this.isLoading.set(false);
-      },
-    });
+    this.influencersService
+      .getInfluencers({
+        take: this.pageSize(),
+        skip: this.currentPage(),
+        search: this.searchControl.value ?? undefined,
+      })
+      .subscribe({
+        next: (result) => {
+          this.influencers.set(result.influencers);
+          this.total.set(result.count);
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.hasError.set(true);
+          this.isLoading.set(false);
+        },
+      });
   }
 
   onPageChange(page: number): void {
@@ -97,17 +105,35 @@ export class InfluencersListComponent implements OnInit, OnDestroy {
 
   getStatusLabel(status: AdminInfluencerStatus): string {
     switch (status) {
-      case 'Active': return 'Ativo';
-      case 'Pending': return 'Pendente';
-      default: return 'Inativo';
+      case 'Active':
+        return 'Ativo';
+      case 'Pending':
+        return 'Pendente';
+      default:
+        return 'Inativo';
     }
+  }
+
+  getCommissionLabel(inf: AdminInfluencer): string {
+    if (inf.commissionRate != null) {
+      return `${inf.commissionRate.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`;
+    }
+
+    if (inf.effectiveCommissionRate != null) {
+      return `${inf.effectiveCommissionRate.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`;
+    }
+
+    return 'Taxa global';
   }
 
   getStatusClass(status: AdminInfluencerStatus): string {
     switch (status) {
-      case 'Active': return 'badge-active';
-      case 'Pending': return 'badge-pending';
-      default: return 'badge-inactive';
+      case 'Active':
+        return 'badge-active';
+      case 'Pending':
+        return 'badge-pending';
+      default:
+        return 'badge-inactive';
     }
   }
 }

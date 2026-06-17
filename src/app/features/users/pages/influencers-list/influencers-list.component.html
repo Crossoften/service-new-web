@@ -92,13 +92,7 @@
                   <td>{{ inf.email }}</td>
                   <td>{{ inf.phone || 'Não informado' }}</td>
                   <td>{{ inf.stats.totalReferrals }}</td>
-                  <td>
-                    @if (inf.stats.accumulatedCommission != null) {
-                      {{ inf.stats.accumulatedCommission | currency: 'BRL' : 'symbol' : '1.2-2' }}
-                    } @else {
-                      Não informado
-                    }
-                  </td>
+                  <td>{{ getCommissionLabel(inf) }}</td>
                   <td>
                     <span class="ranking-badge">
                       {{

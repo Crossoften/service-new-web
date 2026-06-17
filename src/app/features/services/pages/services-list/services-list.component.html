@@ -66,7 +66,18 @@
                   (keydown.enter)="navigateToDetail(service.id)"
                   [attr.aria-label]="'Abrir detalhes de ' + service.name"
                 >
-                  <td class="td-name" data-label="Serviço">{{ service.name }}</td>
+                  <td class="td-name" data-label="Serviço">
+                    <div class="service-name-cell">
+                      @if (service.fileUrl) {
+                        <img [src]="service.fileUrl" [alt]="'Foto de capa de ' + service.name" />
+                      } @else {
+                        <span class="service-image-placeholder" aria-hidden="true">
+                          <i class="bi bi-grid"></i>
+                        </span>
+                      }
+                      <span>{{ service.name }}</span>
+                    </div>
+                  </td>
                   <td data-label="Categoria">{{ service.category.name }}</td>
                   <td data-label="Prestador">{{ service.provider.name }}</td>
                   <td data-label="Valor">{{ formatPrice(service.price) }}</td>

@@ -64,6 +64,8 @@ export interface AdminInfluencerApiListItem {
   fileUrl: string | null;
   ranking: number;
   totalReferrals: number;
+  commissionRate?: number | null;
+  effectiveCommissionRate?: number | null;
   status: string;
 }
 
