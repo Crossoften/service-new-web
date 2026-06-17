@@ -13,21 +13,6 @@
         <h1>Seja bem vindo(a)!</h1>
         <p>Acesse o portal gerencial com seu e-mail e senha cadastrados.</p>
 
-        <div
-          class="status-chip"
-          [class.up]="apiStatusState() === 'up'"
-          [class.down]="apiStatusState() === 'down'"
-        >
-          <i
-            class="bi"
-            [class.bi-check-circle-fill]="apiStatusState() === 'up'"
-            [class.bi-exclamation-octagon-fill]="apiStatusState() === 'down'"
-            [class.bi-arrow-repeat]="apiStatusState() === 'pending'"
-            aria-hidden="true"
-          ></i>
-          <span>{{ apiStatusMessage() }}</span>
-        </div>
-
         <label for="email">Email</label>
         <div class="input-wrap" [class.invalid]="isFieldInvalid('email')">
           <i class="bi bi-person" aria-hidden="true"></i>
