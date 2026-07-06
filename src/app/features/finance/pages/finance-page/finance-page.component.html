@@ -23,16 +23,16 @@
             Comissões de parceiros
           </button>
           <button class="btn-modal" type="button" (click)="openCreatePlanModal(planModalTpl)">
-            Nova assinatura
+            Novo plano
           </button>
         </div>
       </div>
 
       <section class="finance-section finance-section--plans" aria-labelledby="plans-title">
         <div class="finance-section-header">
-          <h2 id="plans-title">Assinaturas</h2>
+          <h2 id="plans-title">Planos por segmento</h2>
           @if (totalPlans() > 0) {
-            <span>{{ totalPlans() }} assinatura(s)</span>
+            <span>{{ totalPlans() }} plano(s)</span>
           }
         </div>
 
@@ -40,19 +40,20 @@
           <app-loading-skeleton [variant]="'table'" [count]="4"></app-loading-skeleton>
         } @else if (hasPlansError()) {
           <app-error-state
-            [title]="'Erro ao carregar assinaturas'"
-            [description]="'Não foi possível carregar as assinaturas. Tente novamente.'"
+            [title]="'Erro ao carregar planos'"
+            [description]="'Não foi possível carregar os planos. Tente novamente.'"
             (retry)="loadPlans()"
           ></app-error-state>
         } @else if (plans().length > 0) {
           <div class="table-wrapper">
-            <table class="finance-table" aria-label="Lista de assinaturas">
+            <table class="finance-table" aria-label="Lista de planos">
               <thead>
                 <tr>
-                  <th scope="col">Assinatura</th>
-                  <th scope="col">Preço</th>
+                  <th scope="col">Plano</th>
+                  <th scope="col">Segmento</th>
+                  <th scope="col">Valor do plano</th>
                   <th scope="col">Renovação</th>
-                  <th scope="col">Valor mensal</th>
+                  <th scope="col">Equivalente mensal</th>
                   <th scope="col">Status</th>
                   <th scope="col" class="col-actions" aria-label="Ações"></th>
                 </tr>
@@ -60,17 +61,18 @@
               <tbody>
                 @for (plan of plans(); track plan.id) {
                   <tr>
-                    <td class="td-name" data-label="Assinatura">{{ plan.name }}</td>
-                    <td data-label="Preço">{{ formatCurrency(plan.price) }}</td>
+                    <td class="td-name" data-label="Plano">{{ plan.name }}</td>
+                    <td data-label="Segmento">{{ planSegmentLabel(plan) }}</td>
+                    <td data-label="Valor do plano">{{ formatCurrency(plan.price) }}</td>
                     <td data-label="Renovação">{{ formatInterval(plan) }}</td>
-                    <td data-label="Valor mensal">{{ formatCurrency(plan.monthlyPrice) }}</td>
+                    <td data-label="Equivalente mensal">{{ formatCurrency(plan.monthlyPrice) }}</td>
                     <td data-label="Status">{{ planStatusLabel(plan) }}</td>
                     <td class="col-actions">
                       <button
                         class="btn-table-action"
                         type="button"
                         (click)="openEditPlanModal(plan, planModalTpl)"
-                        [attr.aria-label]="'Editar assinatura ' + plan.name"
+                        [attr.aria-label]="'Editar plano ' + plan.name"
                       >
                         <i class="bi bi-pencil" aria-hidden="true"></i>
                       </button>
@@ -79,7 +81,7 @@
                         type="button"
                         (click)="openDeletePlanModal(plan, deletePlanConfirmModalTpl)"
                         [disabled]="isDeletingPlanId() === plan.id"
-                        [attr.aria-label]="'Remover assinatura ' + plan.name"
+                        [attr.aria-label]="'Remover plano ' + plan.name"
                       >
                         <i class="bi bi-trash3" aria-hidden="true"></i>
                       </button>
@@ -91,8 +93,8 @@
           </div>
         } @else {
           <app-empty-state
-            [title]="'Nenhuma assinatura cadastrada'"
-            [description]="'Cadastre uma assinatura para que ela apareça nesta lista.'"
+            [title]="'Nenhum plano por segmento cadastrado'"
+            [description]="'Cadastre um plano global ou vinculado a um segmento para que ele apareça nesta lista.'"
             [icon]="'bi-credit-card'"
           ></app-empty-state>
         }
@@ -200,7 +202,8 @@
       <div>
         <h4 class="modal-title">Comissões de parceiros</h4>
         <p class="modal-subtitle">
-          Defina uma comissão exclusiva para influencers ou mantenha a taxa global.
+          Defina uma comissão exclusiva para influencers ou mantenha a taxa global atual de
+          {{ formatPercent(platformSettings()?.influencerCommissionRate) }}.
         </p>
       </div>
       <button class="modal-close" type="button" (click)="dismissModal()" aria-label="Fechar">
@@ -239,7 +242,10 @@
           @if (selectedPartnerCommission()) {
             <form class="rate-editor" [formGroup]="partnerCommissionForm">
               <h5>{{ selectedPartnerCommission()?.name }}</h5>
-              <p>Envie uma taxa específica ou marque para usar a comissão global da plataforma.</p>
+              <p>
+                Envie uma taxa específica ou marque para usar a comissão global atual de
+                {{ formatPercent(platformSettings()?.influencerCommissionRate) }}.
+              </p>
               <label class="toggle-card" for="partner-use-global-rate">
                 <input
                   id="partner-use-global-rate"
@@ -298,7 +304,7 @@
 <ng-template #planModalTpl>
   <div class="modal-card">
     <div class="modal-card-header">
-      <h4 class="modal-title">{{ selectedPlan() ? 'Editar assinatura' : 'Nova assinatura' }}</h4>
+      <h4 class="modal-title">{{ selectedPlan() ? 'Editar plano' : 'Novo plano' }}</h4>
       <button class="modal-close" type="button" (click)="dismissModal()" aria-label="Fechar">
         <i class="bi bi-x-lg" aria-hidden="true"></i>
       </button>
@@ -307,24 +313,24 @@
     <div class="modal-card-body" [formGroup]="planForm">
       <div class="plan-form-grid">
         <div class="form-group">
-          <label class="form-label" for="plan-name">Nome da assinatura</label>
+          <label class="form-label" for="plan-name">Nome do plano</label>
           <input
             id="plan-name"
             type="text"
             class="form-control"
             formControlName="name"
-            placeholder="Ex.: Assinatura mensal"
+            placeholder="Ex.: Plano mensal"
           />
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="plan-slug">Código da assinatura</label>
+          <label class="form-label" for="plan-slug">Código do plano</label>
           <input
             id="plan-slug"
             type="text"
             class="form-control"
             formControlName="slug"
-            placeholder="Ex.: assinatura-mensal"
+            placeholder="Ex.: plano-mensal"
           />
         </div>
 
@@ -335,12 +341,25 @@
             class="form-control"
             rows="3"
             formControlName="description"
-            placeholder="Descreva o benefício da assinatura"
+            placeholder="Descreva o benefício do plano"
           ></textarea>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="plan-price">Preço</label>
+          <label class="form-label" for="plan-category">Segmento</label>
+          <select id="plan-category" class="form-control" formControlName="categoryId">
+            <option [ngValue]="null">Todos os segmentos</option>
+            @for (category of serviceCategories(); track category.id) {
+              <option [ngValue]="category.id">{{ category.name }}</option>
+            }
+          </select>
+          <small class="form-help">
+            Use “Todos os segmentos” para um plano global, ou selecione uma profissão.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="plan-price">Valor do plano</label>
           <div class="currency-input-wrap currency-input-wrap--wide">
             <span class="currency-sign">R$</span>
             <input
@@ -401,7 +420,7 @@
         <label class="toggle-card" for="plan-is-active">
           <input id="plan-is-active" type="checkbox" formControlName="isActive" />
           <span>
-            <strong>Assinatura ativa</strong>
+            <strong>Plano ativo</strong>
             <small>Disponível para contratação.</small>
           </span>
         </label>
@@ -434,7 +453,7 @@
     </div>
 
     <div class="modal-card-header confirmation-header">
-      <h4 class="modal-title">Confirmar nova assinatura</h4>
+      <h4 class="modal-title">Confirmar novo plano</h4>
       <button
         class="modal-close"
         type="button"
@@ -448,17 +467,21 @@
 
     <div class="modal-card-body confirmation-body">
       <p class="confirmation-text">
-        Revise as informações abaixo antes de cadastrar a assinatura. Ela será cadastrada somente
-        após a confirmação.
+        Revise as informações abaixo antes de cadastrar o plano. Ele será cadastrado somente após a
+        confirmação.
       </p>
 
       <dl class="confirmation-summary">
         <div>
-          <dt>Assinatura</dt>
+          <dt>Plano</dt>
           <dd>{{ pendingPlanPayload()?.name || 'N/D' }}</dd>
         </div>
         <div>
-          <dt>Preço</dt>
+          <dt>Segmento</dt>
+          <dd>{{ planSegmentLabel(pendingPlanPayload()) }}</dd>
+        </div>
+        <div>
+          <dt>Valor do plano</dt>
           <dd>{{ formatCurrency(pendingPlanPayload()?.price) }}</dd>
         </div>
         <div>
@@ -503,7 +526,7 @@
     </div>
 
     <div class="modal-card-header confirmation-header">
-      <h4 class="modal-title">Remover assinatura?</h4>
+      <h4 class="modal-title">Remover plano?</h4>
       <button
         class="modal-close"
         type="button"
@@ -517,17 +540,20 @@
 
     <div class="modal-card-body confirmation-body">
       <p class="confirmation-text">
-        Esta ação removerá a assinatura selecionada. Confira as informações abaixo antes de
-        confirmar.
+        Esta ação removerá o plano selecionado. Confira as informações abaixo antes de confirmar.
       </p>
 
       <dl class="confirmation-summary confirmation-summary--danger">
         <div>
-          <dt>Assinatura</dt>
+          <dt>Plano</dt>
           <dd>{{ planToDelete()?.name || 'N/D' }}</dd>
         </div>
         <div>
-          <dt>Preço</dt>
+          <dt>Segmento</dt>
+          <dd>{{ planSegmentLabel(planToDelete()) }}</dd>
+        </div>
+        <div>
+          <dt>Valor do plano</dt>
           <dd>{{ formatCurrency(planToDelete()?.price) }}</dd>
         </div>
         <div>

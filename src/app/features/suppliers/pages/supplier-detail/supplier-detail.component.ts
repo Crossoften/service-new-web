@@ -52,6 +52,8 @@ export class SupplierDetailComponent implements OnInit {
       .getSupplierHistory(Number(this.id), {
         take: this.pageSize,
         skip: this.currentPage(),
+        sortBy: 'serviceDate',
+        sortDirection: 'desc',
       })
       .subscribe({
         next: (res) => {

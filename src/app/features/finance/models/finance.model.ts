@@ -21,6 +21,7 @@ export interface Plan {
   monthlyPrice: string;
   isActive: boolean;
   sortOrder: number;
+  categoryId?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -49,6 +50,7 @@ export interface CreatePlanPayload {
   bonusMonths?: number;
   isActive?: boolean;
   sortOrder?: number;
+  categoryId?: number | null;
 }
 
 export type UpdatePlanPayload = Partial<CreatePlanPayload>;
@@ -100,5 +102,5 @@ export interface FinanceInfluencerCommissionApiResponse {
 }
 
 export interface UpdateInfluencerCommissionPayload {
-  commissionRate: string | null;
+  commissionRate: number | null;
 }

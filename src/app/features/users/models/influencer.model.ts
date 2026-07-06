@@ -1,4 +1,20 @@
 export type AdminInfluencerStatus = 'Active' | 'Pending' | 'Inactive';
+export type AdminInfluencerSocialNetwork =
+  | 'Instagram'
+  | 'TikTok'
+  | 'YouTube'
+  | 'Facebook'
+  | 'X'
+  | 'Other';
+
+export interface AdminInfluencerSocialMedia {
+  id?: number;
+  network: AdminInfluencerSocialNetwork;
+  url: string;
+  followers: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 export interface AdminInfluencerListItem {
   id: number;
@@ -37,6 +53,7 @@ export interface AdminInfluencer {
   referralCode: string | null;
   commissionRate: number | null;
   effectiveCommissionRate: number | null;
+  socialMedias: AdminInfluencerSocialMedia[];
   stats: AdminInfluencerStats;
   createdAt: string;
   updatedAt: string;
@@ -53,6 +70,8 @@ export interface AdminInfluencerListParams {
   status?: AdminInfluencerStatus;
   take?: number;
   skip?: number;
+  sortBy?: 'name' | 'email' | 'status' | 'createdAt';
+  sortDirection?: 'asc' | 'desc';
 }
 
 // API response interfaces — raw shapes from the real API
@@ -96,6 +115,7 @@ export interface AdminInfluencerApiDetail {
   stats?: AdminInfluencerApiStats;
   commissionRate: number | null;
   effectiveCommissionRate: number | null;
+  socialMedias?: AdminInfluencerSocialMedia[];
   createdAt: string;
   updatedAt: string;
 }

@@ -14,6 +14,9 @@ import {
   PublicTextResponse,
   PublicTextType,
   ResetPasswordRequest,
+  UpdateAddressPayload,
+  UpdateBillingTypePayload,
+  UserAddressResponse,
   VerifyCodeRequest,
 } from '../models/auth.model';
 
@@ -84,7 +87,15 @@ export class AuthApiService {
   }
 
   getMySelf(): Observable<MySelfResponse> {
-    return this.apiService.get<MySelfResponse>('/v1/my-self');
+    return this.apiService.get<MySelfResponse>('/v1/profile/me');
+  }
+
+  updateMyAddress(payload: UpdateAddressPayload): Observable<UserAddressResponse> {
+    return this.apiService.patch<UserAddressResponse>('/v1/profile/me/address', payload);
+  }
+
+  updateMyBillingType(payload: UpdateBillingTypePayload): Observable<MySelfResponse> {
+    return this.apiService.patch<MySelfResponse>('/v1/profile/me/billing-type', payload);
   }
 
   logout(): void {

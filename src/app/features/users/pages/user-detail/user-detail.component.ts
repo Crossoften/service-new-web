@@ -7,6 +7,13 @@ import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/lo
 import { ToastService } from '@core/services/toast.service';
 import { UsersService } from '../../services/users.service';
 import { AdminUser, AdminUserProfileType, AdminUserStatus } from '../../models/user.model';
+import {
+  formatFollowers,
+  formatFullAddress,
+  formatLocation,
+  getBillingTypeLabel,
+  getSocialNetworkLabel,
+} from '../../utils/user-display.utils';
 
 type UserStatus = AdminUserStatus;
 
@@ -111,6 +118,12 @@ export class UserDetailComponent implements OnInit {
 
     return date.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
   }
+
+  getBillingTypeLabel = getBillingTypeLabel;
+  getSocialNetworkLabel = getSocialNetworkLabel;
+  formatFollowers = formatFollowers;
+  formatFullAddress = formatFullAddress;
+  formatLocation = formatLocation;
 
   onBack(): void {
     this.router.navigate(['/users']);

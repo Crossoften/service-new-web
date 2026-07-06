@@ -24,6 +24,8 @@ export class InfluencersService {
     if (params.skip && params.skip > 0) query['skip'] = params.skip;
     if (params.search) query['search'] = params.search;
     if (params.status) query['status'] = params.status;
+    if (params.sortBy) query['sortBy'] = params.sortBy;
+    if (params.sortDirection) query['sortDirection'] = params.sortDirection;
 
     return this.apiService.get<AdminInfluencerApiListResponse>('/v1/admin-influencers', query).pipe(
       map((res) => ({
@@ -54,6 +56,7 @@ export class InfluencersService {
       referralCode: null,
       commissionRate: item.commissionRate ?? null,
       effectiveCommissionRate: item.effectiveCommissionRate ?? null,
+      socialMedias: [],
       stats: {
         totalReferrals: item.totalReferrals ?? 0,
         totalPaying: null,
@@ -79,6 +82,7 @@ export class InfluencersService {
       referralCode: item.referralCode ?? null,
       commissionRate: item.commissionRate ?? null,
       effectiveCommissionRate: item.effectiveCommissionRate ?? null,
+      socialMedias: item.socialMedias ?? [],
       stats: {
         totalReferrals: item.stats?.totalReferrals ?? 0,
         totalPaying: item.stats?.totalPaying ?? null,

@@ -34,12 +34,20 @@ export class SuppliersListComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   readonly searchControl = new FormControl('');
+  readonly statusControl = new FormControl<AdminProviderStatus | ''>('');
   readonly suppliers = signal<AdminProvider[]>([]);
   readonly total = signal(0);
   readonly currentPage = signal(1);
   readonly pageSize = signal(10);
   readonly isLoading = signal(false);
   readonly hasError = signal(false);
+  readonly showFilters = signal(false);
+  readonly statusOptions: Array<{ label: string; value: AdminProviderStatus | '' }> = [
+    { label: 'Todos os status', value: '' },
+    { label: 'Ativos', value: 'Active' },
+    { label: 'Pendentes', value: 'Pending' },
+    { label: 'Inativos', value: 'Inactive' },
+  ];
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
   readonly paginationInfo = computed(() => {
@@ -53,29 +61,45 @@ export class SuppliersListComponent implements OnInit, OnDestroy {
     this.loadSuppliers();
     this.searchControl.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
-      .subscribe(() => { this.currentPage.set(1); this.loadSuppliers(); });
+      .subscribe(() => {
+        this.currentPage.set(1);
+        this.loadSuppliers();
+      });
+
+    this.statusControl.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.currentPage.set(1);
+      this.loadSuppliers();
+    });
   }
 
-  ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   loadSuppliers(): void {
     this.isLoading.set(true);
     this.hasError.set(false);
-    this.suppliersService.getSuppliers({
-      take: this.pageSize(),
-      skip: this.currentPage(),
-      search: this.searchControl.value ?? undefined,
-    }).subscribe({
-      next: (result) => {
-        this.suppliers.set(result.providers);
-        this.total.set(result.count);
-        this.isLoading.set(false);
-      },
-      error: () => {
-        this.hasError.set(true);
-        this.isLoading.set(false);
-      },
-    });
+    this.suppliersService
+      .getSuppliers({
+        take: this.pageSize(),
+        skip: this.currentPage(),
+        search: this.searchControl.value ?? undefined,
+        status: this.statusControl.value || undefined,
+        sortBy: 'createdAt',
+        sortDirection: 'desc',
+      })
+      .subscribe({
+        next: (result) => {
+          this.suppliers.set(result.providers);
+          this.total.set(result.count);
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.hasError.set(true);
+          this.isLoading.set(false);
+        },
+      });
   }
 
   onPageChange(page: number): void {
@@ -95,19 +119,34 @@ export class SuppliersListComponent implements OnInit, OnDestroy {
     this.router.navigate(['/users/influencers']);
   }
 
+  toggleFilters(): void {
+    this.showFilters.update((isOpen) => !isOpen);
+  }
+
+  clearFilters(): void {
+    this.statusControl.setValue('');
+    this.searchControl.setValue('');
+  }
+
   getStatusLabel(status: AdminProviderStatus): string {
     switch (status) {
-      case 'Active': return 'Ativo';
-      case 'Pending': return 'Pendente';
-      default: return 'Inativo';
+      case 'Active':
+        return 'Ativo';
+      case 'Pending':
+        return 'Pendente';
+      default:
+        return 'Inativo';
     }
   }
 
   getStatusClass(status: AdminProviderStatus): string {
     switch (status) {
-      case 'Active': return 'badge-active';
-      case 'Pending': return 'badge-pending';
-      default: return 'badge-inactive';
+      case 'Active':
+        return 'badge-active';
+      case 'Pending':
+        return 'badge-pending';
+      default:
+        return 'badge-inactive';
     }
   }
 }

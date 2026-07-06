@@ -32,14 +32,23 @@ export class InfluencersListComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly influencersService = inject(InfluencersService);
   private readonly destroy$ = new Subject<void>();
+  private lastFilterPointerToggleAt = 0;
 
   readonly searchControl = new FormControl('');
+  readonly statusControl = new FormControl<AdminInfluencerStatus | ''>('');
   readonly influencers = signal<AdminInfluencer[]>([]);
   readonly total = signal(0);
   readonly currentPage = signal(1);
   readonly pageSize = signal(10);
   readonly isLoading = signal(false);
   readonly hasError = signal(false);
+  readonly showFilters = signal(false);
+  readonly statusOptions: Array<{ label: string; value: AdminInfluencerStatus | '' }> = [
+    { label: 'Todos os status', value: '' },
+    { label: 'Ativos', value: 'Active' },
+    { label: 'Pendentes', value: 'Pending' },
+    { label: 'Inativos', value: 'Inactive' },
+  ];
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
   readonly paginationInfo = computed(() => {
@@ -57,6 +66,11 @@ export class InfluencersListComponent implements OnInit, OnDestroy {
         this.currentPage.set(1);
         this.loadInfluencers();
       });
+
+    this.statusControl.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.currentPage.set(1);
+      this.loadInfluencers();
+    });
   }
 
   ngOnDestroy(): void {
@@ -72,6 +86,9 @@ export class InfluencersListComponent implements OnInit, OnDestroy {
         take: this.pageSize(),
         skip: this.currentPage(),
         search: this.searchControl.value ?? undefined,
+        status: this.statusControl.value || undefined,
+        sortBy: 'createdAt',
+        sortDirection: 'desc',
       })
       .subscribe({
         next: (result) => {
@@ -101,6 +118,28 @@ export class InfluencersListComponent implements OnInit, OnDestroy {
 
   goToSuppliers(): void {
     this.router.navigate(['/suppliers']);
+  }
+
+  toggleFilters(): void {
+    this.showFilters.update((isOpen) => !isOpen);
+  }
+
+  toggleFiltersFromPointer(event: PointerEvent): void {
+    event.preventDefault();
+    this.lastFilterPointerToggleAt = Date.now();
+    this.toggleFilters();
+  }
+
+  toggleFiltersFromClick(): void {
+    if (Date.now() - this.lastFilterPointerToggleAt < 400) {
+      return;
+    }
+
+    this.toggleFilters();
+  }
+
+  clearFilters(): void {
+    this.statusControl.setValue('');
   }
 
   getStatusLabel(status: AdminInfluencerStatus): string {

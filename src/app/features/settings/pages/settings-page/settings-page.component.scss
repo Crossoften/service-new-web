@@ -130,6 +130,115 @@
   color: #222;
 }
 
+.profile-socials {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.profile-social-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.85rem;
+  border-radius: 0.8rem;
+  background: #f8f9fc;
+}
+
+.profile-social-card span {
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.profile-social-card strong {
+  color: #111827;
+}
+
+.profile-social-card a {
+  color: #8308d2;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.address-form,
+.billing-form {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #f0e7f7;
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.address-form-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.billing-form h3,
+.address-form-header h3 {
+  margin: 0 0 0.25rem;
+  color: #4c1180;
+  font-size: 1rem;
+}
+
+.billing-form p,
+.address-form-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.82rem;
+}
+
+.billing-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.billing-option {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 46px;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid #eadcf5;
+  border-radius: 0.8rem;
+  background: #fbf8fe;
+  color: #374151;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.billing-option:focus-within {
+  border-color: #8308d2;
+  box-shadow: 0 0 0 3px rgba(131, 8, 210, 0.08);
+}
+
+.billing-option input {
+  accent-color: #8308d2;
+}
+
+.address-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.875rem;
+}
+
+.address-form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: #374151;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .inline-actions {
   display: flex;
   gap: 0.75rem;

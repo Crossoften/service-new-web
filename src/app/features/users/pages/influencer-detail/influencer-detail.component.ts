@@ -7,6 +7,7 @@ import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/lo
 import { ToastService } from '@core/services/toast.service';
 import { InfluencersService } from '../../services/influencers.service';
 import { AdminInfluencer } from '../../models/influencer.model';
+import { formatFollowers, getSocialNetworkLabel } from '../../utils/user-display.utils';
 
 @Component({
   selector: 'app-influencer-detail',
@@ -57,6 +58,34 @@ export class InfluencerDetailComponent implements OnInit {
   formatCount(value: number | null): string {
     return value == null ? 'Não informado' : String(value);
   }
+
+  formatPercent(value: number | null | undefined): string {
+    if (value == null) return 'Não informado';
+    return `${value.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`;
+  }
+
+  getCommissionLabel(influencer: AdminInfluencer): string {
+    if (influencer.commissionRate != null) {
+      return `${this.formatPercent(influencer.commissionRate)} exclusiva`;
+    }
+
+    if (influencer.effectiveCommissionRate != null) {
+      return `${this.formatPercent(influencer.effectiveCommissionRate)} global`;
+    }
+
+    return 'Comissão global';
+  }
+
+  getCommissionHelp(influencer: AdminInfluencer): string {
+    if (influencer.commissionRate != null) {
+      return 'Este influencer possui uma comissão própria, diferente da comissão global da plataforma.';
+    }
+
+    return 'Este influencer usa a comissão global configurada no financeiro da plataforma.';
+  }
+
+  getSocialNetworkLabel = getSocialNetworkLabel;
+  formatFollowers = formatFollowers;
 
   getStatusLabel(status: string): string {
     switch (status) {

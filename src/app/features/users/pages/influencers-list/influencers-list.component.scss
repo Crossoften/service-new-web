@@ -147,6 +147,70 @@
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 
   &:hover { background: rgba(131, 8, 210, 0.08); color: #8308d2; border-color: rgba(131, 8, 210, 0.3); }
+
+  &.btn-filter--active {
+    background: #8308d2;
+    color: #fff;
+    border-color: #8308d2;
+  }
+}
+
+.filters-panel {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  width: fit-content;
+  max-width: 100%;
+  margin: -0.5rem 0 1.25rem;
+  padding: 1rem;
+  border: 1px solid rgba(131, 8, 210, 0.12);
+  border-radius: 0.875rem;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(17, 17, 17, 0.06);
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #555;
+  }
+}
+
+.filter-select {
+  min-width: 180px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #222;
+  font-size: 0.875rem;
+
+  &:focus {
+    outline: none;
+    border-color: #8308d2;
+    box-shadow: 0 0 0 3px rgba(131, 8, 210, 0.08);
+  }
+}
+
+.btn-clear-filters {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #555;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover {
+    border-color: rgba(131, 8, 210, 0.35);
+    color: #8308d2;
+  }
 }
 
 .btn-toggle-view {

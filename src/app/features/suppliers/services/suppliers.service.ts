@@ -29,6 +29,8 @@ export class SuppliersService {
     if (params.skip && params.skip > 0) query['skip'] = params.skip;
     if (params.search) query['search'] = params.search;
     if (params.status) query['status'] = params.status;
+    if (params.sortBy) query['sortBy'] = params.sortBy;
+    if (params.sortDirection) query['sortDirection'] = params.sortDirection;
 
     return this.apiService.get<AdminProviderApiListResponse>('/v1/admin-providers', query).pipe(
       map((res) => ({
@@ -53,6 +55,8 @@ export class SuppliersService {
       take: params.take ?? 10,
     };
     if (params.skip && params.skip > 0) query['skip'] = params.skip;
+    if (params.sortBy) query['sortBy'] = params.sortBy;
+    if (params.sortDirection) query['sortDirection'] = params.sortDirection;
 
     return this.apiService
       .get<AdminProviderHistoryApiResponse>(`/v1/admin-providers/${id}/history`, query)

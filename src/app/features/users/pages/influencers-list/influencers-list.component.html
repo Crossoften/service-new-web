@@ -44,10 +44,39 @@
             aria-label="Buscar influencers"
           />
         </div>
-        <button class="btn-filter" type="button" aria-label="Filtrar">
+        <button
+          class="btn-filter"
+          type="button"
+          [class.btn-filter--active]="showFilters() || statusControl.value"
+          [attr.aria-expanded]="showFilters()"
+          aria-controls="influencers-filters"
+          aria-label="Abrir filtros de influencers"
+          (pointerup)="toggleFiltersFromPointer($event)"
+          (click)="toggleFiltersFromClick()"
+        >
           <i class="bi bi-funnel" aria-hidden="true"></i>
         </button>
       </div>
+
+      @if (showFilters()) {
+        <section id="influencers-filters" class="filters-panel" aria-label="Filtros de influencers">
+          <div class="filter-field">
+            <label for="influencer-status-filter">Status</label>
+            <select
+              id="influencer-status-filter"
+              class="filter-select"
+              [formControl]="statusControl"
+            >
+              @for (option of statusOptions; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+          <button class="btn-clear-filters" type="button" (click)="clearFilters()">
+            Limpar filtros
+          </button>
+        </section>
+      }
 
       @if (isLoading()) {
         <app-loading-skeleton [variant]="'table'" [count]="10"></app-loading-skeleton>
@@ -71,7 +100,7 @@
                 <th scope="col">Nome</th>
                 <th scope="col">Email</th>
                 <th scope="col">Telefone</th>
-                <th scope="col">Referências</th>
+                <th scope="col">Downloads</th>
                 <th scope="col">Comissão</th>
                 <th scope="col">Ranking</th>
                 <th scope="col">Status</th>

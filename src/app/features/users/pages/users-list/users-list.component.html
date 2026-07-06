@@ -44,8 +44,20 @@
             aria-label="Buscar usuários"
           />
         </div>
-        <button class="btn-filter" type="button" aria-label="Filtrar">
+        <button
+          class="btn-filter"
+          type="button"
+          (pointerup)="toggleAdvancedFiltersFromPointer($event)"
+          (click)="toggleAdvancedFiltersFromClick()"
+          [attr.aria-expanded]="showAdvancedFilters()"
+          aria-controls="advanced-user-filters"
+          aria-label="Abrir filtros de usuários"
+        >
           <i class="bi bi-funnel" aria-hidden="true"></i>
+          Filtros
+          @if (activeAdvancedFiltersCount() > 0) {
+            <span class="filter-count">{{ activeAdvancedFiltersCount() }}</span>
+          }
         </button>
         <span class="toolbar-spacer"></span>
         <button class="btn-toggle-view" type="button" (click)="goToCollaborators()">
@@ -53,6 +65,143 @@
           Administradores
         </button>
       </div>
+
+      @if (showAdvancedFilters()) {
+        <section
+          id="advanced-user-filters"
+          class="advanced-filters"
+          aria-label="Filtros avançados de usuários"
+        >
+          <div class="filters-header">
+            <div>
+              <h2>Filtros avançados</h2>
+              <p>Refine por perfil, status, localização, indicação, serviços e planos.</p>
+            </div>
+            <button class="btn-clear-filters" type="button" (click)="clearAdvancedFilters()">
+              Limpar filtros
+            </button>
+          </div>
+
+          <div class="filters-grid">
+            <label class="filter-field">
+              <span>Status</span>
+              <select class="filter-select" [formControl]="statusControl">
+                <option value="">Todos</option>
+                @for (option of statusOptions; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </label>
+
+            <label class="filter-field">
+              <span>Tipo de perfil</span>
+              <select class="filter-select" [formControl]="profileTypeControl">
+                <option value="">Todos</option>
+                @for (option of profileTypeOptions; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </label>
+
+            <label class="filter-field">
+              <span>Modelo de cobrança</span>
+              <select class="filter-select" [formControl]="billingTypeControl">
+                <option value="">Todos</option>
+                @for (option of billingTypeOptions; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </label>
+
+            <label class="filter-field">
+              <span>Estado</span>
+              <select class="filter-select" [formControl]="stateControl">
+                <option value="">Todos os estados</option>
+                @for (state of stateOptions; track state.value) {
+                  <option [value]="state.value">{{ state.label }}</option>
+                }
+              </select>
+            </label>
+
+            <label class="filter-field">
+              <span>Cidade</span>
+              <select
+                class="filter-select"
+                [formControl]="cityControl"
+                [disabled]="!stateControl.value || isLoadingCities()"
+              >
+                <option value="">
+                  {{
+                    !stateControl.value
+                      ? 'Selecione um estado primeiro'
+                      : isLoadingCities()
+                        ? 'Carregando cidades...'
+                        : 'Todas as cidades'
+                  }}
+                </option>
+                @for (city of cityOptions(); track city) {
+                  <option [value]="city">{{ city }}</option>
+                }
+              </select>
+              <small class="filter-help">Escolha primeiro o estado para carregar as cidades.</small>
+            </label>
+
+            <label class="filter-field filter-field--wide">
+              <span>Indicado por influencer</span>
+              <select class="filter-select" [formControl]="referredByInfluencerIdControl">
+                <option [ngValue]="''">Todos</option>
+                @for (influencer of influencers(); track influencer.id) {
+                  <option [ngValue]="influencer.id">
+                    {{ influencer.name }}{{ influencer.email ? ' · ' + influencer.email : '' }}
+                  </option>
+                }
+              </select>
+            </label>
+
+            <label class="filter-field">
+              <span>Presta serviço ativo</span>
+              <select class="filter-select" [formControl]="hasActiveServiceControl">
+                <option value="">Todos</option>
+                @for (option of booleanFilterOptions; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </label>
+
+            <label class="filter-field">
+              <span>Plano ativo</span>
+              <select class="filter-select" [formControl]="hasSubscriptionControl">
+                <option value="">Todos</option>
+                @for (option of booleanFilterOptions; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </label>
+
+            <label class="filter-field">
+              <span>Valor mínimo do plano</span>
+              <input
+                class="filter-input"
+                type="text"
+                inputmode="decimal"
+                [formControl]="minSubscriptionAmountControl"
+                placeholder="Ex.: R$ 29,90"
+              />
+            </label>
+
+            <label class="filter-field">
+              <span>Valor máximo do plano</span>
+              <input
+                class="filter-input"
+                type="text"
+                inputmode="decimal"
+                [formControl]="maxSubscriptionAmountControl"
+                placeholder="Ex.: R$ 99,90"
+              />
+            </label>
+          </div>
+        </section>
+      }
 
       @if (isLoading()) {
         <app-loading-skeleton [variant]="'table'" [count]="10"></app-loading-skeleton>
@@ -78,6 +227,7 @@
                 <th scope="col">Email</th>
                 <th scope="col">Celular</th>
                 <th scope="col">Serviços</th>
+                <th scope="col">Cobrança</th>
                 <th scope="col">Status</th>
                 <th scope="col" class="col-actions" aria-label="Ações"></th>
               </tr>
@@ -107,6 +257,15 @@
                   <td data-label="Email">{{ user.email }}</td>
                   <td data-label="Celular">{{ user.phone || 'Não informado' }}</td>
                   <td data-label="Serviços">{{ user.openServices ?? 'Não informado' }}</td>
+                  <td data-label="Cobrança">
+                    <span
+                      class="billing-badge"
+                      [class.subscription]="user.billingType === 'Subscription'"
+                      [class.commission]="user.billingType === 'Commission'"
+                    >
+                      {{ getBillingTypeLabel(user.billingType) }}
+                    </span>
+                  </td>
                   <td data-label="Status">
                     <span
                       class="status-badge"

@@ -93,6 +93,7 @@ export class FinancePageComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadPlatformSettings();
+    this.loadServiceCategories();
     this.loadPlans();
   }
 
@@ -270,7 +271,7 @@ export class FinancePageComponent implements OnInit, OnDestroy {
 
     const useGlobalRate = Boolean(this.partnerCommissionForm.value.useGlobalRate);
     const commissionRateValue = Number(this.partnerCommissionForm.value.commissionRate);
-    const commissionRate = useGlobalRate ? null : String(commissionRateValue);
+    const commissionRate = useGlobalRate ? null : commissionRateValue;
 
     this.isSavingPartnerCommission.set(true);
     this.financeService
@@ -371,8 +372,8 @@ export class FinancePageComponent implements OnInit, OnDestroy {
           this.isSavingPlan.set(false);
           this.activeModalRef?.close();
           this.showFeedbackModal({
-            title: 'Assinatura atualizada',
-            description: 'As informações da assinatura foram salvas com sucesso.',
+            title: 'Plano atualizado',
+            description: 'As informações do plano foram salvas com sucesso.',
             icon: 'bi-check2-circle',
             variant: 'success',
           });
@@ -399,8 +400,8 @@ export class FinancePageComponent implements OnInit, OnDestroy {
           this.confirmationModalRef?.close();
           this.activeModalRef?.close();
           this.showFeedbackModal({
-            title: 'Assinatura cadastrada',
-            description: 'A nova assinatura foi cadastrada com sucesso.',
+            title: 'Plano cadastrado',
+            description: 'O novo plano foi cadastrado com sucesso.',
             icon: 'bi-check2-circle',
             variant: 'success',
           });
@@ -440,8 +441,8 @@ export class FinancePageComponent implements OnInit, OnDestroy {
           this.planToDelete.set(null);
           this.confirmationModalRef?.close();
           this.showFeedbackModal({
-            title: 'Assinatura removida',
-            description: 'A assinatura selecionada foi removida com sucesso.',
+            title: 'Plano removido',
+            description: 'O plano selecionado foi removido com sucesso.',
             icon: 'bi-check2-circle',
             variant: 'success',
           });
@@ -541,6 +542,17 @@ export class FinancePageComponent implements OnInit, OnDestroy {
     return plan.isActive ? 'Ativo' : 'Inativo';
   }
 
+  planSegmentLabel(plan: Plan | CreatePlanPayload | null): string {
+    if (!plan?.categoryId) {
+      return 'Todos os segmentos';
+    }
+
+    return (
+      this.serviceCategories().find((category) => category.id === plan.categoryId)?.name ??
+      'Segmento não encontrado'
+    );
+  }
+
   formatPayloadInterval(payload: CreatePlanPayload | null): string {
     if (!payload) {
       return 'N/D';
@@ -561,6 +573,7 @@ export class FinancePageComponent implements OnInit, OnDestroy {
       interval: [plan?.interval ?? 'Month', [Validators.required]],
       intervalCount: [plan?.intervalCount ?? 1, [Validators.required, Validators.min(1)]],
       bonusMonths: [plan?.bonusMonths ?? 0, [Validators.min(0)]],
+      categoryId: [plan?.categoryId ?? null],
       isActive: [plan?.isActive ?? true],
       sortOrder: [plan?.sortOrder ?? this.plans().length + 1, [Validators.min(0)]],
     });
@@ -578,6 +591,7 @@ export class FinancePageComponent implements OnInit, OnDestroy {
       interval: value.interval,
       intervalCount: Number(value.intervalCount),
       bonusMonths: Number(value.bonusMonths ?? 0),
+      categoryId: value.categoryId ? Number(value.categoryId) : null,
       isActive: Boolean(value.isActive),
       sortOrder: Number(value.sortOrder ?? 0),
     };

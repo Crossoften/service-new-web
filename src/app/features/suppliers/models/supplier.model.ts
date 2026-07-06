@@ -63,11 +63,15 @@ export interface AdminProviderListParams {
   status?: AdminProviderStatus;
   take?: number;
   skip?: number;
+  sortBy?: 'name' | 'email' | 'status' | 'createdAt';
+  sortDirection?: 'asc' | 'desc';
 }
 
 export interface AdminProviderHistoryParams {
   take?: number;
   skip?: number;
+  sortBy?: 'createdAt' | 'serviceDate' | 'totalValue' | 'status';
+  sortDirection?: 'asc' | 'desc';
 }
 
 // API response interfaces — raw shapes from the real API

@@ -14,8 +14,7 @@
           <div>
             <h2 class="card-title">Foto de perfil atual</h2>
             <p class="card-description">
-              Usa <code>/v1/my-self</code> para exibir o usuário autenticado e
-              <code>/v1/profile-photo</code> para remoção.
+              Exibe os dados completos do perfil autenticado, incluindo endereço e redes sociais.
             </p>
           </div>
         </div>
@@ -37,11 +36,99 @@
                 <p><strong>Nome:</strong> {{ currentUser()?.name }}</p>
                 <p><strong>Email:</strong> {{ currentUser()?.email }}</p>
                 <p><strong>Perfil:</strong> {{ currentUser()?.role }}</p>
+                <p>
+                  <strong>Modelo de cobrança:</strong>
+                  {{ getBillingTypeLabel(currentUser()?.billingType) }}
+                </p>
+                <p><strong>Localização:</strong> {{ formatLocation(currentUser()?.address) }}</p>
+                <p><strong>Endereço:</strong> {{ formatFullAddress(currentUser()?.address) }}</p>
                 <p><strong>fileKey:</strong> {{ currentUser()?.fileKey || '-' }}</p>
               </div>
             </div>
+
+            <div class="profile-socials" aria-label="Redes sociais do perfil">
+              @if (currentUser()!.socialMedias.length) {
+                @for (social of currentUser()!.socialMedias; track social.network) {
+                  <div class="profile-social-card">
+                    <span>{{ getSocialNetworkLabel(social.network) }}</span>
+                    <strong>{{ formatFollowers(social.followers) }}</strong>
+                    @if (social.url) {
+                      <a [href]="social.url" target="_blank" rel="noreferrer">Abrir perfil</a>
+                    }
+                  </div>
+                }
+              } @else {
+                <p class="empty-copy">Nenhuma rede social cadastrada.</p>
+              }
+            </div>
+
+            <form class="billing-form" [formGroup]="billingForm" (ngSubmit)="saveBillingType()">
+              <div>
+                <h3>Modelo de cobrança</h3>
+                <p>Escolha como este perfil deve ser cobrado quando a regra se aplicar.</p>
+              </div>
+              <div class="billing-options" role="radiogroup" aria-label="Modelo de cobrança">
+                @for (option of billingTypeOptions; track option.value) {
+                  <label class="billing-option">
+                    <input type="radio" formControlName="billingType" [value]="option.value" />
+                    <span>{{ option.label }}</span>
+                  </label>
+                }
+              </div>
+              <button type="submit" class="btn-secondary" [disabled]="isSavingBillingType()">
+                @if (isSavingBillingType()) {
+                  <span class="spinner" aria-hidden="true"></span>
+                  Salvando...
+                } @else {
+                  Salvar modelo de cobrança
+                }
+              </button>
+            </form>
+
+            <form class="address-form" [formGroup]="addressForm" (ngSubmit)="saveAddress()">
+              <div class="address-form-header">
+                <div>
+                  <h3>Endereço do perfil</h3>
+                  <p>Atualize cidade, estado e número usando a rota dedicada do perfil.</p>
+                </div>
+                <button type="submit" class="btn-secondary" [disabled]="isSavingAddress()">
+                  @if (isSavingAddress()) {
+                    <span class="spinner" aria-hidden="true"></span>
+                    Salvando...
+                  } @else {
+                    Salvar endereço
+                  }
+                </button>
+              </div>
+              <div class="address-form-grid">
+                <label>
+                  Rua
+                  <input type="text" class="form-control" formControlName="street" />
+                </label>
+                <label>
+                  Número
+                  <input type="text" class="form-control" formControlName="number" />
+                </label>
+                <label>
+                  Bairro
+                  <input type="text" class="form-control" formControlName="neighborhood" />
+                </label>
+                <label>
+                  Cidade
+                  <input type="text" class="form-control" formControlName="city" />
+                </label>
+                <label>
+                  Estado
+                  <input type="text" class="form-control" formControlName="state" />
+                </label>
+                <label>
+                  CEP
+                  <input type="text" class="form-control" formControlName="zipCode" />
+                </label>
+              </div>
+            </form>
           } @else {
-            <p class="empty-copy">Não foi possível carregar <code>/v1/my-self</code>.</p>
+            <p class="empty-copy">Não foi possível carregar os dados do perfil.</p>
           }
 
           <div class="inline-actions">
@@ -144,10 +231,10 @@
           <div>
             <h2 class="card-title">Consulta, download e exclusao</h2>
             <p class="card-description">
-              Usa <code>/v1/one-file/{{ '{id}' }}</code>,
-              <code>/download/{{ '{id}' }}</code> e
-              <code>DELETE /v1/one-file/{{ '{id}' }}</code>. Caso o backend use
-              <code>fileKey</code> como identificador, informe o valor retornado no upload.
+              Usa <code>/v1/one-file/{{ '{id}' }}</code
+              >, <code>/download/{{ '{id}' }}</code> e <code>DELETE /v1/one-file/{{ '{id}' }}</code
+              >. Caso o backend use <code>fileKey</code> como identificador, informe o valor
+              retornado no upload.
             </p>
           </div>
         </div>
@@ -160,7 +247,12 @@
               placeholder="Informe o id ou fileKey"
               [formControl]="toolsForm.controls.fileId"
             />
-            <button type="button" class="btn-secondary" (click)="lookupFile()" [disabled]="isLookingUpFile()">
+            <button
+              type="button"
+              class="btn-secondary"
+              (click)="lookupFile()"
+              [disabled]="isLookingUpFile()"
+            >
               @if (isLookingUpFile()) {
                 <span class="spinner" aria-hidden="true"></span>
                 Consultando...
@@ -169,7 +261,12 @@
               }
             </button>
             <button type="button" class="btn-secondary" (click)="downloadFile()">Download</button>
-            <button type="button" class="btn-danger" (click)="deleteFile()" [disabled]="isDeletingFile()">
+            <button
+              type="button"
+              class="btn-danger"
+              (click)="deleteFile()"
+              [disabled]="isDeletingFile()"
+            >
               @if (isDeletingFile()) {
                 <span class="spinner" aria-hidden="true"></span>
                 Excluindo...

@@ -48,9 +48,33 @@
                     {{ getStatusLabel(influencer()!.status) }}
                   </span>
                 </div>
+                <div class="info-item info-item--wide">
+                  <span class="info-label">Comissão</span>
+                  <span class="info-value">{{ getCommissionLabel(influencer()!) }}</span>
+                  <small class="info-help">{{ getCommissionHelp(influencer()!) }}</small>
+                </div>
               </div>
             </div>
           </div>
+
+          <section class="social-section" aria-labelledby="influencer-social-title">
+            <h3 id="influencer-social-title" class="section-title">Redes sociais</h3>
+            @if (influencer()!.socialMedias.length) {
+              <div class="social-grid">
+                @for (social of influencer()!.socialMedias; track social.network) {
+                  <div class="social-card">
+                    <span class="social-network">{{ getSocialNetworkLabel(social.network) }}</span>
+                    <strong>{{ formatFollowers(social.followers) }}</strong>
+                    @if (social.url) {
+                      <a [href]="social.url" target="_blank" rel="noreferrer">Abrir perfil</a>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="empty-section">Nenhuma rede social cadastrada.</p>
+            }
+          </section>
 
           <!-- Indicações do Influencer -->
           <div class="referrals-section">
@@ -58,7 +82,7 @@
             <div class="referrals-grid">
               <div class="referral-stat">
                 <i class="bi bi-graph-up-arrow stat-icon" aria-hidden="true"></i>
-                <span class="stat-label">Total de indicações</span>
+                <span class="stat-label">Downloads gerados</span>
                 <span class="stat-value">{{ influencer()!.stats.totalReferrals }}</span>
               </div>
               <div class="referral-stat">

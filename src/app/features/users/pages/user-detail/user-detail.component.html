@@ -58,6 +58,24 @@
               <span class="info-label">Email</span>
               <strong>{{ user()?.email }}</strong>
             </div>
+            <div class="info-item">
+              <span class="info-label">Modelo de cobrança</span>
+              <strong>{{ getBillingTypeLabel(user()?.billingType) }}</strong>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Localização</span>
+              <strong>{{ formatLocation(user()?.address) }}</strong>
+            </div>
+            <div class="info-item info-item--wide">
+              <span class="info-label">Endereço</span>
+              <strong>{{ formatFullAddress(user()?.address) }}</strong>
+            </div>
+            @if (user()?.referralCode) {
+              <div class="info-item">
+                <span class="info-label">Código de indicação</span>
+                <strong>{{ user()?.referralCode }}</strong>
+              </div>
+            }
             @if (user()?.birthDate) {
               <div class="info-item">
                 <span class="info-label">Data de nascimento</span>
@@ -65,6 +83,29 @@
               </div>
             }
           </div>
+
+          <section class="detail-section" aria-labelledby="social-medias-title">
+            <div class="section-heading">
+              <h3 id="social-medias-title">Redes sociais</h3>
+              <p>Contagem de seguidores cadastrada no perfil.</p>
+            </div>
+
+            @if (user()!.socialMedias.length) {
+              <div class="social-grid">
+                @for (social of user()!.socialMedias; track social.network) {
+                  <div class="social-card">
+                    <span class="social-network">{{ getSocialNetworkLabel(social.network) }}</span>
+                    <strong>{{ formatFollowers(social.followers) }}</strong>
+                    @if (social.url) {
+                      <a [href]="social.url" target="_blank" rel="noreferrer">Abrir perfil</a>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="empty-section">Nenhuma rede social cadastrada.</p>
+            }
+          </section>
 
           <div class="form-actions">
             <button type="button" class="btn-cancel" (click)="onBack()">CANCELAR</button>

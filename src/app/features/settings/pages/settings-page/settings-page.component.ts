@@ -3,7 +3,15 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastService } from '@core/services/toast.service';
 import { AuthApiService } from '@features/auth/services/auth-api.service';
-import { MySelfResponse } from '@features/auth/models/auth.model';
+import { MySelfResponse, BillingType } from '@features/auth/models/auth.model';
+import {
+  formatFollowers,
+  formatFullAddress,
+  formatLocation,
+  getBillingTypeLabel,
+  getSocialNetworkLabel,
+  billingTypeOptions,
+} from '@features/users/utils/user-display.utils';
 import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar.component';
 import {
   DeletedFileResponse,
@@ -35,11 +43,33 @@ export class SettingsPageComponent implements OnInit {
   readonly isLookingUpFile = signal(false);
   readonly isDeletingFile = signal(false);
   readonly isRemovingProfilePhoto = signal(false);
+  readonly isSavingAddress = signal(false);
+  readonly isSavingBillingType = signal(false);
 
   readonly toolsForm = this.fb.nonNullable.group({
     fileId: ['', Validators.required],
     profileFileKey: [''],
   });
+
+  readonly addressForm = this.fb.nonNullable.group({
+    street: [''],
+    number: [''],
+    neighborhood: [''],
+    city: [''],
+    state: [''],
+    zipCode: [''],
+  });
+
+  readonly billingForm = this.fb.group({
+    billingType: this.fb.control<BillingType>('None'),
+  });
+
+  getBillingTypeLabel = getBillingTypeLabel;
+  getSocialNetworkLabel = getSocialNetworkLabel;
+  billingTypeOptions = billingTypeOptions;
+  formatFollowers = formatFollowers;
+  formatFullAddress = formatFullAddress;
+  formatLocation = formatLocation;
 
   ngOnInit(): void {
     this.loadCurrentUser();
@@ -188,11 +218,56 @@ export class SettingsPageComponent implements OnInit {
     });
   }
 
+  saveAddress(): void {
+    this.isSavingAddress.set(true);
+    const payload = this.addressForm.getRawValue();
+
+    this.authApiService.updateMyAddress(payload).subscribe({
+      next: (address) => {
+        const currentUser = this.currentUser();
+        if (currentUser) {
+          this.currentUser.set({ ...currentUser, address });
+        }
+        this.toastService.showSuccess('Endereço atualizado com sucesso.');
+        this.isSavingAddress.set(false);
+      },
+      error: () => {
+        this.isSavingAddress.set(false);
+      },
+    });
+  }
+
+  saveBillingType(): void {
+    this.isSavingBillingType.set(true);
+    const billingType = this.billingForm.controls.billingType.value;
+
+    this.authApiService.updateMyBillingType({ billingType }).subscribe({
+      next: (response) => {
+        this.currentUser.set(response);
+        this.billingForm.controls.billingType.setValue(response.billingType ?? 'None');
+        this.toastService.showSuccess('Modelo de cobrança atualizado com sucesso.');
+        this.isSavingBillingType.set(false);
+      },
+      error: () => {
+        this.isSavingBillingType.set(false);
+      },
+    });
+  }
+
   private loadCurrentUser(): void {
     this.authApiService.getMySelf().subscribe({
       next: (response) => {
         this.currentUser.set(response);
         this.toolsForm.controls.profileFileKey.setValue(response.fileKey ?? '');
+        this.addressForm.patchValue({
+          street: response.address?.street ?? '',
+          number: response.address?.number ?? '',
+          neighborhood: response.address?.neighborhood ?? '',
+          city: response.address?.city ?? '',
+          state: response.address?.state ?? '',
+          zipCode: response.address?.zipCode ?? '',
+        });
+        this.billingForm.controls.billingType.setValue(response.billingType ?? 'None');
       },
       error: () => {
         this.currentUser.set(null);

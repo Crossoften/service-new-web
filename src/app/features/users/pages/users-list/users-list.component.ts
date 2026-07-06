@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { Subject, merge } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil, tap } from 'rxjs/operators';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar.component';
@@ -11,7 +11,29 @@ import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/lo
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { ErrorStateComponent } from '@shared/components/error-state/error-state.component';
 import { UsersService } from '../../services/users.service';
-import { AdminUser, AdminUserProfileType, AdminUserStatus } from '../../models/user.model';
+import { InfluencersService } from '../../services/influencers.service';
+import { AdminInfluencer } from '../../models/influencer.model';
+import {
+  AdminUser,
+  AdminUserBillingType,
+  AdminUserProfileType,
+  AdminUserStatus,
+} from '../../models/user.model';
+import {
+  billingTypeOptions,
+  booleanFilterOptions,
+  getBillingTypeLabel,
+  normalizeBillingTypeFilterValue,
+  normalizeBooleanFilterValue,
+  normalizeNumberFilterValue,
+  normalizeTextFilterValue,
+  profileTypeOptions,
+  statusOptions,
+} from '../../utils/user-display.utils';
+
+interface IbgeCityResponse {
+  nome: string;
+}
 
 @Component({
   selector: 'app-users-list',
@@ -31,17 +53,67 @@ import { AdminUser, AdminUserProfileType, AdminUserStatus } from '../../models/u
 export class UsersListComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly usersService = inject(UsersService);
+  private readonly influencersService = inject(InfluencersService);
   private readonly destroy$ = new Subject<void>();
+  private cityRequestId = 0;
+  private lastFilterPointerToggleAt = 0;
 
   readonly searchControl = new FormControl('');
+  readonly billingTypeControl = new FormControl<Exclude<AdminUserBillingType, null> | ''>('');
+  readonly statusControl = new FormControl<AdminUserStatus | ''>('');
+  readonly profileTypeControl = new FormControl<Exclude<AdminUserProfileType, 'Unknown'> | ''>('');
+  readonly cityControl = new FormControl('');
+  readonly stateControl = new FormControl('');
+  readonly referredByInfluencerIdControl = new FormControl<number | ''>('');
+  readonly hasActiveServiceControl = new FormControl<'true' | 'false' | ''>('');
+  readonly hasSubscriptionControl = new FormControl<'true' | 'false' | ''>('');
+  readonly minSubscriptionAmountControl = new FormControl('');
+  readonly maxSubscriptionAmountControl = new FormControl('');
   readonly users = signal<AdminUser[]>([]);
   readonly total = signal(0);
   readonly currentPage = signal(1);
   readonly pageSize = signal(10);
   readonly isLoading = signal(false);
   readonly hasError = signal(false);
+  readonly showAdvancedFilters = signal(false);
+  readonly influencers = signal<AdminInfluencer[]>([]);
+  readonly cityOptions = signal<string[]>([]);
+  readonly isLoadingCities = signal(false);
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
+  readonly billingTypeOptions = billingTypeOptions;
+  readonly statusOptions = statusOptions;
+  readonly profileTypeOptions = profileTypeOptions;
+  readonly booleanFilterOptions = booleanFilterOptions;
+  readonly stateOptions = [
+    { value: 'AC', label: 'Acre' },
+    { value: 'AL', label: 'Alagoas' },
+    { value: 'AP', label: 'Amapá' },
+    { value: 'AM', label: 'Amazonas' },
+    { value: 'BA', label: 'Bahia' },
+    { value: 'CE', label: 'Ceará' },
+    { value: 'DF', label: 'Distrito Federal' },
+    { value: 'ES', label: 'Espírito Santo' },
+    { value: 'GO', label: 'Goiás' },
+    { value: 'MA', label: 'Maranhão' },
+    { value: 'MT', label: 'Mato Grosso' },
+    { value: 'MS', label: 'Mato Grosso do Sul' },
+    { value: 'MG', label: 'Minas Gerais' },
+    { value: 'PA', label: 'Pará' },
+    { value: 'PB', label: 'Paraíba' },
+    { value: 'PR', label: 'Paraná' },
+    { value: 'PE', label: 'Pernambuco' },
+    { value: 'PI', label: 'Piauí' },
+    { value: 'RJ', label: 'Rio de Janeiro' },
+    { value: 'RN', label: 'Rio Grande do Norte' },
+    { value: 'RS', label: 'Rio Grande do Sul' },
+    { value: 'RO', label: 'Rondônia' },
+    { value: 'RR', label: 'Roraima' },
+    { value: 'SC', label: 'Santa Catarina' },
+    { value: 'SP', label: 'São Paulo' },
+    { value: 'SE', label: 'Sergipe' },
+    { value: 'TO', label: 'Tocantins' },
+  ];
   readonly paginationInfo = computed(() => {
     if (this.total() === 0) return '0 itens';
     const start = (this.currentPage() - 1) * this.pageSize() + 1;
@@ -51,12 +123,8 @@ export class UsersListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadUsers();
-    this.searchControl.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.currentPage.set(1);
-        this.loadUsers();
-      });
+    this.loadInfluencerOptions();
+    this.registerFilterChanges();
   }
 
   ngOnDestroy(): void {
@@ -71,7 +139,17 @@ export class UsersListComponent implements OnInit, OnDestroy {
       .getUsers({
         take: this.pageSize(),
         skip: this.currentPage(),
-        search: this.searchControl.value ?? undefined,
+        search: normalizeTextFilterValue(this.searchControl.value),
+        status: this.statusControl.value || undefined,
+        profileType: this.profileTypeControl.value || undefined,
+        billingType: normalizeBillingTypeFilterValue(this.billingTypeControl.value),
+        city: normalizeTextFilterValue(this.cityControl.value),
+        state: normalizeTextFilterValue(this.stateControl.value),
+        referredByInfluencerId: this.referredByInfluencerIdControl.value || undefined,
+        hasActiveService: normalizeBooleanFilterValue(this.hasActiveServiceControl.value),
+        hasSubscription: normalizeBooleanFilterValue(this.hasSubscriptionControl.value),
+        minSubscriptionAmount: normalizeNumberFilterValue(this.minSubscriptionAmountControl.value),
+        maxSubscriptionAmount: normalizeNumberFilterValue(this.maxSubscriptionAmountControl.value),
       })
       .subscribe({
         next: (result) => {
@@ -83,6 +161,139 @@ export class UsersListComponent implements OnInit, OnDestroy {
           this.hasError.set(true);
           this.isLoading.set(false);
         },
+      });
+  }
+
+  toggleAdvancedFilters(): void {
+    this.showAdvancedFilters.update((value) => !value);
+  }
+
+  toggleAdvancedFiltersFromPointer(event: PointerEvent): void {
+    event.preventDefault();
+    this.lastFilterPointerToggleAt = Date.now();
+    this.toggleAdvancedFilters();
+  }
+
+  toggleAdvancedFiltersFromClick(): void {
+    if (Date.now() - this.lastFilterPointerToggleAt < 400) {
+      return;
+    }
+
+    this.toggleAdvancedFilters();
+  }
+
+  activeAdvancedFiltersCount(): number {
+    return [
+      this.statusControl.value,
+      this.profileTypeControl.value,
+      this.billingTypeControl.value,
+      this.cityControl.value?.trim(),
+      this.stateControl.value?.trim(),
+      this.referredByInfluencerIdControl.value,
+      this.hasActiveServiceControl.value,
+      this.hasSubscriptionControl.value,
+      this.minSubscriptionAmountControl.value?.trim(),
+      this.maxSubscriptionAmountControl.value?.trim(),
+    ].filter(Boolean).length;
+  }
+
+  clearAdvancedFilters(): void {
+    this.statusControl.setValue('', { emitEvent: false });
+    this.profileTypeControl.setValue('', { emitEvent: false });
+    this.billingTypeControl.setValue('', { emitEvent: false });
+    this.cityControl.setValue('', { emitEvent: false });
+    this.cityOptions.set([]);
+    this.isLoadingCities.set(false);
+    this.stateControl.setValue('', { emitEvent: false });
+    this.referredByInfluencerIdControl.setValue('', { emitEvent: false });
+    this.hasActiveServiceControl.setValue('', { emitEvent: false });
+    this.hasSubscriptionControl.setValue('', { emitEvent: false });
+    this.minSubscriptionAmountControl.setValue('', { emitEvent: false });
+    this.maxSubscriptionAmountControl.setValue('', { emitEvent: false });
+    this.currentPage.set(1);
+    this.loadUsers();
+  }
+
+  private registerFilterChanges(): void {
+    merge(
+      this.searchControl.valueChanges.pipe(debounceTime(300), distinctUntilChanged()),
+      this.cityControl.valueChanges.pipe(debounceTime(300), distinctUntilChanged()),
+      this.minSubscriptionAmountControl.valueChanges.pipe(
+        debounceTime(300),
+        distinctUntilChanged()
+      ),
+      this.maxSubscriptionAmountControl.valueChanges.pipe(
+        debounceTime(300),
+        distinctUntilChanged()
+      ),
+      this.statusControl.valueChanges.pipe(distinctUntilChanged()),
+      this.profileTypeControl.valueChanges.pipe(distinctUntilChanged()),
+      this.billingTypeControl.valueChanges.pipe(distinctUntilChanged()),
+      this.stateControl.valueChanges.pipe(
+        distinctUntilChanged(),
+        tap((state) => {
+          this.cityControl.setValue('', { emitEvent: false });
+          void this.loadCityOptions(state || '');
+        })
+      ),
+      this.referredByInfluencerIdControl.valueChanges.pipe(distinctUntilChanged()),
+      this.hasActiveServiceControl.valueChanges.pipe(distinctUntilChanged()),
+      this.hasSubscriptionControl.valueChanges.pipe(distinctUntilChanged())
+    )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.currentPage.set(1);
+        this.loadUsers();
+      });
+  }
+
+  private async loadCityOptions(state: string): Promise<void> {
+    const requestId = ++this.cityRequestId;
+    this.cityOptions.set([]);
+
+    if (!state) {
+      this.isLoadingCities.set(false);
+      return;
+    }
+
+    this.isLoadingCities.set(true);
+
+    try {
+      const response = await fetch(
+        `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${encodeURIComponent(
+          state
+        )}/municipios?orderBy=nome`
+      );
+
+      if (!response.ok) {
+        throw new Error('Não foi possível carregar cidades.');
+      }
+
+      const cities = (await response.json()) as IbgeCityResponse[];
+
+      if (requestId !== this.cityRequestId) {
+        return;
+      }
+
+      this.cityOptions.set(cities.map((city) => city.nome).filter(Boolean));
+    } catch {
+      if (requestId === this.cityRequestId) {
+        this.cityOptions.set([]);
+      }
+    } finally {
+      if (requestId === this.cityRequestId) {
+        this.isLoadingCities.set(false);
+      }
+    }
+  }
+
+  private loadInfluencerOptions(): void {
+    this.influencersService
+      .getInfluencers({ take: 100, skip: 1 })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => this.influencers.set(result.influencers),
+        error: () => this.influencers.set([]),
       });
   }
 
@@ -109,6 +320,8 @@ export class UsersListComponent implements OnInit, OnDestroy {
   goToSuppliers(): void {
     this.router.navigate(['/suppliers']);
   }
+
+  getBillingTypeLabel = getBillingTypeLabel;
 
   getStatusLabel(status: AdminUserStatus): string {
     switch (status) {
