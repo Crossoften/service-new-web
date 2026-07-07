@@ -189,7 +189,8 @@
 
 // Referrals section
 .social-section,
-.referrals-section {
+.referrals-section,
+.referrals-list-section {
   margin-top: 1.5rem;
   padding: 1.25rem 1.5rem;
   background: #fff;
@@ -290,6 +291,98 @@
   font-size: 0.875rem;
   font-weight: 700;
   color: #111;
+}
+
+.section-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.section-description {
+  margin: -0.5rem 0 0;
+  color: #6b7280;
+  font-size: 0.82rem;
+}
+
+.section-count {
+  flex-shrink: 0;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(131, 8, 210, 0.08);
+  color: #6906a8;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.referrals-table-wrapper {
+  overflow-x: auto;
+}
+
+.referrals-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+
+  th,
+  td {
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 0.84rem;
+  }
+
+  th {
+    color: #6b7280;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+.referral-user-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  img,
+  span {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  img {
+    object-fit: cover;
+  }
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1e7fb;
+    color: #6906a8;
+    font-weight: 800;
+  }
+
+  strong,
+  small {
+    display: block;
+  }
+
+  small {
+    color: #6b7280;
+    margin-top: 0.15rem;
+  }
 }
 
 .divider {

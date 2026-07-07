@@ -95,7 +95,9 @@ export class AuthApiService {
   }
 
   updateMyBillingType(payload: UpdateBillingTypePayload): Observable<MySelfResponse> {
-    return this.apiService.patch<MySelfResponse>('/v1/profile/me/billing-type', payload);
+    return this.apiService.patch<MySelfResponse>('/v1/profile/me/billing-type', {
+      billingType: payload.billingType === 'None' ? null : payload.billingType,
+    });
   }
 
   logout(): void {

@@ -10,7 +10,6 @@ import {
   formatLocation,
   getBillingTypeLabel,
   getSocialNetworkLabel,
-  billingTypeOptions,
 } from '@features/users/utils/user-display.utils';
 import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar.component';
 import {
@@ -61,12 +60,15 @@ export class SettingsPageComponent implements OnInit {
   });
 
   readonly billingForm = this.fb.group({
-    billingType: this.fb.control<BillingType>('None'),
+    billingType: this.fb.control<BillingType>(null),
   });
 
   getBillingTypeLabel = getBillingTypeLabel;
   getSocialNetworkLabel = getSocialNetworkLabel;
-  billingTypeOptions = billingTypeOptions;
+  billingTypeOptions: Array<{ value: BillingType; label: string }> = [
+    { value: 'Subscription', label: 'Assinatura' },
+    { value: null, label: 'Não paga' },
+  ];
   formatFollowers = formatFollowers;
   formatFullAddress = formatFullAddress;
   formatLocation = formatLocation;
@@ -241,17 +243,19 @@ export class SettingsPageComponent implements OnInit {
     this.isSavingBillingType.set(true);
     const billingType = this.billingForm.controls.billingType.value;
 
-    this.authApiService.updateMyBillingType({ billingType }).subscribe({
-      next: (response) => {
-        this.currentUser.set(response);
-        this.billingForm.controls.billingType.setValue(response.billingType ?? 'None');
-        this.toastService.showSuccess('Modelo de cobrança atualizado com sucesso.');
-        this.isSavingBillingType.set(false);
-      },
-      error: () => {
-        this.isSavingBillingType.set(false);
-      },
-    });
+    this.authApiService
+      .updateMyBillingType({ billingType: billingType === 'None' ? null : billingType })
+      .subscribe({
+        next: (response) => {
+          this.currentUser.set(response);
+          this.billingForm.controls.billingType.setValue(response.billingType ?? null);
+          this.toastService.showSuccess('Modelo de cobrança atualizado com sucesso.');
+          this.isSavingBillingType.set(false);
+        },
+        error: () => {
+          this.isSavingBillingType.set(false);
+        },
+      });
   }
 
   private loadCurrentUser(): void {

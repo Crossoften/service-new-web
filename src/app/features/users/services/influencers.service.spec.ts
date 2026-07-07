@@ -44,4 +44,44 @@ describe('InfluencersService', () => {
       sortDirection: 'asc',
     });
   });
+
+  it('loads referrals from the influencer referrals route', async () => {
+    apiService.get.mockReturnValue(
+      of({
+        referrals: [
+          {
+            id: 7,
+            name: 'Maria Cliente',
+            email: 'maria@email.com',
+            phone: '(34) 99999-0000',
+            status: 'Active',
+            profileType: 'Client',
+            billingType: 'Subscription',
+            address: { city: 'Uberlândia', state: 'MG' },
+            fileUrl: null,
+            createdAt: '2026-03-17T01:00:00.000Z',
+          },
+        ],
+      })
+    );
+
+    const referrals = await firstValueFrom(service.getInfluencerReferrals(15));
+
+    expect(apiService.get).toHaveBeenCalledWith('/v1/admin-influencers/15/referrals');
+    expect(referrals).toEqual([
+      {
+        id: 7,
+        name: 'Maria Cliente',
+        email: 'maria@email.com',
+        phone: '(34) 99999-0000',
+        status: 'Active',
+        profileType: 'Client',
+        billingType: 'Subscription',
+        city: 'Uberlândia',
+        state: 'MG',
+        fileUrl: null,
+        createdAt: '2026-03-17T01:00:00.000Z',
+      },
+    ]);
+  });
 });

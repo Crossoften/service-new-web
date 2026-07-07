@@ -113,4 +113,25 @@ describe('AuthApiService profile contract', () => {
     expect(apiService.patch).toHaveBeenCalledWith('/v1/profile/me/billing-type', { billingType });
     expect(response.billingType).toBe('Commission');
   });
+
+  it('sends null when the authenticated user should not pay through a plan', async () => {
+    apiService.patch.mockReturnValue(of({ ...profileResponse, billingType: null }));
+
+    const response = await firstValueFrom(service.updateMyBillingType({ billingType: null }));
+
+    expect(apiService.patch).toHaveBeenCalledWith('/v1/profile/me/billing-type', {
+      billingType: null,
+    });
+    expect(response.billingType).toBeNull();
+  });
+
+  it('normalizes legacy None billing type to null before sending', async () => {
+    apiService.patch.mockReturnValue(of({ ...profileResponse, billingType: null }));
+
+    await firstValueFrom(service.updateMyBillingType({ billingType: 'None' }));
+
+    expect(apiService.patch).toHaveBeenCalledWith('/v1/profile/me/billing-type', {
+      billingType: null,
+    });
+  });
 });

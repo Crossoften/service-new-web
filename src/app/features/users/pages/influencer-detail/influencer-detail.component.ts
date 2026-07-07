@@ -6,7 +6,7 @@ import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar
 import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/loading-skeleton.component';
 import { ToastService } from '@core/services/toast.service';
 import { InfluencersService } from '../../services/influencers.service';
-import { AdminInfluencer } from '../../models/influencer.model';
+import { AdminInfluencer, AdminInfluencerReferral } from '../../models/influencer.model';
 import { formatFollowers, getSocialNetworkLabel } from '../../utils/user-display.utils';
 
 @Component({
@@ -24,7 +24,10 @@ export class InfluencerDetailComponent implements OnInit {
   private readonly toastService = inject(ToastService);
 
   readonly influencer = signal<AdminInfluencer | undefined>(undefined);
+  readonly referrals = signal<AdminInfluencerReferral[]>([]);
   readonly isLoading = signal(false);
+  readonly isLoadingReferrals = signal(false);
+  readonly hasReferralsError = signal(false);
 
   ngOnInit(): void {
     this.isLoading.set(true);
@@ -32,6 +35,7 @@ export class InfluencerDetailComponent implements OnInit {
       next: (inf) => {
         this.influencer.set(inf);
         this.isLoading.set(false);
+        this.loadReferrals(inf.id);
       },
       error: () => {
         this.toastService.showError('Erro ao carregar influencer.');
@@ -57,6 +61,16 @@ export class InfluencerDetailComponent implements OnInit {
 
   formatCount(value: number | null): string {
     return value == null ? 'Não informado' : String(value);
+  }
+
+  formatLocation(referral: AdminInfluencerReferral): string {
+    return [referral.city, referral.state].filter(Boolean).join(' / ') || 'Não informada';
+  }
+
+  formatDate(value: string | null): string {
+    if (!value) return 'Não informado';
+
+    return new Intl.DateTimeFormat('pt-BR').format(new Date(value));
   }
 
   formatPercent(value: number | null | undefined): string {
@@ -87,6 +101,19 @@ export class InfluencerDetailComponent implements OnInit {
   getSocialNetworkLabel = getSocialNetworkLabel;
   formatFollowers = formatFollowers;
 
+  getReferralBillingTypeLabel(billingType: string | null): string {
+    switch (billingType) {
+      case 'Subscription':
+        return 'Assinatura';
+      case 'Commission':
+        return 'Comissão';
+      case 'None':
+        return 'Não definido';
+      default:
+        return 'Não paga';
+    }
+  }
+
   getStatusLabel(status: string): string {
     switch (status) {
       case 'Active':
@@ -111,5 +138,21 @@ export class InfluencerDetailComponent implements OnInit {
 
   onBack(): void {
     this.router.navigate(['/users/influencers']);
+  }
+
+  private loadReferrals(influencerId: number): void {
+    this.isLoadingReferrals.set(true);
+    this.hasReferralsError.set(false);
+
+    this.influencersService.getInfluencerReferrals(influencerId).subscribe({
+      next: (referrals) => {
+        this.referrals.set(referrals);
+        this.isLoadingReferrals.set(false);
+      },
+      error: () => {
+        this.hasReferralsError.set(true);
+        this.isLoadingReferrals.set(false);
+      },
+    });
   }
 }

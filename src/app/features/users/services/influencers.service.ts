@@ -9,6 +9,8 @@ import {
   AdminInfluencerApiListItem,
   AdminInfluencerApiListResponse,
   AdminInfluencerApiDetail,
+  AdminInfluencerReferral,
+  AdminInfluencerReferralApiItem,
 } from '../models/influencer.model';
 
 @Injectable({ providedIn: 'root' })
@@ -40,6 +42,15 @@ export class InfluencersService {
     return this.apiService
       .get<AdminInfluencerApiDetail>(`/v1/admin-influencers/${id}`)
       .pipe(map((i) => this.mapInfluencerFromDetail(i)));
+  }
+
+  getInfluencerReferrals(id: number): Observable<AdminInfluencerReferral[]> {
+    return this.apiService
+      .get<
+        | AdminInfluencerReferralApiItem[]
+        | { referrals?: AdminInfluencerReferralApiItem[]; users?: AdminInfluencerReferralApiItem[] }
+      >(`/v1/admin-influencers/${id}/referrals`)
+      .pipe(map((response) => this.mapReferralResponse(response)));
   }
 
   private mapInfluencerFromList(item: AdminInfluencerApiListItem): AdminInfluencer {
@@ -97,5 +108,32 @@ export class InfluencersService {
   private mapStatus(status: string): AdminInfluencerStatus {
     if (status === 'Active' || status === 'Pending' || status === 'Inactive') return status;
     return 'Inactive';
+  }
+
+  private mapReferralResponse(
+    response:
+      | AdminInfluencerReferralApiItem[]
+      | { referrals?: AdminInfluencerReferralApiItem[]; users?: AdminInfluencerReferralApiItem[] }
+  ): AdminInfluencerReferral[] {
+    const referrals = Array.isArray(response)
+      ? response
+      : (response.referrals ?? response.users ?? []);
+    return referrals.map((item) => this.mapReferral(item));
+  }
+
+  private mapReferral(item: AdminInfluencerReferralApiItem): AdminInfluencerReferral {
+    return {
+      id: item.id ?? 0,
+      name: item.name ?? 'Usuário sem nome',
+      email: item.email ?? 'Não informado',
+      phone: item.phone ?? null,
+      status: item.status ?? null,
+      profileType: item.profileType ?? null,
+      billingType: item.billingType ?? null,
+      city: item.city ?? item.address?.city ?? null,
+      state: item.state ?? item.address?.state ?? null,
+      fileUrl: item.fileUrl ?? null,
+      createdAt: item.createdAt ?? null,
+    };
   }
 }

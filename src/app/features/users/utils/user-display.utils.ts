@@ -123,9 +123,10 @@ export function getBillingTypeLabel(billingType: AdminUserBillingType | undefine
     case 'Commission':
       return 'Comissão';
     case 'None':
+      return 'Não definido';
     case null:
     case undefined:
-      return 'Não definido';
+      return 'Não paga';
   }
 }
 

@@ -59,6 +59,20 @@ export interface AdminInfluencer {
   updatedAt: string;
 }
 
+export interface AdminInfluencerReferral {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  status: string | null;
+  profileType: string | null;
+  billingType: string | null;
+  city: string | null;
+  state: string | null;
+  fileUrl: string | null;
+  createdAt: string | null;
+}
+
 export interface AdminInfluencerListResponse {
   influencers: AdminInfluencerListItem[];
   pages: number;
@@ -118,6 +132,24 @@ export interface AdminInfluencerApiDetail {
   socialMedias?: AdminInfluencerSocialMedia[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface AdminInfluencerReferralApiItem {
+  id?: number;
+  name?: string;
+  email?: string;
+  phone?: string | null;
+  status?: string | null;
+  profileType?: string | null;
+  billingType?: string | null;
+  fileUrl?: string | null;
+  createdAt?: string | null;
+  city?: string | null;
+  state?: string | null;
+  address?: {
+    city?: string | null;
+    state?: string | null;
+  } | null;
 }
 
 // Legacy alias
