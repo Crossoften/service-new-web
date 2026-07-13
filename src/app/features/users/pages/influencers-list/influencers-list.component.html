@@ -78,6 +78,8 @@
         </section>
       }
 
+      <app-influencer-regional-ranking></app-influencer-regional-ranking>
+
       @if (isLoading()) {
         <app-loading-skeleton [variant]="'table'" [count]="10"></app-loading-skeleton>
       } @else if (hasError()) {
@@ -100,7 +102,9 @@
                 <th scope="col">Nome</th>
                 <th scope="col">Email</th>
                 <th scope="col">Telefone</th>
-                <th scope="col">Downloads</th>
+                <th scope="col">Cidade</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Indicações</th>
                 <th scope="col">Comissão</th>
                 <th scope="col">Ranking</th>
                 <th scope="col">Status</th>
@@ -117,12 +121,14 @@
                   (keydown.enter)="navigateToDetail(inf.id)"
                   [attr.aria-label]="'Abrir detalhes de ' + inf.name"
                 >
-                  <td class="td-name">{{ inf.name }}</td>
-                  <td>{{ inf.email }}</td>
-                  <td>{{ inf.phone || 'Não informado' }}</td>
-                  <td>{{ inf.stats.totalReferrals }}</td>
-                  <td>{{ getCommissionLabel(inf) }}</td>
-                  <td>
+                  <td class="td-name" data-label="Nome">{{ inf.name }}</td>
+                  <td data-label="Email">{{ inf.email }}</td>
+                  <td data-label="Telefone">{{ inf.phone || 'Não informado' }}</td>
+                  <td data-label="Cidade">{{ getCityDisplay(inf.address?.city) }}</td>
+                  <td data-label="Estado">{{ getStateDisplay(inf.address?.state) }}</td>
+                  <td data-label="Indicações">{{ inf.stats.totalReferrals }}</td>
+                  <td data-label="Comissão">{{ getCommissionLabel(inf) }}</td>
+                  <td data-label="Ranking">
                     <span class="ranking-badge">
                       {{
                         inf.stats.rankingPosition != null
@@ -131,7 +137,7 @@
                       }}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="Status">
                     <span
                       class="status-badge"
                       [class.active]="inf.status === 'Active'"

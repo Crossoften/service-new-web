@@ -77,4 +77,38 @@ describe('SuppliersService', () => {
       sortDirection: 'desc',
     });
   });
+
+  it('carrega ranking regional de prestadores com filtros obrigatórios', async () => {
+    apiService.get.mockReturnValue(
+      of({
+        providers: [
+          {
+            ranking: 2,
+            city: 'Curitiba',
+            state: 'PR',
+            providersCount: 8,
+            activeServices: 42,
+          },
+        ],
+      })
+    );
+
+    const ranking = await firstValueFrom(
+      service.getRegionalRanking({ state: 'PR', city: 'Curitiba' })
+    );
+
+    expect(apiService.get).toHaveBeenCalledWith('/v1/admin-users/ranking/providers-by-location', {
+      state: 'PR',
+      city: 'Curitiba',
+    });
+    expect(ranking).toEqual([
+      {
+        position: 2,
+        city: 'Curitiba',
+        state: 'PR',
+        totalProviders: 8,
+        totalActiveServices: 42,
+      },
+    ]);
+  });
 });

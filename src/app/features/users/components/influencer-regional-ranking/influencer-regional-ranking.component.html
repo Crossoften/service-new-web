@@ -1,0 +1,115 @@
+<section class="regional-ranking-card" aria-labelledby="influencer-regional-ranking-title">
+  <div class="regional-ranking-header">
+    <div>
+      <span class="section-eyebrow">Ranking de influenciadores</span>
+      <h2 id="influencer-regional-ranking-title">Desempenho por cidade</h2>
+      <p>Escolha uma cidade para acompanhar influenciadores e indicações nessa região.</p>
+    </div>
+  </div>
+
+  <form
+    class="ranking-filters"
+    aria-label="Filtros do desempenho por cidade"
+    (ngSubmit)="loadRanking()"
+  >
+    <label class="filter-field" for="influencer-ranking-state">
+      <span>Estado</span>
+      <select
+        id="influencer-ranking-state"
+        [formControl]="stateControl"
+        aria-describedby="influencer-ranking-help"
+      >
+        <option value="">
+          {{ isLoadingStates() ? 'Carregando estados...' : 'Selecione um estado' }}
+        </option>
+        @for (state of stateOptions(); track state.id) {
+          <option [value]="state.abbreviation">{{ state.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="filter-field" for="influencer-ranking-city">
+      <span>Cidade</span>
+      <select
+        id="influencer-ranking-city"
+        [formControl]="cityControl"
+        aria-describedby="influencer-ranking-help"
+      >
+        <option value="">
+          {{
+            !stateControl.value
+              ? 'Selecione um estado primeiro'
+              : isLoadingCities()
+                ? 'Carregando cidades...'
+                : 'Selecione uma cidade'
+          }}
+        </option>
+        @for (city of cityOptions(); track city) {
+          <option [value]="city">{{ city }}</option>
+        }
+      </select>
+    </label>
+
+    <button class="ranking-submit" type="submit" [disabled]="!canLoadRanking() || isLoading()">
+      Consultar
+    </button>
+  </form>
+  <p id="influencer-ranking-help" class="filter-help">
+    Selecione primeiro o estado e depois a cidade desejada.
+  </p>
+  @if (locationError()) {
+    <p class="location-error" role="alert">{{ locationError() }}</p>
+  }
+
+  <div class="ranking-panel">
+    @if (isLoading()) {
+      <app-loading-skeleton [variant]="'table'" [count]="1"></app-loading-skeleton>
+    } @else if (errorMessage()) {
+      <div class="ranking-state-message error" role="alert">
+        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    } @else if (!hasLoaded()) {
+      <div class="ranking-state-message">
+        <i class="bi bi-geo-alt" aria-hidden="true"></i>
+        <span>Selecione um estado e uma cidade para ver o desempenho regional.</span>
+      </div>
+    } @else if (rankingRows().length === 0) {
+      <div class="ranking-state-message">
+        <i class="bi bi-inbox" aria-hidden="true"></i>
+        <span>Nenhum desempenho encontrado para esta cidade.</span>
+      </div>
+    } @else {
+      <div class="ranking-table-wrap">
+        <table class="ranking-table">
+          <caption>
+            Desempenho de influenciadores por cidade, com posição, cidade, estado, total de
+            influenciadores e total de indicações.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Posição</th>
+              <th scope="col">Cidade</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Total de influenciadores</th>
+              <th scope="col">Total de indicações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rankingRows(); track row.position ?? $index) {
+              <tr>
+                <td>
+                  <span class="rank-position">{{ formatPosition(row.position) }}</span>
+                </td>
+                <td>{{ row.city || 'Não informada' }}</td>
+                <td>{{ row.state || 'Não informado' }}</td>
+                <td>{{ formatNumber(row.totalInfluencers) }}</td>
+                <td>{{ formatNumber(row.totalReferrals) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</section>

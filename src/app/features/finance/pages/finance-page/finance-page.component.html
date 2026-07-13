@@ -109,8 +109,7 @@
       <div>
         <h4 class="modal-title">Porcentagem de fornecedores</h4>
         <p class="modal-subtitle">
-          Ajuste a taxa da plataforma por categoria. O repasse do fornecedor é calculado
-          automaticamente.
+          Consulte e ajuste a porcentagem destinada à plataforma em cada categoria.
         </p>
       </div>
       <button class="modal-close" type="button" (click)="dismissModal()" aria-label="Fechar">
@@ -139,7 +138,7 @@
               >
                 <span>
                   <strong>{{ category.name }}</strong>
-                  <small>Fornecedor: {{ formatProviderRate(category) }}</small>
+                  <small>{{ providerNetValueLabel() }}</small>
                 </span>
                 <span class="rate-pill"
                   >Plataforma: {{ formatPercent(category.platformFeeRate) }}</span
@@ -302,129 +301,271 @@
 </ng-template>
 
 <ng-template #planModalTpl>
-  <div class="modal-card">
-    <div class="modal-card-header">
-      <h4 class="modal-title">{{ selectedPlan() ? 'Editar plano' : 'Novo plano' }}</h4>
+  <div class="modal-card plan-editor-modal">
+    <div class="modal-card-header plan-editor-header">
+      <div>
+        <span class="plan-editor-eyebrow">PLANOS</span>
+        <h4 class="modal-title">{{ selectedPlan() ? 'Editar plano' : 'Novo plano' }}</h4>
+        <p class="modal-subtitle">
+          Defina as informações principais e escolha para quais segmentos o plano estará disponível.
+        </p>
+      </div>
       <button class="modal-close" type="button" (click)="dismissModal()" aria-label="Fechar">
         <i class="bi bi-x-lg" aria-hidden="true"></i>
       </button>
     </div>
 
-    <div class="modal-card-body" [formGroup]="planForm">
-      <div class="plan-form-grid">
-        <div class="form-group">
-          <label class="form-label" for="plan-name">Nome do plano</label>
-          <input
-            id="plan-name"
-            type="text"
-            class="form-control"
-            formControlName="name"
-            placeholder="Ex.: Plano mensal"
-          />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="plan-slug">Código do plano</label>
-          <input
-            id="plan-slug"
-            type="text"
-            class="form-control"
-            formControlName="slug"
-            placeholder="Ex.: plano-mensal"
-          />
-        </div>
-
-        <div class="form-group plan-form-grid__full">
-          <label class="form-label" for="plan-description">Descrição</label>
-          <textarea
-            id="plan-description"
-            class="form-control"
-            rows="3"
-            formControlName="description"
-            placeholder="Descreva o benefício do plano"
-          ></textarea>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="plan-category">Segmento</label>
-          <select id="plan-category" class="form-control" formControlName="categoryId">
-            <option [ngValue]="null">Todos os segmentos</option>
-            @for (category of serviceCategories(); track category.id) {
-              <option [ngValue]="category.id">{{ category.name }}</option>
-            }
-          </select>
-          <small class="form-help">
-            Use “Todos os segmentos” para um plano global, ou selecione uma profissão.
-          </small>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="plan-price">Valor do plano</label>
-          <div class="currency-input-wrap currency-input-wrap--wide">
-            <span class="currency-sign">R$</span>
-            <input
-              id="plan-price"
-              type="number"
-              class="form-control"
-              formControlName="price"
-              min="0"
-              step="0.01"
-            />
+    <div class="modal-card-body plan-editor-body" [formGroup]="planForm">
+      <section class="plan-form-section" aria-labelledby="plan-basic-title">
+        <div class="plan-form-section__header">
+          <span class="plan-form-section__icon" aria-hidden="true">
+            <i class="bi bi-card-heading"></i>
+          </span>
+          <div>
+            <h5 id="plan-basic-title">Informações do plano</h5>
+            <p>Preencha o nome, a descrição e o valor que serão apresentados.</p>
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label" for="plan-interval">Renovação</label>
-          <select id="plan-interval" class="form-control" formControlName="interval">
-            <option value="Month">Mensal</option>
-            <option value="Year">Anual</option>
-          </select>
+        <div class="plan-form-grid">
+          <div class="form-group">
+            <label class="form-label" for="plan-name">Nome do plano</label>
+            <input
+              id="plan-name"
+              type="text"
+              class="form-control"
+              formControlName="name"
+              placeholder="Ex.: Plano Essencial"
+            />
+            @if (isPlanControlInvalid('name')) {
+              <small class="form-error">Informe o nome do plano.</small>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="plan-price">Valor do plano</label>
+            <div class="currency-input-wrap currency-input-wrap--wide">
+              <span class="currency-sign">R$</span>
+              <input
+                id="plan-price"
+                type="number"
+                class="form-control"
+                formControlName="price"
+                min="0"
+                step="0.01"
+                inputmode="decimal"
+              />
+            </div>
+            @if (isPlanControlInvalid('price')) {
+              <small class="form-error">Informe um valor válido para o plano.</small>
+            }
+          </div>
+
+          <div class="form-group plan-form-grid__full">
+            <label class="form-label" for="plan-description">Descrição</label>
+            <textarea
+              id="plan-description"
+              class="form-control"
+              rows="3"
+              formControlName="description"
+              placeholder="Explique de forma breve o que este plano oferece"
+            ></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="plan-form-section" aria-labelledby="plan-segment-title">
+        <div class="plan-form-section__header">
+          <span class="plan-form-section__icon" aria-hidden="true"
+            ><i class="bi bi-people"></i
+          ></span>
+          <div>
+            <h5 id="plan-segment-title">Disponibilidade por segmento</h5>
+            <p>Escolha se o plano será geral ou exclusivo para um segmento.</p>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label" for="plan-interval-count">Quantidade de ciclos</label>
-          <input
-            id="plan-interval-count"
-            type="number"
-            class="form-control"
-            formControlName="intervalCount"
-            min="1"
-            step="1"
-          />
+        <div class="segment-scope-grid" role="radiogroup" aria-labelledby="plan-segment-title">
+          <button
+            class="segment-scope-card"
+            type="button"
+            role="radio"
+            [class.segment-scope-card--active]="planSegmentMode() === 'all'"
+            [attr.aria-checked]="planSegmentMode() === 'all'"
+            (click)="selectPlanSegmentMode('all')"
+          >
+            <span class="segment-scope-card__icon" aria-hidden="true"
+              ><i class="bi bi-grid"></i
+            ></span>
+            <span class="segment-scope-card__copy">
+              <strong>Todos os segmentos</strong>
+              <small>Disponível para qualquer categoria profissional.</small>
+            </span>
+            <i class="bi bi-check-circle-fill segment-scope-card__check" aria-hidden="true"></i>
+          </button>
+
+          <button
+            class="segment-scope-card"
+            type="button"
+            role="radio"
+            [class.segment-scope-card--active]="planSegmentMode() === 'specific'"
+            [attr.aria-checked]="planSegmentMode() === 'specific'"
+            (click)="selectPlanSegmentMode('specific')"
+          >
+            <span class="segment-scope-card__icon" aria-hidden="true">
+              <i class="bi bi-person-badge"></i>
+            </span>
+            <span class="segment-scope-card__copy">
+              <strong>Segmento específico</strong>
+              <small>Disponível somente para a categoria selecionada.</small>
+            </span>
+            <i class="bi bi-check-circle-fill segment-scope-card__check" aria-hidden="true"></i>
+          </button>
         </div>
 
-        <div class="form-group">
-          <label class="form-label" for="plan-bonus-months">Meses bônus</label>
-          <input
-            id="plan-bonus-months"
-            type="number"
-            class="form-control"
-            formControlName="bonusMonths"
-            min="0"
-            step="1"
-          />
-        </div>
+        @if (planSegmentMode() === 'specific') {
+          <div class="segment-picker">
+            @if (selectedPlanCategory()) {
+              <div class="segment-selected" aria-live="polite">
+                <span>
+                  <small>Segmento selecionado</small>
+                  <strong>{{ selectedPlanCategory()?.name }}</strong>
+                </span>
+                <i class="bi bi-check2-circle" aria-hidden="true"></i>
+              </div>
+            }
 
-        <div class="form-group">
-          <label class="form-label" for="plan-sort-order">Ordem de exibição</label>
-          <input
-            id="plan-sort-order"
-            type="number"
-            class="form-control"
-            formControlName="sortOrder"
-            min="0"
-            step="1"
-          />
-        </div>
+            <div class="segment-search">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input
+                id="plan-category-search"
+                type="search"
+                class="form-control"
+                [value]="planCategorySearch()"
+                (input)="updatePlanCategorySearch($event)"
+                placeholder="Buscar segmento"
+                autocomplete="off"
+                aria-label="Buscar segmento pelo nome"
+              />
+            </div>
 
-        <label class="toggle-card" for="plan-is-active">
-          <input id="plan-is-active" type="checkbox" formControlName="isActive" />
-          <span>
-            <strong>Plano ativo</strong>
-            <small>Disponível para contratação.</small>
+            @if (isLoadingServiceCategories()) {
+              <app-loading-skeleton [variant]="'list'" [count]="3"></app-loading-skeleton>
+            } @else if (hasServiceCategoriesError()) {
+              <app-error-state
+                [title]="'Não foi possível carregar os segmentos'"
+                [description]="'Tente novamente antes de continuar.'"
+                (retry)="loadServiceCategories()"
+              ></app-error-state>
+            } @else {
+              <div class="segment-selector" role="radiogroup" aria-label="Selecione um segmento">
+                @for (category of filteredPlanCategories(); track category.id) {
+                  <button
+                    class="segment-option"
+                    type="button"
+                    role="radio"
+                    [class.segment-option--active]="isPlanCategorySelected(category.id)"
+                    [attr.aria-checked]="isPlanCategorySelected(category.id)"
+                    (click)="selectPlanCategory(category.id)"
+                  >
+                    <span>{{ category.name }}</span>
+                    <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                  </button>
+                } @empty {
+                  <p class="segment-empty">Nenhum segmento encontrado para essa busca.</p>
+                }
+              </div>
+            }
+
+            @if (isPlanControlInvalid('categoryId')) {
+              <small class="form-error">Selecione o segmento deste plano.</small>
+            }
+          </div>
+        }
+      </section>
+
+      <section class="plan-form-section" aria-labelledby="plan-renewal-title">
+        <div class="plan-form-section__header">
+          <span class="plan-form-section__icon" aria-hidden="true">
+            <i class="bi bi-arrow-repeat"></i>
           </span>
-        </label>
-      </div>
+          <div>
+            <h5 id="plan-renewal-title">Renovação</h5>
+            <p>Defina com que frequência o plano será renovado.</p>
+          </div>
+        </div>
+
+        <div class="renewal-option-grid" role="radiogroup" aria-labelledby="plan-renewal-title">
+          <button
+            class="renewal-option"
+            type="button"
+            role="radio"
+            [class.renewal-option--active]="planForm.controls.interval.value === 'Month'"
+            [attr.aria-checked]="planForm.controls.interval.value === 'Month'"
+            (click)="selectPlanInterval('Month')"
+          >
+            <i class="bi bi-calendar-month" aria-hidden="true"></i>
+            <span><strong>Mensal</strong><small>Renovação a cada mês</small></span>
+          </button>
+          <button
+            class="renewal-option"
+            type="button"
+            role="radio"
+            [class.renewal-option--active]="planForm.controls.interval.value === 'Year'"
+            [attr.aria-checked]="planForm.controls.interval.value === 'Year'"
+            (click)="selectPlanInterval('Year')"
+          >
+            <i class="bi bi-calendar3" aria-hidden="true"></i>
+            <span><strong>Anual</strong><small>Renovação a cada ano</small></span>
+          </button>
+        </div>
+      </section>
+
+      <details class="plan-advanced-options">
+        <summary>
+          <span>
+            <strong>Opções adicionais</strong>
+            <small>Meses bônus e posição do plano na listagem</small>
+          </span>
+          <i class="bi bi-chevron-down" aria-hidden="true"></i>
+        </summary>
+        <div class="plan-form-grid plan-advanced-options__content">
+          <div class="form-group">
+            <label class="form-label" for="plan-bonus-months">Meses bônus</label>
+            <input
+              id="plan-bonus-months"
+              type="number"
+              class="form-control"
+              formControlName="bonusMonths"
+              min="0"
+              step="1"
+              inputmode="numeric"
+            />
+            <small class="form-help">Use zero quando o plano não oferecer meses extras.</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="plan-sort-order">Posição na listagem</label>
+            <input
+              id="plan-sort-order"
+              type="number"
+              class="form-control"
+              formControlName="sortOrder"
+              min="0"
+              step="1"
+              inputmode="numeric"
+            />
+            <small class="form-help">Números menores aparecem primeiro.</small>
+          </div>
+        </div>
+      </details>
+
+      <label class="toggle-card plan-active-card" for="plan-is-active">
+        <input id="plan-is-active" type="checkbox" formControlName="isActive" />
+        <span>
+          <strong>Disponibilizar este plano</strong>
+          <small>Quando ativo, o plano fica disponível para contratação.</small>
+        </span>
+      </label>
     </div>
 
     <div class="modal-card-footer">
@@ -440,7 +581,7 @@
         @if (isSavingPlan()) {
           <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
         }
-        SALVAR
+        {{ selectedPlan() ? 'SALVAR ALTERAÇÕES' : 'REVISAR E CADASTRAR' }}
       </button>
     </div>
   </div>
@@ -474,7 +615,7 @@
       <dl class="confirmation-summary">
         <div>
           <dt>Plano</dt>
-          <dd>{{ pendingPlanPayload()?.name || 'N/D' }}</dd>
+          <dd>{{ pendingPlanPayload()?.name || 'Não informado' }}</dd>
         </div>
         <div>
           <dt>Segmento</dt>
@@ -546,7 +687,7 @@
       <dl class="confirmation-summary confirmation-summary--danger">
         <div>
           <dt>Plano</dt>
-          <dd>{{ planToDelete()?.name || 'N/D' }}</dd>
+          <dd>{{ planToDelete()?.name || 'Não informado' }}</dd>
         </div>
         <div>
           <dt>Segmento</dt>
@@ -558,7 +699,7 @@
         </div>
         <div>
           <dt>Ciclo</dt>
-          <dd>{{ planToDelete() ? formatInterval(planToDelete()!) : 'N/D' }}</dd>
+          <dd>{{ planToDelete() ? formatInterval(planToDelete()!) : 'Não informado' }}</dd>
         </div>
         <div>
           <dt>Status</dt>

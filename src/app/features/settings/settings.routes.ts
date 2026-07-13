@@ -12,10 +12,8 @@ export const SETTINGS_ROUTES: Routes = [
   {
     path: 'api',
     loadComponent: () =>
-      import('./pages/settings-page/settings-page.component').then(
-        (m) => m.SettingsPageComponent
-      ),
-    data: { title: 'Ferramentas da API' },
+      import('./pages/settings-page/settings-page.component').then((m) => m.SettingsPageComponent),
+    data: { title: 'Arquivos e perfil' },
   },
   {
     path: 'new',

@@ -10,8 +10,10 @@ import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar
 import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/loading-skeleton.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { ErrorStateComponent } from '@shared/components/error-state/error-state.component';
+import { InfluencerRegionalRankingComponent } from '../../components/influencer-regional-ranking/influencer-regional-ranking.component';
 import { InfluencersService } from '../../services/influencers.service';
 import { AdminInfluencer, AdminInfluencerStatus } from '../../models/influencer.model';
+import { getCityDisplay, getStateDisplay } from '../../utils/user-display.utils';
 
 @Component({
   selector: 'app-influencers-list',
@@ -24,6 +26,7 @@ import { AdminInfluencer, AdminInfluencerStatus } from '../../models/influencer.
     LoadingSkeletonComponent,
     EmptyStateComponent,
     ErrorStateComponent,
+    InfluencerRegionalRankingComponent,
   ],
   templateUrl: './influencers-list.component.html',
   styleUrls: ['./influencers-list.component.scss'],
@@ -43,6 +46,8 @@ export class InfluencersListComponent implements OnInit, OnDestroy {
   readonly isLoading = signal(false);
   readonly hasError = signal(false);
   readonly showFilters = signal(false);
+  readonly getCityDisplay = getCityDisplay;
+  readonly getStateDisplay = getStateDisplay;
   readonly statusOptions: Array<{ label: string; value: AdminInfluencerStatus | '' }> = [
     { label: 'Todos os status', value: '' },
     { label: 'Ativos', value: 'Active' },

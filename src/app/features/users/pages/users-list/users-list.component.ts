@@ -23,6 +23,8 @@ import {
   billingTypeOptions,
   booleanFilterOptions,
   getBillingTypeLabel,
+  getCityDisplay,
+  getStateDisplay,
   normalizeBillingTypeFilterValue,
   normalizeBooleanFilterValue,
   normalizeNumberFilterValue,
@@ -85,6 +87,8 @@ export class UsersListComponent implements OnInit, OnDestroy {
   readonly statusOptions = statusOptions;
   readonly profileTypeOptions = profileTypeOptions;
   readonly booleanFilterOptions = booleanFilterOptions;
+  readonly getCityDisplay = getCityDisplay;
+  readonly getStateDisplay = getStateDisplay;
   readonly stateOptions = [
     { value: 'AC', label: 'Acre' },
     { value: 'AL', label: 'Alagoas' },
@@ -144,7 +148,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
         profileType: this.profileTypeControl.value || undefined,
         billingType: normalizeBillingTypeFilterValue(this.billingTypeControl.value),
         city: normalizeTextFilterValue(this.cityControl.value),
-        state: normalizeTextFilterValue(this.stateControl.value),
+        state: this.getSelectedStateName(),
         referredByInfluencerId: this.referredByInfluencerIdControl.value || undefined,
         hasActiveService: normalizeBooleanFilterValue(this.hasActiveServiceControl.value),
         hasSubscription: normalizeBooleanFilterValue(this.hasSubscriptionControl.value),
@@ -212,6 +216,15 @@ export class UsersListComponent implements OnInit, OnDestroy {
     this.maxSubscriptionAmountControl.setValue('', { emitEvent: false });
     this.currentPage.set(1);
     this.loadUsers();
+  }
+
+  private getSelectedStateName(): string | undefined {
+    const selectedState = normalizeTextFilterValue(this.stateControl.value);
+    if (!selectedState) {
+      return undefined;
+    }
+
+    return this.stateOptions.find((state) => state.value === selectedState)?.label ?? selectedState;
   }
 
   private registerFilterChanges(): void {

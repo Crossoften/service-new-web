@@ -194,7 +194,7 @@ export class SettingsPageComponent implements OnInit {
       this.currentUser()?.fileKey || this.toolsForm.controls.profileFileKey.value.trim();
 
     if (!fileKey) {
-      this.toastService.showError('Nenhum fileKey disponivel para remover a foto.');
+      this.toastService.showError('Não foi possível identificar a foto de perfil.');
       return;
     }
 

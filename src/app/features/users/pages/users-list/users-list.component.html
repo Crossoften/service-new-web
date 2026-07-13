@@ -226,6 +226,8 @@
                 <th scope="col">Tipo</th>
                 <th scope="col">Email</th>
                 <th scope="col">Celular</th>
+                <th scope="col">Cidade</th>
+                <th scope="col">Estado</th>
                 <th scope="col">Serviços</th>
                 <th scope="col">Cobrança</th>
                 <th scope="col">Status</th>
@@ -256,6 +258,8 @@
                   </td>
                   <td data-label="Email">{{ user.email }}</td>
                   <td data-label="Celular">{{ user.phone || 'Não informado' }}</td>
+                  <td data-label="Cidade">{{ getCityDisplay(user.address?.city) }}</td>
+                  <td data-label="Estado">{{ getStateDisplay(user.address?.state) }}</td>
                   <td data-label="Serviços">{{ user.openServices ?? 'Não informado' }}</td>
                   <td data-label="Cobrança">
                     <span

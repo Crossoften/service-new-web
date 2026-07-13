@@ -3,7 +3,7 @@
 
   <main class="main-content">
     <div class="page-wrapper">
-      <p class="breadcrumb-label">COBERTURA DE CONTRATO</p>
+      <p class="breadcrumb-label">RECURSO INDISPONÍVEL</p>
       <h1 class="page-title">{{ title }}</h1>
 
       <section class="notice-card">
@@ -12,23 +12,11 @@
         </div>
 
         <div class="notice-content">
-          <h2>Módulo sem endpoint no backend atual</h2>
-          <p>{{ summary }}</p>
+          <h2>Este recurso ainda não está disponível</h2>
           <p>
-            Para manter a integração consistente, a navegação foi preservada, mas o fluxo ficou
-            bloqueado até que a API correspondente seja disponibilizada.
+            A opção já aparece no portal, mas ainda não pode ser utilizada. Tente novamente mais
+            tarde.
           </p>
-
-          @if (missingEndpoints.length) {
-            <div class="endpoint-list">
-              <h3>Endpoints faltantes para esta tela</h3>
-              <ul>
-                @for (endpoint of missingEndpoints; track endpoint) {
-                  <li>{{ endpoint }}</li>
-                }
-              </ul>
-            </div>
-          }
 
           <a class="action-link" [routerLink]="actionRoute">
             {{ actionLabel }}

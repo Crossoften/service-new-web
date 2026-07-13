@@ -163,6 +163,14 @@ export function formatFollowers(value: number | null | undefined): string {
   return value.toLocaleString('pt-BR');
 }
 
+export function getCityDisplay(city: string | null | undefined): string {
+  return normalizeText(city) || 'Não informada';
+}
+
+export function getStateDisplay(state: string | null | undefined): string {
+  return normalizeText(state) || 'Não informado';
+}
+
 export function formatLocation(address: Partial<AdminUserAddress> | null | undefined): string {
   const city = normalizeText(address?.city);
   const state = normalizeState(address?.state);

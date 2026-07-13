@@ -17,7 +17,7 @@ export type AdminUserProfileType =
   | 'Unknown';
 
 export interface AdminUserAddress {
-  id: number;
+  id?: number;
   street?: string | null;
   number?: string | null;
   neighborhood?: string | null;

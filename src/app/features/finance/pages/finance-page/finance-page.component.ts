@@ -4,11 +4,12 @@ import {
   OnInit,
   TemplateRef,
   ViewChild,
+  computed,
   inject,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -21,6 +22,7 @@ import {
   CreatePlanPayload,
   FinanceInfluencerCommission,
   Plan,
+  PlanInterval,
   PlatformSettings,
   ServiceCategoryFinance,
   UpdatePlanPayload,
@@ -32,6 +34,33 @@ type FeedbackModalState = {
   icon: string;
   variant: 'success';
 };
+
+type PlanSegmentMode = 'all' | 'specific';
+
+type PlatformForm = FormGroup<{
+  influencerCommissionRate: FormControl<number | null>;
+}>;
+
+type ServiceCategoryRateForm = FormGroup<{
+  platformFeeRate: FormControl<number | null>;
+}>;
+
+type PartnerCommissionForm = FormGroup<{
+  commissionRate: FormControl<number | null>;
+  useGlobalRate: FormControl<boolean | null>;
+}>;
+
+type PlanForm = FormGroup<{
+  name: FormControl<string | null>;
+  slug: FormControl<string | null>;
+  description: FormControl<string | null>;
+  price: FormControl<number | null>;
+  interval: FormControl<'Month' | 'Year' | null>;
+  bonusMonths: FormControl<number | null>;
+  categoryId: FormControl<number | null>;
+  isActive: FormControl<boolean | null>;
+  sortOrder: FormControl<number | null>;
+}>;
 
 @Component({
   selector: 'app-finance-page',
@@ -49,7 +78,6 @@ type FeedbackModalState = {
 })
 export class FinancePageComponent implements OnInit, OnDestroy {
   private readonly modal = inject(NgbModal);
-  private readonly fb = inject(FormBuilder);
   private readonly financeService = inject(FinanceService);
   private readonly destroy$ = new Subject<void>();
 
@@ -61,6 +89,18 @@ export class FinancePageComponent implements OnInit, OnDestroy {
   readonly isSavingPlatform = signal(false);
 
   readonly serviceCategories = signal<ServiceCategoryFinance[]>([]);
+  readonly planCategorySearch = signal('');
+  readonly planSegmentMode = signal<PlanSegmentMode>('all');
+  readonly filteredPlanCategories = computed(() => {
+    const term = this.normalizeSearch(this.planCategorySearch());
+    if (!term) {
+      return this.serviceCategories();
+    }
+
+    return this.serviceCategories().filter((category) =>
+      this.normalizeSearch(category.name).includes(term)
+    );
+  });
   readonly isLoadingServiceCategories = signal(false);
   readonly hasServiceCategoriesError = signal(false);
   readonly selectedServiceCategory = signal<ServiceCategoryFinance | null>(null);
@@ -83,10 +123,10 @@ export class FinancePageComponent implements OnInit, OnDestroy {
   readonly planToDelete = signal<Plan | null>(null);
   readonly feedbackModal = signal<FeedbackModalState | null>(null);
 
-  platformForm!: FormGroup;
-  serviceCategoryRateForm!: FormGroup;
-  partnerCommissionForm!: FormGroup;
-  planForm!: FormGroup;
+  platformForm!: PlatformForm;
+  serviceCategoryRateForm!: ServiceCategoryRateForm;
+  partnerCommissionForm!: PartnerCommissionForm;
+  planForm!: PlanForm;
   private activeModalRef: NgbModalRef | null = null;
   private confirmationModalRef: NgbModalRef | null = null;
   private feedbackModalRef: NgbModalRef | null = null;
@@ -142,11 +182,11 @@ export class FinancePageComponent implements OnInit, OnDestroy {
   }
 
   openPlatformModal(templateRef: TemplateRef<unknown>): void {
-    this.platformForm = this.fb.group({
-      influencerCommissionRate: [
+    this.platformForm = new FormGroup({
+      influencerCommissionRate: new FormControl(
         this.platformSettings()?.influencerCommissionRate ?? 0,
-        [Validators.required, Validators.min(0), Validators.max(100)],
-      ],
+        [Validators.required, Validators.min(0), Validators.max(100)]
+      ),
     });
 
     this.activeModalRef = this.modal.open(templateRef, { centered: true, size: 'md' });
@@ -179,11 +219,12 @@ export class FinancePageComponent implements OnInit, OnDestroy {
 
   selectServiceCategory(category: ServiceCategoryFinance): void {
     this.selectedServiceCategory.set(category);
-    this.serviceCategoryRateForm = this.fb.group({
-      platformFeeRate: [
-        category.platformFeeRate,
-        [Validators.required, Validators.min(0), Validators.max(100)],
-      ],
+    this.serviceCategoryRateForm = new FormGroup({
+      platformFeeRate: new FormControl(category.platformFeeRate, [
+        Validators.required,
+        Validators.min(0),
+        Validators.max(100),
+      ]),
     });
   }
 
@@ -201,7 +242,7 @@ export class FinancePageComponent implements OnInit, OnDestroy {
     this.isSavingServiceCategory.set(true);
     this.financeService
       .updateServiceCategoryPlatformFeeRate(category.id, {
-        platformFeeRate: Number(this.serviceCategoryRateForm.value.platformFeeRate),
+        platformFeeRate: Number(this.serviceCategoryRateForm.controls.platformFeeRate.value),
       })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -249,12 +290,12 @@ export class FinancePageComponent implements OnInit, OnDestroy {
 
   selectPartnerCommission(partner: FinanceInfluencerCommission): void {
     this.selectedPartnerCommission.set(partner);
-    this.partnerCommissionForm = this.fb.group({
-      commissionRate: [
+    this.partnerCommissionForm = new FormGroup({
+      commissionRate: new FormControl(
         partner.commissionRate ?? partner.effectiveCommissionRate ?? 0,
-        [Validators.min(0), Validators.max(100)],
-      ],
-      useGlobalRate: [partner.commissionRate == null],
+        [Validators.min(0), Validators.max(100)]
+      ),
+      useGlobalRate: new FormControl(partner.commissionRate == null),
     });
   }
 
@@ -269,8 +310,8 @@ export class FinancePageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const useGlobalRate = Boolean(this.partnerCommissionForm.value.useGlobalRate);
-    const commissionRateValue = Number(this.partnerCommissionForm.value.commissionRate);
+    const useGlobalRate = Boolean(this.partnerCommissionForm.controls.useGlobalRate.value);
+    const commissionRateValue = Number(this.partnerCommissionForm.controls.commissionRate.value);
     const commissionRate = useGlobalRate ? null : commissionRateValue;
 
     this.isSavingPartnerCommission.set(true);
@@ -279,17 +320,6 @@ export class FinancePageComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          const updatedPartner: FinanceInfluencerCommission = {
-            ...partner,
-            commissionRate: useGlobalRate ? null : commissionRateValue,
-            effectiveCommissionRate: useGlobalRate
-              ? partner.effectiveCommissionRate
-              : commissionRateValue,
-          };
-          this.partnerCommissions.update((partners) =>
-            partners.map((item) => (item.id === partner.id ? updatedPartner : item))
-          );
-          this.selectedPartnerCommission.set(updatedPartner);
           this.isSavingPartnerCommission.set(false);
           this.showFeedbackModal({
             title: 'Comissão atualizada',
@@ -297,6 +327,7 @@ export class FinancePageComponent implements OnInit, OnDestroy {
             icon: 'bi-check2-circle',
             variant: 'success',
           });
+          this.loadPartnerCommissions();
         },
         error: () => this.isSavingPartnerCommission.set(false),
       });
@@ -312,7 +343,7 @@ export class FinancePageComponent implements OnInit, OnDestroy {
 
     this.financeService
       .updatePlatformSettings({
-        influencerCommissionRate: Number(this.platformForm.value.influencerCommissionRate),
+        influencerCommissionRate: Number(this.platformForm.controls.influencerCommissionRate.value),
       })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -333,13 +364,18 @@ export class FinancePageComponent implements OnInit, OnDestroy {
 
   openCreatePlanModal(templateRef: TemplateRef<unknown>): void {
     this.selectedPlan.set(null);
+    this.planCategorySearch.set('');
+    this.planSegmentMode.set('all');
     this.planForm = this.createPlanForm();
     this.activeModalRef = this.modal.open(templateRef, { centered: true, size: 'lg' });
   }
 
   openEditPlanModal(plan: Plan, templateRef: TemplateRef<unknown>): void {
     this.selectedPlan.set(plan);
+    this.planCategorySearch.set('');
+    this.planSegmentMode.set(plan.categoryId ? 'specific' : 'all');
     this.planForm = this.createPlanForm(plan);
+    this.configureCategoryValidation();
     this.activeModalRef = this.modal.open(templateRef, { centered: true, size: 'lg' });
   }
   savePlan(confirmTemplateRef?: TemplateRef<unknown>): void {
@@ -483,14 +519,60 @@ export class FinancePageComponent implements OnInit, OnDestroy {
 
   formatPercent(value: number | null | undefined): string {
     if (value == null) {
-      return 'N/D';
+      return 'Não informado';
     }
 
     return `${value.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`;
   }
 
-  formatProviderRate(category: ServiceCategoryFinance): string {
-    return this.formatPercent(100 - Number(category.platformFeeRate ?? 0));
+  providerNetValueLabel(): string {
+    return 'Valor líquido ainda não disponível';
+  }
+
+  updatePlanCategorySearch(value: Event): void {
+    const target = value.target as HTMLInputElement | null;
+    this.planCategorySearch.set(target?.value ?? '');
+  }
+
+  selectPlanCategory(categoryId: number | null): void {
+    this.planForm.controls.categoryId.setValue(categoryId);
+    this.planForm.controls.categoryId.markAsTouched();
+  }
+
+  selectPlanInterval(interval: PlanInterval): void {
+    this.planForm.controls.interval.setValue(interval);
+    this.planForm.controls.interval.markAsTouched();
+  }
+
+  selectPlanSegmentMode(mode: PlanSegmentMode): void {
+    this.planSegmentMode.set(mode);
+    if (mode === 'all') {
+      this.planForm.controls.categoryId.setValue(null);
+      this.planCategorySearch.set('');
+    }
+    this.configureCategoryValidation();
+  }
+
+  isPlanCategorySelected(categoryId: number | null): boolean {
+    return this.planForm.controls.categoryId.value === categoryId;
+  }
+
+  selectedPlanCategory(): ServiceCategoryFinance | undefined {
+    const categoryId = this.planForm.controls.categoryId.value;
+    return this.serviceCategories().find((category) => category.id === categoryId);
+  }
+
+  isPlanControlInvalid(controlName: keyof PlanForm['controls']): boolean {
+    const control = this.planForm.controls[controlName];
+    return control.invalid && (control.dirty || control.touched);
+  }
+
+  private normalizeSearch(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
   }
 
   partnerCommissionLabel(partner: FinanceInfluencerCommission): string {
@@ -507,12 +589,12 @@ export class FinancePageComponent implements OnInit, OnDestroy {
 
   formatDate(value: string | null | undefined): string {
     if (!value) {
-      return 'N/D';
+      return 'Não informado';
     }
 
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
-      return 'N/D';
+      return 'Não informado';
     }
 
     return date.toLocaleString('pt-BR');
@@ -520,12 +602,12 @@ export class FinancePageComponent implements OnInit, OnDestroy {
 
   formatCurrency(value: string | number | null | undefined): string {
     if (value == null || value === '') {
-      return 'N/D';
+      return 'Não informado';
     }
 
     const numericValue = Number(value);
     if (Number.isNaN(numericValue)) {
-      return 'N/D';
+      return 'Não informado';
     }
 
     return numericValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -533,8 +615,7 @@ export class FinancePageComponent implements OnInit, OnDestroy {
 
   formatInterval(plan: Plan): string {
     const intervalLabel = plan.interval === 'Year' ? 'ano' : 'mês';
-    const count = plan.intervalCount || 1;
-    const base = count === 1 ? `A cada ${intervalLabel}` : `A cada ${count} ${intervalLabel}s`;
+    const base = `A cada ${intervalLabel}`;
     return plan.bonusMonths ? `${base} + ${plan.bonusMonths} mês(es) bônus` : base;
   }
 
@@ -555,45 +636,67 @@ export class FinancePageComponent implements OnInit, OnDestroy {
 
   formatPayloadInterval(payload: CreatePlanPayload | null): string {
     if (!payload) {
-      return 'N/D';
+      return 'Não informado';
     }
 
     const intervalLabel = payload.interval === 'Year' ? 'ano' : 'mês';
-    const count = payload.intervalCount || 1;
-    const base = count === 1 ? `A cada ${intervalLabel}` : `A cada ${count} ${intervalLabel}s`;
+    const base = `A cada ${intervalLabel}`;
     return payload.bonusMonths ? `${base} + ${payload.bonusMonths} mês(es) bônus` : base;
   }
 
-  private createPlanForm(plan?: Plan): FormGroup {
-    return this.fb.group({
-      name: [plan?.name ?? '', [Validators.required, Validators.maxLength(120)]],
-      slug: [plan?.slug ?? '', [Validators.required, Validators.maxLength(120)]],
-      description: [plan?.description ?? '', [Validators.maxLength(500)]],
-      price: [plan ? Number(plan.price) : 0, [Validators.required, Validators.min(0)]],
-      interval: [plan?.interval ?? 'Month', [Validators.required]],
-      intervalCount: [plan?.intervalCount ?? 1, [Validators.required, Validators.min(1)]],
-      bonusMonths: [plan?.bonusMonths ?? 0, [Validators.min(0)]],
-      categoryId: [plan?.categoryId ?? null],
-      isActive: [plan?.isActive ?? true],
-      sortOrder: [plan?.sortOrder ?? this.plans().length + 1, [Validators.min(0)]],
+  private createPlanForm(plan?: Plan): PlanForm {
+    return new FormGroup({
+      name: new FormControl(plan?.name ?? '', [Validators.required, Validators.maxLength(120)]),
+      slug: new FormControl(plan?.slug ?? '', [Validators.maxLength(120)]),
+      description: new FormControl(plan?.description ?? '', [Validators.maxLength(500)]),
+      price: new FormControl(plan ? Number(plan.price) : 0, [
+        Validators.required,
+        Validators.min(0),
+      ]),
+      interval: new FormControl<PlanInterval>(plan?.interval ?? 'Month', [Validators.required]),
+      bonusMonths: new FormControl(plan?.bonusMonths ?? 0, [Validators.min(0)]),
+      categoryId: new FormControl(plan?.categoryId ?? null),
+      isActive: new FormControl(plan?.isActive ?? true),
+      sortOrder: new FormControl(plan?.sortOrder ?? this.plans().length + 1, [Validators.min(0)]),
     });
   }
 
   private buildPlanPayload(): CreatePlanPayload | UpdatePlanPayload {
-    const value = this.planForm.value;
+    const value = this.planForm.getRawValue();
+    const name = String(value.name ?? '').trim();
     const description = String(value.description ?? '').trim();
+    const slug = String(value.slug ?? '').trim() || this.createPlanSlug(name);
 
     return {
-      name: String(value.name ?? '').trim(),
-      slug: String(value.slug ?? '').trim(),
+      name,
+      slug,
       ...(description ? { description } : {}),
       price: Number(value.price),
-      interval: value.interval,
-      intervalCount: Number(value.intervalCount),
+      interval: value.interval ?? 'Month',
+      intervalCount: 1,
       bonusMonths: Number(value.bonusMonths ?? 0),
-      categoryId: value.categoryId ? Number(value.categoryId) : null,
+      categoryId: value.categoryId != null ? Number(value.categoryId) : null,
       isActive: Boolean(value.isActive),
       sortOrder: Number(value.sortOrder ?? 0),
     };
+  }
+
+  private configureCategoryValidation(): void {
+    const categoryControl = this.planForm.controls.categoryId;
+    if (this.planSegmentMode() === 'specific') {
+      categoryControl.setValidators([Validators.required]);
+    } else {
+      categoryControl.clearValidators();
+    }
+    categoryControl.updateValueAndValidity();
+  }
+
+  private createPlanSlug(name: string): string {
+    return name
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 }

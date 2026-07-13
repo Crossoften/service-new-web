@@ -14,6 +14,10 @@ import {
   AdminProviderApiDetail,
   ProviderHistoryApiItem,
   AdminProviderHistoryApiResponse,
+  ProviderRegionalRankingApiItem,
+  ProviderRegionalRankingApiResponse,
+  ProviderRegionalRankingFilters,
+  ProviderRegionalRankingItem,
 } from '../models/supplier.model';
 
 @Injectable({ providedIn: 'root' })
@@ -67,6 +71,17 @@ export class SuppliersService {
           count: res.totalRecords,
         }))
       );
+  }
+
+  getRegionalRanking(
+    filters: ProviderRegionalRankingFilters
+  ): Observable<ProviderRegionalRankingItem[]> {
+    return this.apiService
+      .get<ProviderRegionalRankingApiResponse>('/v1/admin-users/ranking/providers-by-location', {
+        state: filters.state,
+        city: filters.city,
+      })
+      .pipe(map((response) => this.mapRegionalRankingResponse(response)));
   }
 
   private mapProviderFromList(item: AdminProviderApiListItem): AdminProvider {
@@ -126,5 +141,34 @@ export class SuppliersService {
   private mapStatus(status: string): AdminProviderStatus {
     if (status === 'Active' || status === 'Pending' || status === 'Inactive') return status;
     return 'Inactive';
+  }
+
+  private mapRegionalRankingResponse(
+    response: ProviderRegionalRankingApiResponse
+  ): ProviderRegionalRankingItem[] {
+    const items = Array.isArray(response)
+      ? response
+      : (response.providers ??
+        response.ranking ??
+        response.rankings ??
+        response.data ??
+        response.items ??
+        response.results ??
+        []);
+
+    return items.map((item) => this.mapRegionalRankingItem(item));
+  }
+
+  private mapRegionalRankingItem(
+    item: ProviderRegionalRankingApiItem
+  ): ProviderRegionalRankingItem {
+    return {
+      position: item.position ?? item.ranking ?? item.rank ?? null,
+      city: item.city ?? null,
+      state: item.state ?? null,
+      totalProviders: item.totalProviders ?? item.providersCount ?? item.totalSuppliers ?? null,
+      totalActiveServices:
+        item.totalActiveServices ?? item.activeServices ?? item.totalServices ?? null,
+    };
   }
 }

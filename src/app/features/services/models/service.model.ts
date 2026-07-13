@@ -95,6 +95,20 @@ export interface AdminServiceClientsParams {
   skip?: number;
 }
 
+export interface ServicePurchasesRegionalRankingFilters {
+  state: string;
+  city: string;
+}
+
+export interface ServicePurchasesRegionalRankingItem {
+  position: number | null;
+  city: string | null;
+  state: string | null;
+  totalPurchases: number | null;
+  totalWorks: number | null;
+  totalValue: number | null;
+}
+
 // API response interfaces — raw shapes from the real API
 export interface AdminServiceApiListItem {
   id: number;
@@ -159,6 +173,32 @@ export interface AdminServiceClientsApiResponse {
   totalPages: number;
   totalRecords: number;
 }
+
+export interface ServicePurchasesRegionalRankingApiItem {
+  position?: number | null;
+  ranking?: number | null;
+  rank?: number | null;
+  city?: string | null;
+  state?: string | null;
+  totalPurchases?: number | null;
+  purchasesCount?: number | null;
+  totalWorks?: number | null;
+  worksCount?: number | null;
+  totalValue?: number | null;
+  totalAmount?: number | null;
+  amount?: number | null;
+}
+
+export type ServicePurchasesRegionalRankingApiResponse =
+  | ServicePurchasesRegionalRankingApiItem[]
+  | {
+      purchases?: ServicePurchasesRegionalRankingApiItem[];
+      ranking?: ServicePurchasesRegionalRankingApiItem[];
+      rankings?: ServicePurchasesRegionalRankingApiItem[];
+      data?: ServicePurchasesRegionalRankingApiItem[];
+      items?: ServicePurchasesRegionalRankingApiItem[];
+      results?: ServicePurchasesRegionalRankingApiItem[];
+    };
 
 // Legacy alias
 export type Service = AdminService;

@@ -5,7 +5,9 @@ import {
   formatFollowers,
   formatLocation,
   getBillingTypeLabel,
+  getCityDisplay,
   getSocialNetworkLabel,
+  getStateDisplay,
   normalizeBillingTypeFilterValue,
   normalizeBooleanFilterValue,
   normalizeNumberFilterValue,
@@ -35,6 +37,15 @@ describe('user display utilities', () => {
     expect(formatLocation(null)).toBe('Não informado');
   });
 
+  it('formats city and state columns independently without converting full state names', () => {
+    expect(getCityDisplay('  Rio de Janeiro  ')).toBe('Rio de Janeiro');
+    expect(getCityDisplay('')).toBe('Não informada');
+    expect(getCityDisplay(null)).toBe('Não informada');
+    expect(getStateDisplay('São Paulo')).toBe('São Paulo');
+    expect(getStateDisplay('')).toBe('Não informado');
+    expect(getStateDisplay(undefined)).toBe('Não informado');
+  });
+
   it('formats social follower counts in friendly Portuguese abbreviations', () => {
     expect(formatFollowers(999)).toBe('999');
     expect(formatFollowers(15400)).toBe('15,4 mil');
@@ -45,7 +56,7 @@ describe('user display utilities', () => {
   it('translates billing and social network labels', () => {
     expect(getBillingTypeLabel('Subscription')).toBe('Assinatura');
     expect(getBillingTypeLabel('Commission')).toBe('Comissão');
-    expect(getBillingTypeLabel(null)).toBe('Não definido');
+    expect(getBillingTypeLabel(null)).toBe('Não paga');
     expect(getSocialNetworkLabel('YouTube')).toBe('YouTube');
   });
 

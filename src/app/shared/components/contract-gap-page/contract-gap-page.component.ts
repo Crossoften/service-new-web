@@ -17,22 +17,11 @@ export class ContractGapPageComponent {
     return this.route.snapshot.data['moduleTitle'] || 'Modulo';
   }
 
-  get summary(): string {
-    return (
-      this.route.snapshot.data['summary'] ||
-      'O backend documentado ainda não disponibiliza endpoints para esta área da aplicação.'
-    );
-  }
-
   get actionLabel(): string {
     return this.route.snapshot.data['actionLabel'] || 'Voltar';
   }
 
   get actionRoute(): string {
     return this.route.snapshot.data['actionRoute'] || '/dashboard';
-  }
-
-  get missingEndpoints(): string[] {
-    return this.route.snapshot.data['missingEndpoints'] || [];
   }
 }

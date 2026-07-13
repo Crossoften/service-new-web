@@ -131,4 +131,40 @@ describe('FinancePageComponent partner commissions', () => {
     expect(payload.categoryId).toBe(3);
     expect(component.planSegmentLabel(plan)).toBe('Advogados');
   });
+
+  it('keeps the cycle count out of the form and sends the backend-required value as 1', () => {
+    const privateComponent = component as unknown as FinancePagePrivate;
+    component.planForm = privateComponent.createPlanForm({ ...plan, intervalCount: 6 });
+
+    const payload = privateComponent.buildPlanPayload();
+
+    expect(component.planForm.contains('intervalCount')).toBe(false);
+    expect(payload.intervalCount).toBe(1);
+    expect(component.formatInterval({ ...plan, intervalCount: 6 })).toBe('A cada mês');
+  });
+
+  it('generates the internal plan code from the name when creating a plan', () => {
+    const privateComponent = component as unknown as FinancePagePrivate;
+    component.planForm = privateComponent.createPlanForm();
+    component.planForm.patchValue({ name: 'Plano Saúde & Bem-estar', price: 79.9 });
+
+    const payload = privateComponent.buildPlanPayload();
+
+    expect(payload.slug).toBe('plano-saude-bem-estar');
+  });
+
+  it('requires a category only when the plan is limited to a specific segment', () => {
+    const privateComponent = component as unknown as FinancePagePrivate;
+    component.planForm = privateComponent.createPlanForm();
+
+    component.selectPlanSegmentMode('specific');
+    expect(component.planForm.controls.categoryId.hasError('required')).toBe(true);
+
+    component.selectPlanCategory(serviceCategory.id);
+    expect(component.planForm.controls.categoryId.valid).toBe(true);
+
+    component.selectPlanSegmentMode('all');
+    expect(component.planForm.controls.categoryId.value).toBeNull();
+    expect(component.planForm.controls.categoryId.valid).toBe(true);
+  });
 });

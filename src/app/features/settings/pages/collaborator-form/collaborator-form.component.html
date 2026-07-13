@@ -18,7 +18,7 @@
                   id="col-code"
                   type="text"
                   class="form-control"
-                  [value]="collaborator()?.code ?? 'Gerado pela API'"
+                  [value]="collaborator()?.code ?? 'Gerado automaticamente'"
                   readonly
                 />
               </div>
@@ -108,7 +108,11 @@
                 </div>
                 @if (isFieldInvalid('password')) {
                   <div class="invalid-feedback">
-                    {{ isEditing ? 'Se informada, a senha deve ter entre 4 e 8 caracteres.' : 'Senha obrigatória com 4 a 8 caracteres.' }}
+                    {{
+                      isEditing
+                        ? 'Se informada, a senha deve ter entre 4 e 8 caracteres.'
+                        : 'Senha obrigatória com 4 a 8 caracteres.'
+                    }}
                   </div>
                 }
               </div>
@@ -130,8 +134,13 @@
 
             @if (collaborator()) {
               <div class="metadata-row">
-                <span>Perfil: <strong>{{ collaborator()?.role }}</strong></span>
-                <span>Atualizado em: <strong>{{ collaborator()?.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</strong></span>
+                <span
+                  >Perfil: <strong>{{ collaborator()?.role }}</strong></span
+                >
+                <span
+                  >Atualizado em:
+                  <strong>{{ collaborator()?.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</strong></span
+                >
               </div>
             }
 

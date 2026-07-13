@@ -32,13 +32,13 @@
       } @else if (hasError()) {
         <app-error-state
           [title]="'Erro ao carregar colaboradores'"
-          [description]="'Não foi possível buscar os admins do Portal Gerencial. Tente novamente.'"
+          [description]="'Não foi possível buscar os colaboradores. Tente novamente.'"
           (retry)="loadCollaborators()"
         ></app-error-state>
       } @else if (!collaborators().length) {
         <app-empty-state
           [title]="'Nenhum colaborador encontrado'"
-          [description]="'A API não retornou admins para os filtros atuais.'"
+          [description]="'Não há colaboradores para os filtros selecionados.'"
           [icon]="'bi-person-badge'"
         ></app-empty-state>
       } @else {

@@ -8,7 +8,7 @@
       } @else if (hasError()) {
         <div class="error-state">
           <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
-          <p>Não foi possível carregar os dados do dashboard. Verifique a conexão com a API.</p>
+          <p>Não foi possível carregar o resumo. Verifique sua conexão e tente novamente.</p>
         </div>
       } @else {
         <section class="stats-grid" aria-label="Resumo do dashboard">
@@ -51,7 +51,7 @@
             <div class="chart-empty-state">
               <i class="bi bi-bar-chart" aria-hidden="true"></i>
               <strong>Gráfico mensal indisponível</strong>
-              <span>A API retornou a série mensal vazia para usuários e serviços.</span>
+              <span>Ainda não há dados mensais de usuários e serviços para exibir.</span>
             </div>
           }
         </section>

@@ -45,19 +45,18 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
   readonly hasError = signal(false);
   readonly cards = signal<DashboardCards | null>(null);
   readonly chartData = signal<DashboardChart | null>(null);
-
   readonly metricCards = computed<DashboardMetricCard[]>(() => {
     const c = this.cards();
     return [
       {
         label: 'Usuários',
-        value: c?.totalUsers != null ? String(c.totalUsers) : 'N/D',
+        value: c?.totalUsers != null ? String(c.totalUsers) : 'Não informado',
         icon: 'bi-briefcase',
         unavailable: c?.totalUsers == null,
       },
       {
         label: 'Serviços',
-        value: c?.totalServices != null ? String(c.totalServices) : 'N/D',
+        value: c?.totalServices != null ? String(c.totalServices) : 'Não informado',
         icon: 'bi-grid',
         unavailable: c?.totalServices == null,
       },
@@ -66,7 +65,7 @@ export class DashboardPageComponent implements OnInit, AfterViewInit, OnDestroy 
         value:
           c?.totalCashValue != null
             ? c.totalCashValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-            : 'N/D',
+            : 'Não informado',
         icon: 'bi-graph-up',
         unavailable: c?.totalCashValue == null,
       },

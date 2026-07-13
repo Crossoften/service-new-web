@@ -4,7 +4,7 @@
   <main class="main-content">
     <div class="page-wrapper">
       <p class="breadcrumb-label">CONFIGURAÇÃO</p>
-      <h1 class="page-title">Ferramentas da API</h1>
+      <h1 class="page-title">Arquivos e perfil</h1>
 
       <div class="settings-card">
         <div class="card-header">
@@ -42,7 +42,6 @@
                 </p>
                 <p><strong>Localização:</strong> {{ formatLocation(currentUser()?.address) }}</p>
                 <p><strong>Endereço:</strong> {{ formatFullAddress(currentUser()?.address) }}</p>
-                <p><strong>fileKey:</strong> {{ currentUser()?.fileKey || '-' }}</p>
               </div>
             </div>
 
@@ -78,7 +77,7 @@
               <button type="submit" class="btn-secondary" [disabled]="isSavingBillingType()">
                 @if (isSavingBillingType()) {
                   <span class="spinner" aria-hidden="true"></span>
-                  Salvando...
+                  Salvando…
                 } @else {
                   Salvar modelo de cobrança
                 }
@@ -89,12 +88,12 @@
               <div class="address-form-header">
                 <div>
                   <h3>Endereço do perfil</h3>
-                  <p>Atualize cidade, estado e número usando a rota dedicada do perfil.</p>
+                  <p>Atualize os dados de localização vinculados ao perfil.</p>
                 </div>
                 <button type="submit" class="btn-secondary" [disabled]="isSavingAddress()">
                   @if (isSavingAddress()) {
                     <span class="spinner" aria-hidden="true"></span>
-                    Salvando...
+                    Salvando…
                   } @else {
                     Salvar endereço
                   }
@@ -135,7 +134,8 @@
             <input
               type="text"
               class="form-control"
-              placeholder="fileKey da foto de perfil"
+              placeholder="Referência da foto de perfil"
+              aria-label="Referência da foto de perfil"
               [formControl]="toolsForm.controls.profileFileKey"
             />
             <button
@@ -146,7 +146,7 @@
             >
               @if (isRemovingProfilePhoto()) {
                 <span class="spinner" aria-hidden="true"></span>
-                Removendo...
+                Removendo…
               } @else {
                 Remover foto
               }
@@ -162,8 +162,8 @@
               <i class="bi bi-upload" aria-hidden="true"></i>
             </div>
             <div>
-              <h2 class="card-title">Upload unitário</h2>
-              <p class="card-description">Endpoint: <code>/v1/upload/one-file</code></p>
+              <h2 class="card-title">Enviar um arquivo</h2>
+              <p class="card-description">Selecione um arquivo para armazenar no portal.</p>
             </div>
           </div>
 
@@ -174,14 +174,14 @@
             </label>
 
             @if (isUploadingSingle()) {
-              <p class="inline-status">Enviando arquivo...</p>
+              <p class="inline-status">Enviando arquivo…</p>
             }
 
             @if (singleUploadResult()) {
               <div class="result-box">
-                <p><strong>fileKey:</strong> {{ singleUploadResult()?.fileKey }}</p>
+                <p><strong>Referência:</strong> {{ singleUploadResult()?.fileKey }}</p>
                 <a [href]="singleUploadResult()?.fileUrl" target="_blank" rel="noreferrer">
-                  Abrir URL retornada
+                  Abrir arquivo
                 </a>
               </div>
             }
@@ -194,8 +194,8 @@
               <i class="bi bi-collection" aria-hidden="true"></i>
             </div>
             <div>
-              <h2 class="card-title">Upload múltiplo</h2>
-              <p class="card-description">Endpoint: <code>/v1/upload/many-files</code> (max 5)</p>
+              <h2 class="card-title">Enviar vários arquivos</h2>
+              <p class="card-description">Selecione até 5 arquivos de uma vez.</p>
             </div>
           </div>
 
@@ -206,14 +206,14 @@
             </label>
 
             @if (isUploadingMany()) {
-              <p class="inline-status">Enviando arquivos...</p>
+              <p class="inline-status">Enviando arquivos…</p>
             }
 
             @if (manyUploadResults().length) {
               <div class="result-list">
                 @for (file of manyUploadResults(); track file.fileKey) {
                   <div class="result-box">
-                    <p><strong>fileKey:</strong> {{ file.fileKey }}</p>
+                    <p><strong>Referência:</strong> {{ file.fileKey }}</p>
                     <a [href]="file.fileUrl" target="_blank" rel="noreferrer">Abrir arquivo</a>
                   </div>
                 }
@@ -229,12 +229,9 @@
             <i class="bi bi-folder2-open" aria-hidden="true"></i>
           </div>
           <div>
-            <h2 class="card-title">Consulta, download e exclusao</h2>
+            <h2 class="card-title">Localizar, baixar ou remover arquivo</h2>
             <p class="card-description">
-              Usa <code>/v1/one-file/{{ '{id}' }}</code
-              >, <code>/download/{{ '{id}' }}</code> e <code>DELETE /v1/one-file/{{ '{id}' }}</code
-              >. Caso o backend use <code>fileKey</code> como identificador, informe o valor
-              retornado no upload.
+              Informe a referência exibida após o envio para localizar o arquivo desejado.
             </p>
           </div>
         </div>
@@ -244,7 +241,8 @@
             <input
               type="text"
               class="form-control"
-              placeholder="Informe o id ou fileKey"
+              placeholder="Informe a referência do arquivo"
+              aria-label="Referência do arquivo"
               [formControl]="toolsForm.controls.fileId"
             />
             <button
@@ -255,12 +253,12 @@
             >
               @if (isLookingUpFile()) {
                 <span class="spinner" aria-hidden="true"></span>
-                Consultando...
+                Consultando…
               } @else {
                 Consultar
               }
             </button>
-            <button type="button" class="btn-secondary" (click)="downloadFile()">Download</button>
+            <button type="button" class="btn-secondary" (click)="downloadFile()">Baixar</button>
             <button
               type="button"
               class="btn-danger"
@@ -269,7 +267,7 @@
             >
               @if (isDeletingFile()) {
                 <span class="spinner" aria-hidden="true"></span>
-                Excluindo...
+                Removendo…
               } @else {
                 Excluir
               }
@@ -278,9 +276,9 @@
 
           @if (fileLookupResult()) {
             <div class="result-box">
-              <p><strong>fileKey:</strong> {{ fileLookupResult()?.fileKey }}</p>
+              <p><strong>Referência:</strong> {{ fileLookupResult()?.fileKey }}</p>
               <a [href]="fileLookupResult()?.fileUrl" target="_blank" rel="noreferrer">
-                Abrir URL retornada
+                Abrir arquivo
               </a>
             </div>
           }
@@ -288,7 +286,7 @@
           @if (deletedFileResult()) {
             <div class="result-box deleted">
               <p><strong>Arquivo removido:</strong> {{ deletedFileResult()?.name }}</p>
-              <p><strong>fileKey:</strong> {{ deletedFileResult()?.fileKey }}</p>
+              <p><strong>Referência:</strong> {{ deletedFileResult()?.fileKey }}</p>
             </div>
           }
         </div>

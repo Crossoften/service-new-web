@@ -14,6 +14,10 @@ import {
   AdminServiceApiListResponse,
   AdminServiceClientsApiResponse,
   ServiceClientItem,
+  ServicePurchasesRegionalRankingApiItem,
+  ServicePurchasesRegionalRankingApiResponse,
+  ServicePurchasesRegionalRankingFilters,
+  ServicePurchasesRegionalRankingItem,
 } from '../models/service.model';
 
 @Injectable({ providedIn: 'root' })
@@ -67,6 +71,20 @@ export class ServicesService {
           count: res.totalRecords,
         }))
       );
+  }
+
+  getPurchasesRegionalRanking(
+    filters: ServicePurchasesRegionalRankingFilters
+  ): Observable<ServicePurchasesRegionalRankingItem[]> {
+    return this.apiService
+      .get<ServicePurchasesRegionalRankingApiResponse>(
+        '/v1/admin-services/ranking/purchases-by-location',
+        {
+          state: filters.state,
+          city: filters.city,
+        }
+      )
+      .pipe(map((response) => this.mapPurchasesRegionalRankingResponse(response)));
   }
 
   private mapServiceFromList(item: AdminServiceApiListItem): AdminService {
@@ -132,5 +150,34 @@ export class ServicesService {
       return type;
     }
     return 'Online';
+  }
+
+  private mapPurchasesRegionalRankingResponse(
+    response: ServicePurchasesRegionalRankingApiResponse
+  ): ServicePurchasesRegionalRankingItem[] {
+    const items = Array.isArray(response)
+      ? response
+      : (response.purchases ??
+        response.ranking ??
+        response.rankings ??
+        response.data ??
+        response.items ??
+        response.results ??
+        []);
+
+    return items.map((item) => this.mapPurchasesRegionalRankingItem(item));
+  }
+
+  private mapPurchasesRegionalRankingItem(
+    item: ServicePurchasesRegionalRankingApiItem
+  ): ServicePurchasesRegionalRankingItem {
+    return {
+      position: item.position ?? item.ranking ?? item.rank ?? null,
+      city: item.city ?? null,
+      state: item.state ?? null,
+      totalPurchases: item.totalPurchases ?? item.purchasesCount ?? null,
+      totalWorks: item.totalWorks ?? item.worksCount ?? null,
+      totalValue: item.totalValue ?? item.totalAmount ?? item.amount ?? null,
+    };
   }
 }

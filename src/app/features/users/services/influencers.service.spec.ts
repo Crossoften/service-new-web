@@ -84,4 +84,87 @@ describe('InfluencersService', () => {
       },
     ]);
   });
+
+  it('maps influencer address independently from total referrals', async () => {
+    apiService.get.mockReturnValue(
+      of({
+        influencers: [
+          {
+            id: 19,
+            name: 'Isabela',
+            email: 'isabela@email.com',
+            phone: null,
+            fileUrl: null,
+            ranking: 2,
+            totalReferrals: 1,
+            status: 'Active',
+            address: null,
+          },
+          {
+            id: 25,
+            name: 'Rafael Lima Santos',
+            email: 'rafael@email.com',
+            phone: null,
+            fileUrl: null,
+            ranking: 3,
+            totalReferrals: 0,
+            status: 'Active',
+            address: {
+              id: 5,
+              city: 'Rio de Janeiro',
+              state: 'Rio de Janeiro',
+            },
+          },
+        ],
+        currentPage: 1,
+        totalPages: 1,
+        totalRecords: 2,
+      })
+    );
+
+    const result = await firstValueFrom(service.getInfluencers({ take: 10 }));
+
+    expect(result.influencers[0].address).toBeNull();
+    expect(result.influencers[0].stats.totalReferrals).toBe(1);
+    expect(result.influencers[1].address).toEqual({
+      id: 5,
+      city: 'Rio de Janeiro',
+      state: 'Rio de Janeiro',
+    });
+    expect(result.influencers[1].stats.totalReferrals).toBe(0);
+  });
+
+  it('loads influencer regional ranking with required city and state filters', async () => {
+    apiService.get.mockReturnValue(
+      of({
+        ranking: [
+          {
+            position: 1,
+            city: 'Uberlândia',
+            state: 'MG',
+            totalInfluencers: 3,
+            totalReferrals: 27,
+          },
+        ],
+      })
+    );
+
+    const ranking = await firstValueFrom(
+      service.getRegionalRanking({ state: 'MG', city: 'Uberlândia' })
+    );
+
+    expect(apiService.get).toHaveBeenCalledWith('/v1/admin-influencers/ranking/location', {
+      state: 'MG',
+      city: 'Uberlândia',
+    });
+    expect(ranking).toEqual([
+      {
+        position: 1,
+        city: 'Uberlândia',
+        state: 'MG',
+        totalInfluencers: 3,
+        totalReferrals: 27,
+      },
+    ]);
+  });
 });

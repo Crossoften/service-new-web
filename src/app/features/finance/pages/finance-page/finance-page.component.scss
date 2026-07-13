@@ -491,6 +491,68 @@
   line-height: 1.35;
 }
 
+.form-error {
+  color: #b42318;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.segment-selector {
+  display: grid;
+  gap: 0.6rem;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 0.2rem;
+  border: 1px solid #ece4f4;
+  border-radius: 0.75rem;
+  background: #fbf7ff;
+}
+
+.segment-option {
+  display: grid;
+  gap: 0.18rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ece4f4;
+  border-radius: 0.7rem;
+  background: #fff;
+  color: #111;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
+
+  span {
+    font-size: 0.88rem;
+    font-weight: 800;
+  }
+
+  small {
+    color: #666;
+    font-size: 0.74rem;
+    line-height: 1.35;
+  }
+
+  &:hover,
+  &:focus-visible,
+  &--active {
+    outline: none;
+    border-color: rgba(131, 8, 210, 0.45);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(131, 8, 210, 0.1);
+  }
+}
+
+.segment-empty {
+  margin: 0;
+  padding: 0.75rem;
+  color: #666;
+  font-size: 0.82rem;
+}
+
 .currency-sign {
   font-size: 0.8rem;
   font-weight: 700;
@@ -717,5 +779,289 @@ textarea.form-control {
   }
   .modal-card {
     width: calc(100vw - 0.75rem);
+  }
+}
+
+// Novo editor de planos
+.plan-editor-modal {
+  border: 1px solid rgba(131, 8, 210, 0.08);
+  box-shadow: 0 24px 60px rgba(46, 16, 64, 0.16);
+}
+
+.plan-editor-header {
+  align-items: flex-start;
+  background: linear-gradient(135deg, #fff 0%, #fbf7ff 100%);
+
+  .modal-title {
+    margin-top: 0.25rem;
+    font-size: 1.3rem;
+  }
+}
+
+.plan-editor-eyebrow {
+  color: #8308d2;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.plan-editor-body {
+  display: grid;
+  gap: 1rem;
+  background: #fafafa;
+}
+
+.plan-form-section {
+  padding: 1.1rem;
+  border: 1px solid #ececf0;
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.plan-form-section__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+
+  h5,
+  p {
+    margin: 0;
+  }
+
+  h5 {
+    color: #17131b;
+    font-size: 0.95rem;
+    font-weight: 800;
+  }
+
+  p {
+    margin-top: 0.2rem;
+    color: #6b6570;
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+}
+
+.plan-form-section__icon,
+.segment-scope-card__icon,
+.renewal-option > i {
+  display: inline-flex;
+  flex: 0 0 36px;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 0.7rem;
+  background: #f3e8fb;
+  color: #8308d2;
+}
+
+.segment-scope-grid,
+.renewal-option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.segment-scope-card,
+.renewal-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1px solid #e5e1e8;
+  border-radius: 0.85rem;
+  background: #fff;
+  color: #28232c;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    box-shadow 0.15s;
+
+  &:hover,
+  &:focus-visible {
+    outline: none;
+    border-color: rgba(131, 8, 210, 0.45);
+    box-shadow: 0 0 0 3px rgba(131, 8, 210, 0.08);
+  }
+}
+
+.segment-scope-card--active,
+.renewal-option--active {
+  border-color: #8308d2;
+  background: #fbf7ff;
+  box-shadow: inset 0 0 0 1px #8308d2;
+}
+
+.segment-scope-card__copy,
+.renewal-option span {
+  display: grid;
+  min-width: 0;
+  gap: 0.15rem;
+
+  strong {
+    font-size: 0.84rem;
+    font-weight: 800;
+  }
+
+  small {
+    color: #6d6870;
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+}
+
+.segment-scope-card__check {
+  margin-left: auto;
+  color: #8308d2;
+  opacity: 0;
+}
+
+.segment-scope-card--active .segment-scope-card__check {
+  opacity: 1;
+}
+
+.segment-picker {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+  padding: 0.9rem;
+  border-radius: 0.9rem;
+  background: #f8f5fa;
+}
+
+.segment-selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #d8b8ed;
+  border-radius: 0.75rem;
+  background: #fff;
+  color: #5d1395;
+
+  span {
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  small {
+    color: #766c7c;
+    font-size: 0.68rem;
+  }
+
+  strong {
+    color: #281d2e;
+    font-size: 0.84rem;
+  }
+}
+
+.segment-search {
+  position: relative;
+
+  > i {
+    position: absolute;
+    top: 50%;
+    left: 0.8rem;
+    z-index: 1;
+    color: #8b8490;
+    transform: translateY(-50%);
+  }
+
+  .form-control {
+    padding-left: 2.35rem;
+  }
+}
+
+.plan-editor-modal .segment-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  > i {
+    color: #8308d2;
+    opacity: 0;
+  }
+
+  &--active > i {
+    opacity: 1;
+  }
+}
+
+.renewal-option--active > i {
+  background: #8308d2;
+  color: #fff;
+}
+
+.plan-advanced-options {
+  border: 1px solid #e7e4e9;
+  border-radius: 0.9rem;
+  background: #fff;
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    list-style: none;
+    cursor: pointer;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    span {
+      display: grid;
+      gap: 0.15rem;
+    }
+
+    strong {
+      color: #28232c;
+      font-size: 0.84rem;
+    }
+
+    small {
+      color: #746f78;
+      font-size: 0.72rem;
+    }
+
+    > i {
+      color: #8308d2;
+      transition: transform 0.15s;
+    }
+  }
+
+  &[open] summary > i {
+    transform: rotate(180deg);
+  }
+}
+
+.plan-advanced-options__content {
+  padding: 0 1rem 1rem;
+}
+
+.plan-active-card {
+  background: #fff;
+}
+
+@media (max-width: 640px) {
+  .segment-scope-grid,
+  .renewal-option-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-form-section {
+    padding: 0.9rem;
+  }
+
+  .segment-scope-card,
+  .renewal-option {
+    min-height: 68px;
   }
 }

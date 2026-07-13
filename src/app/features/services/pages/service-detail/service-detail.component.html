@@ -71,7 +71,7 @@
             @if (isLoadingClients()) {
               <app-loading-skeleton [variant]="'table'" [count]="5"></app-loading-skeleton>
             } @else if (!clients().length) {
-              <p class="empty-hint">Nenhum cliente retornado para este serviço.</p>
+              <p class="empty-hint">Nenhum cliente encontrado para este serviço.</p>
             } @else {
               <div class="table-wrapper">
                 <table class="bookings-table" aria-label="Clientes do serviço">

@@ -73,7 +73,7 @@
             @if (isLoadingHistory()) {
               <app-loading-skeleton [variant]="'table'" [count]="5"></app-loading-skeleton>
             } @else if (!history().length) {
-              <p class="empty-hint">Nenhum histórico retornado para este fornecedor.</p>
+              <p class="empty-hint">Nenhum histórico encontrado para este fornecedor.</p>
             } @else {
               <div class="history-list">
                 @for (item of history(); track item.id) {

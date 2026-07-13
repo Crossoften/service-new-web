@@ -74,6 +74,19 @@ export interface AdminProviderHistoryParams {
   sortDirection?: 'asc' | 'desc';
 }
 
+export interface ProviderRegionalRankingFilters {
+  state: string;
+  city: string;
+}
+
+export interface ProviderRegionalRankingItem {
+  position: number | null;
+  city: string | null;
+  state: string | null;
+  totalProviders: number | null;
+  totalActiveServices: number | null;
+}
+
 // API response interfaces — raw shapes from the real API
 export interface AdminProviderApiListItem {
   id: number;
@@ -129,6 +142,31 @@ export interface AdminProviderHistoryApiResponse {
   totalPages: number;
   totalRecords: number;
 }
+
+export interface ProviderRegionalRankingApiItem {
+  position?: number | null;
+  ranking?: number | null;
+  rank?: number | null;
+  city?: string | null;
+  state?: string | null;
+  totalProviders?: number | null;
+  providersCount?: number | null;
+  totalSuppliers?: number | null;
+  totalActiveServices?: number | null;
+  activeServices?: number | null;
+  totalServices?: number | null;
+}
+
+export type ProviderRegionalRankingApiResponse =
+  | ProviderRegionalRankingApiItem[]
+  | {
+      providers?: ProviderRegionalRankingApiItem[];
+      ranking?: ProviderRegionalRankingApiItem[];
+      rankings?: ProviderRegionalRankingApiItem[];
+      data?: ProviderRegionalRankingApiItem[];
+      items?: ProviderRegionalRankingApiItem[];
+      results?: ProviderRegionalRankingApiItem[];
+    };
 
 // Legacy aliases
 export type SupplierStatus = AdminProviderStatus;

@@ -11,6 +11,10 @@ import {
   AdminInfluencerApiDetail,
   AdminInfluencerReferral,
   AdminInfluencerReferralApiItem,
+  InfluencerRegionalRankingApiItem,
+  InfluencerRegionalRankingApiResponse,
+  InfluencerRegionalRankingFilters,
+  InfluencerRegionalRankingItem,
 } from '../models/influencer.model';
 
 @Injectable({ providedIn: 'root' })
@@ -53,6 +57,17 @@ export class InfluencersService {
       .pipe(map((response) => this.mapReferralResponse(response)));
   }
 
+  getRegionalRanking(
+    filters: InfluencerRegionalRankingFilters
+  ): Observable<InfluencerRegionalRankingItem[]> {
+    return this.apiService
+      .get<InfluencerRegionalRankingApiResponse>('/v1/admin-influencers/ranking/location', {
+        state: filters.state,
+        city: filters.city,
+      })
+      .pipe(map((response) => this.mapRegionalRankingResponse(response)));
+  }
+
   private mapInfluencerFromList(item: AdminInfluencerApiListItem): AdminInfluencer {
     return {
       id: item.id,
@@ -67,6 +82,7 @@ export class InfluencersService {
       referralCode: null,
       commissionRate: item.commissionRate ?? null,
       effectiveCommissionRate: item.effectiveCommissionRate ?? null,
+      address: item.address ?? null,
       socialMedias: [],
       stats: {
         totalReferrals: item.totalReferrals ?? 0,
@@ -93,6 +109,7 @@ export class InfluencersService {
       referralCode: item.referralCode ?? null,
       commissionRate: item.commissionRate ?? null,
       effectiveCommissionRate: item.effectiveCommissionRate ?? null,
+      address: item.address ?? null,
       socialMedias: item.socialMedias ?? [],
       stats: {
         totalReferrals: item.stats?.totalReferrals ?? 0,
@@ -134,6 +151,34 @@ export class InfluencersService {
       state: item.state ?? item.address?.state ?? null,
       fileUrl: item.fileUrl ?? null,
       createdAt: item.createdAt ?? null,
+    };
+  }
+
+  private mapRegionalRankingResponse(
+    response: InfluencerRegionalRankingApiResponse
+  ): InfluencerRegionalRankingItem[] {
+    const items = Array.isArray(response)
+      ? response
+      : (response.influencers ??
+        response.ranking ??
+        response.rankings ??
+        response.data ??
+        response.items ??
+        response.results ??
+        []);
+
+    return items.map((item) => this.mapRegionalRankingItem(item));
+  }
+
+  private mapRegionalRankingItem(
+    item: InfluencerRegionalRankingApiItem
+  ): InfluencerRegionalRankingItem {
+    return {
+      position: item.position ?? item.ranking ?? item.rank ?? null,
+      city: item.city ?? null,
+      state: item.state ?? null,
+      totalInfluencers: item.totalInfluencers ?? item.influencersCount ?? item.total ?? null,
+      totalReferrals: item.totalReferrals ?? item.referralsCount ?? null,
     };
   }
 }

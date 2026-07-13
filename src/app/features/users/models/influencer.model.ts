@@ -1,3 +1,5 @@
+import type { AdminUserAddress } from './user.model';
+
 export type AdminInfluencerStatus = 'Active' | 'Pending' | 'Inactive';
 export type AdminInfluencerSocialNetwork =
   | 'Instagram'
@@ -53,6 +55,7 @@ export interface AdminInfluencer {
   referralCode: string | null;
   commissionRate: number | null;
   effectiveCommissionRate: number | null;
+  address: AdminUserAddress | null;
   socialMedias: AdminInfluencerSocialMedia[];
   stats: AdminInfluencerStats;
   createdAt: string;
@@ -88,6 +91,19 @@ export interface AdminInfluencerListParams {
   sortDirection?: 'asc' | 'desc';
 }
 
+export interface InfluencerRegionalRankingFilters {
+  state: string;
+  city: string;
+}
+
+export interface InfluencerRegionalRankingItem {
+  position: number | null;
+  city: string | null;
+  state: string | null;
+  totalInfluencers: number | null;
+  totalReferrals: number | null;
+}
+
 // API response interfaces — raw shapes from the real API
 export interface AdminInfluencerApiListItem {
   id: number;
@@ -99,6 +115,7 @@ export interface AdminInfluencerApiListItem {
   totalReferrals: number;
   commissionRate?: number | null;
   effectiveCommissionRate?: number | null;
+  address?: AdminUserAddress | null;
   status: string;
 }
 
@@ -129,6 +146,7 @@ export interface AdminInfluencerApiDetail {
   stats?: AdminInfluencerApiStats;
   commissionRate: number | null;
   effectiveCommissionRate: number | null;
+  address?: AdminUserAddress | null;
   socialMedias?: AdminInfluencerSocialMedia[];
   createdAt: string;
   updatedAt: string;
@@ -151,6 +169,30 @@ export interface AdminInfluencerReferralApiItem {
     state?: string | null;
   } | null;
 }
+
+export interface InfluencerRegionalRankingApiItem {
+  position?: number | null;
+  ranking?: number | null;
+  rank?: number | null;
+  city?: string | null;
+  state?: string | null;
+  totalInfluencers?: number | null;
+  influencersCount?: number | null;
+  total?: number | null;
+  totalReferrals?: number | null;
+  referralsCount?: number | null;
+}
+
+export type InfluencerRegionalRankingApiResponse =
+  | InfluencerRegionalRankingApiItem[]
+  | {
+      influencers?: InfluencerRegionalRankingApiItem[];
+      ranking?: InfluencerRegionalRankingApiItem[];
+      rankings?: InfluencerRegionalRankingApiItem[];
+      data?: InfluencerRegionalRankingApiItem[];
+      items?: InfluencerRegionalRankingApiItem[];
+      results?: InfluencerRegionalRankingApiItem[];
+    };
 
 // Legacy alias
 export type InfluencerStatus = AdminInfluencerStatus;

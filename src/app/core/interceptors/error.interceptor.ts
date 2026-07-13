@@ -12,20 +12,18 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      const errorMessage = error.error?.message || 'Erro desconhecido';
-
       switch (error.status) {
         case 0:
           toastService.showError('Erro de conexão. Verifique sua internet.');
           break;
 
         case 400:
-          toastService.showError(`Requisicao invalida: ${errorMessage}`);
+          toastService.showError('Não foi possível concluir. Revise os dados informados.');
           break;
 
         case 401:
           sessionService.clearSession();
-          toastService.showError('Sessao expirada. Faca login novamente.');
+          toastService.showError('Sua sessão expirou. Entre novamente.');
           router.navigate(['/auth/login']);
           break;
 
@@ -38,11 +36,13 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           break;
 
         case 500:
-          toastService.showError('Erro no servidor. Tente novamente mais tarde.');
+          toastService.showError(
+            'Não foi possível concluir a operação. Tente novamente mais tarde.'
+          );
           break;
 
         default:
-          toastService.showError(`Erro ${error.status}: ${errorMessage}`);
+          toastService.showError('Algo deu errado. Tente novamente.');
       }
 
       return throwError(() => error);
