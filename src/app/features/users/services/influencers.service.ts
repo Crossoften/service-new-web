@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, catchError, forkJoin, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from '@core/services/api.service';
+import { UsersService } from './users.service';
+import { AdminUser } from '../models/user.model';
 import {
   AdminInfluencer,
   AdminInfluencerListParams,
@@ -19,11 +21,15 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class InfluencersService {
-  constructor(private readonly apiService: ApiService) {}
+  constructor(
+    private readonly apiService: ApiService,
+    private readonly usersService: UsersService
+  ) {}
 
   getInfluencers(
     params: AdminInfluencerListParams
   ): Observable<{ influencers: AdminInfluencer[]; pages: number; count: number }> {
+    const hasLocationFilter = Boolean(params.state || params.city);
     const query: Record<string, string | number> = {
       take: params.take ?? 10,
     };
@@ -33,12 +39,70 @@ export class InfluencersService {
     if (params.sortBy) query['sortBy'] = params.sortBy;
     if (params.sortDirection) query['sortDirection'] = params.sortDirection;
 
-    return this.apiService.get<AdminInfluencerApiListResponse>('/v1/admin-influencers', query).pipe(
-      map((res) => ({
-        influencers: res.influencers.map((i) => this.mapInfluencerFromList(i)),
-        pages: res.totalPages,
-        count: res.totalRecords,
-      }))
+    const influencersRequest = this.apiService.get<AdminInfluencerApiListResponse>(
+      '/v1/admin-influencers',
+      query
+    );
+    const adminUsersRequest = this.usersService.getUsers({
+      take: params.take ?? 10,
+      skip: params.skip,
+      search: params.search,
+      status: params.status,
+      profileType: 'Influencer',
+      city: params.city,
+      state: params.state,
+      sortBy: params.sortBy,
+      sortDirection: params.sortDirection,
+    });
+    const usersRequest = hasLocationFilter
+      ? adminUsersRequest
+      : adminUsersRequest.pipe(catchError(() => of({ users: [], pages: 0, count: 0 })));
+
+    return forkJoin({ influencersResponse: influencersRequest, usersResponse: usersRequest }).pipe(
+      map(({ influencersResponse, usersResponse }) => {
+        const influencerItemsById = new Map(
+          influencersResponse.influencers.map((item) => [item.id, item])
+        );
+        const influencerItemsByEmail = new Map(
+          influencersResponse.influencers.map((item) => [item.email, item])
+        );
+
+        if (hasLocationFilter) {
+          return {
+            influencers: usersResponse.users.map((user) => {
+              const matchingItem =
+                influencerItemsById.get(user.id) ?? influencerItemsByEmail.get(user.email);
+              const influencer = matchingItem
+                ? this.mapInfluencerFromList(matchingItem)
+                : this.mapAdminUserAsInfluencer(user);
+
+              return {
+                ...influencer,
+                address: user.address ?? influencer.address,
+              };
+            }),
+            pages: usersResponse.pages,
+            count: usersResponse.count,
+          };
+        }
+
+        const usersById = new Map(usersResponse.users.map((user) => [user.id, user]));
+        const usersByEmail = new Map(usersResponse.users.map((user) => [user.email, user]));
+
+        return {
+          influencers: influencersResponse.influencers.map((item) => {
+            const influencer = this.mapInfluencerFromList(item);
+            const matchingUser = usersById.get(item.id) ?? usersByEmail.get(item.email);
+
+            return {
+              ...influencer,
+              address: influencer.address ?? matchingUser?.address ?? null,
+            };
+          }),
+          pages: influencersResponse.totalPages,
+          count: influencersResponse.totalRecords,
+        };
+      })
     );
   }
 
@@ -119,6 +183,33 @@ export class InfluencersService {
       },
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
+    };
+  }
+
+  private mapAdminUserAsInfluencer(user: AdminUser): AdminInfluencer {
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      code: user.code,
+      status: user.status,
+      fileUrl: user.fileUrl,
+      fileKey: user.fileKey,
+      birthDate: user.birthDate,
+      referralCode: user.referralCode,
+      commissionRate: null,
+      effectiveCommissionRate: null,
+      address: user.address,
+      socialMedias: user.socialMedias,
+      stats: {
+        totalReferrals: 0,
+        totalPaying: null,
+        accumulatedCommission: null,
+        rankingPosition: null,
+      },
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
   }
 

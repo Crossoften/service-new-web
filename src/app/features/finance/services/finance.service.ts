@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
+import { HttpContext } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from '@core/services/api.service';
+import { SUPPRESS_GLOBAL_ERROR_TOAST } from '@core/tokens/http-context.tokens';
 import {
   CreatePlanPayload,
   FinanceInfluencerCommission,
@@ -73,7 +75,8 @@ export class FinanceService {
   }
 
   createPlan(payload: CreatePlanPayload): Observable<Plan> {
-    return this.apiService.post<Plan>('/v1/plans', payload);
+    const context = new HttpContext().set(SUPPRESS_GLOBAL_ERROR_TOAST, true);
+    return this.apiService.post<Plan>('/v1/plans', payload, { context });
   }
 
   updatePlan(id: number, payload: UpdatePlanPayload): Observable<Plan> {

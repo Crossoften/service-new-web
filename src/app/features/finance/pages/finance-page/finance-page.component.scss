@@ -431,6 +431,28 @@
   line-height: 1.5;
 }
 
+.feedback-modal--error {
+  border-top: 4px solid #dc3545;
+}
+
+.feedback-message {
+  margin: 0 1.5rem;
+  border-radius: 0.8rem;
+
+  .confirmation-text {
+    margin: 0;
+  }
+}
+
+.feedback-message--error {
+  border: 1px solid #f5c2c7;
+  background: #fff5f6;
+
+  .confirmation-text {
+    color: #6f1d27;
+  }
+}
+
 .confirmation-summary {
   display: grid;
   gap: 0.65rem;
@@ -784,6 +806,8 @@ textarea.form-control {
 
 // Novo editor de planos
 .plan-editor-modal {
+  width: 100%;
+  max-width: none;
   border: 1px solid rgba(131, 8, 210, 0.08);
   box-shadow: 0 24px 60px rgba(46, 16, 64, 0.16);
 }

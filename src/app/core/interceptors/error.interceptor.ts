@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { SessionService } from '../services/session.service';
 import { ToastService } from '../services/toast.service';
+import { SUPPRESS_GLOBAL_ERROR_TOAST } from '../tokens/http-context.tokens';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const toastService = inject(ToastService);
@@ -12,6 +13,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      if (req.context.get(SUPPRESS_GLOBAL_ERROR_TOAST) && error.status !== 401) {
+        return throwError(() => error);
+      }
+
       switch (error.status) {
         case 0:
           toastService.showError('Erro de conexão. Verifique sua internet.');

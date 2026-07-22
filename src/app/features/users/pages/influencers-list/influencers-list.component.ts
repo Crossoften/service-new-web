@@ -12,7 +12,11 @@ import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.
 import { ErrorStateComponent } from '@shared/components/error-state/error-state.component';
 import { InfluencerRegionalRankingComponent } from '../../components/influencer-regional-ranking/influencer-regional-ranking.component';
 import { InfluencersService } from '../../services/influencers.service';
-import { AdminInfluencer, AdminInfluencerStatus } from '../../models/influencer.model';
+import {
+  AdminInfluencer,
+  AdminInfluencerStatus,
+  InfluencerListLocationFilter,
+} from '../../models/influencer.model';
 import { getCityDisplay, getStateDisplay } from '../../utils/user-display.utils';
 
 @Component({
@@ -39,7 +43,17 @@ export class InfluencersListComponent implements OnInit, OnDestroy {
 
   readonly searchControl = new FormControl('');
   readonly statusControl = new FormControl<AdminInfluencerStatus | ''>('');
+  readonly locationFilter = signal<InfluencerListLocationFilter>({});
   readonly influencers = signal<AdminInfluencer[]>([]);
+  readonly podiumInfluencers = computed(() =>
+    [...this.influencers()]
+      .filter(
+        (influencer) =>
+          influencer.stats.rankingPosition != null && influencer.stats.rankingPosition > 0
+      )
+      .sort((first, second) => first.stats.rankingPosition! - second.stats.rankingPosition!)
+      .slice(0, 3)
+  );
   readonly total = signal(0);
   readonly currentPage = signal(1);
   readonly pageSize = signal(10);
@@ -92,6 +106,8 @@ export class InfluencersListComponent implements OnInit, OnDestroy {
         skip: this.currentPage(),
         search: this.searchControl.value ?? undefined,
         status: this.statusControl.value || undefined,
+        state: this.locationFilter().state,
+        city: this.locationFilter().city,
         sortBy: 'createdAt',
         sortDirection: 'desc',
       })
@@ -144,7 +160,15 @@ export class InfluencersListComponent implements OnInit, OnDestroy {
   }
 
   clearFilters(): void {
-    this.statusControl.setValue('');
+    this.statusControl.setValue('', { emitEvent: false });
+    this.currentPage.set(1);
+    this.loadInfluencers();
+  }
+
+  onLocationFilterChange(filter: InfluencerListLocationFilter): void {
+    this.locationFilter.set(filter);
+    this.currentPage.set(1);
+    this.loadInfluencers();
   }
 
   getStatusLabel(status: AdminInfluencerStatus): string {
@@ -156,6 +180,15 @@ export class InfluencersListComponent implements OnInit, OnDestroy {
       default:
         return 'Inativo';
     }
+  }
+
+  getInitials(name: string): string {
+    return name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('');
   }
 
   getCommissionLabel(inf: AdminInfluencer): string {

@@ -78,7 +78,119 @@
         </section>
       }
 
-      <app-influencer-regional-ranking></app-influencer-regional-ranking>
+      <app-influencer-regional-ranking
+        (locationFilterChange)="onLocationFilterChange($event)"
+      ></app-influencer-regional-ranking>
+
+      @if (locationFilter().state && !isLoading() && podiumInfluencers().length) {
+        <section class="podium-section" aria-labelledby="influencer-podium-title">
+          <div class="podium-heading">
+            <div>
+              <span class="podium-eyebrow">
+                <i class="bi bi-stars" aria-hidden="true"></i>
+                Destaques da região
+              </span>
+              <h2 id="influencer-podium-title">Pódio de influencers</h2>
+              <p>
+                Os melhores colocados entre os resultados de
+                <strong>{{ locationFilter().city || locationFilter().state }}</strong
+                >.
+              </p>
+            </div>
+            <span class="podium-ranking-note">Posição no ranking geral</span>
+          </div>
+
+          <div
+            class="podium-grid"
+            [class.podium-grid--single]="podiumInfluencers().length === 1"
+            [class.podium-grid--two]="podiumInfluencers().length === 2"
+          >
+            @if (podiumInfluencers()[1]; as silver) {
+              <button
+                class="podium-card podium-card--silver"
+                type="button"
+                (click)="navigateToDetail(silver.id)"
+                [attr.aria-label]="'Abrir detalhes de ' + silver.name + ', segundo lugar do filtro'"
+              >
+                <span class="podium-medal" aria-hidden="true"
+                  ><i class="bi bi-award-fill"></i
+                ></span>
+                <span class="podium-place">2º lugar</span>
+                <span class="podium-avatar">
+                  @if (silver.fileUrl) {
+                    <img [src]="silver.fileUrl" [alt]="'Foto de ' + silver.name" />
+                  } @else {
+                    {{ getInitials(silver.name) }}
+                  }
+                </span>
+                <strong class="podium-name">{{ silver.name }}</strong>
+                <span class="podium-stats">
+                  <b>#{{ silver.stats.rankingPosition }}</b> no ranking
+                  <small>{{ silver.stats.totalReferrals }} indicações</small>
+                </span>
+                <span class="podium-base">Prata</span>
+              </button>
+            }
+
+            @if (podiumInfluencers()[0]; as gold) {
+              <button
+                class="podium-card podium-card--gold"
+                type="button"
+                (click)="navigateToDetail(gold.id)"
+                [attr.aria-label]="'Abrir detalhes de ' + gold.name + ', primeiro lugar do filtro'"
+              >
+                <i class="bi bi-crown-fill podium-crown" aria-hidden="true"></i>
+                <span class="podium-medal" aria-hidden="true"
+                  ><i class="bi bi-trophy-fill"></i
+                ></span>
+                <span class="podium-place">1º lugar</span>
+                <span class="podium-avatar">
+                  @if (gold.fileUrl) {
+                    <img [src]="gold.fileUrl" [alt]="'Foto de ' + gold.name" />
+                  } @else {
+                    {{ getInitials(gold.name) }}
+                  }
+                </span>
+                <strong class="podium-name">{{ gold.name }}</strong>
+                <span class="podium-stats">
+                  <b>#{{ gold.stats.rankingPosition }}</b> no ranking
+                  <small>{{ gold.stats.totalReferrals }} indicações</small>
+                </span>
+                <span class="podium-base">Ouro</span>
+              </button>
+            }
+
+            @if (podiumInfluencers()[2]; as bronze) {
+              <button
+                class="podium-card podium-card--bronze"
+                type="button"
+                (click)="navigateToDetail(bronze.id)"
+                [attr.aria-label]="
+                  'Abrir detalhes de ' + bronze.name + ', terceiro lugar do filtro'
+                "
+              >
+                <span class="podium-medal" aria-hidden="true"
+                  ><i class="bi bi-award-fill"></i
+                ></span>
+                <span class="podium-place">3º lugar</span>
+                <span class="podium-avatar">
+                  @if (bronze.fileUrl) {
+                    <img [src]="bronze.fileUrl" [alt]="'Foto de ' + bronze.name" />
+                  } @else {
+                    {{ getInitials(bronze.name) }}
+                  }
+                </span>
+                <strong class="podium-name">{{ bronze.name }}</strong>
+                <span class="podium-stats">
+                  <b>#{{ bronze.stats.rankingPosition }}</b> no ranking
+                  <small>{{ bronze.stats.totalReferrals }} indicações</small>
+                </span>
+                <span class="podium-base">Bronze</span>
+              </button>
+            }
+          </div>
+        </section>
+      }
 
       @if (isLoading()) {
         <app-loading-skeleton [variant]="'table'" [count]="10"></app-loading-skeleton>

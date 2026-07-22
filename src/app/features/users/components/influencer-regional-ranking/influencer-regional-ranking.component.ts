@@ -1,11 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Subject, combineLatest } from 'rxjs';
 import { debounceTime, distinctUntilChanged, startWith, takeUntil } from 'rxjs/operators';
 
 import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/loading-skeleton.component';
-import { InfluencerRegionalRankingItem } from '../../models/influencer.model';
+import {
+  InfluencerListLocationFilter,
+  InfluencerRegionalRankingItem,
+} from '../../models/influencer.model';
 import { IbgeLocationsService, IbgeStateOption } from '../../services/ibge-locations.service';
 import { InfluencersService } from '../../services/influencers.service';
 
@@ -17,6 +20,8 @@ import { InfluencersService } from '../../services/influencers.service';
   styleUrls: ['./influencer-regional-ranking.component.scss'],
 })
 export class InfluencerRegionalRankingComponent implements OnInit, OnDestroy {
+  @Output() readonly locationFilterChange = new EventEmitter<InfluencerListLocationFilter>();
+
   private readonly influencersService = inject(InfluencersService);
   private readonly ibgeLocationsService = inject(IbgeLocationsService);
   private readonly destroy$ = new Subject<void>();
@@ -50,10 +55,11 @@ export class InfluencerRegionalRankingComponent implements OnInit, OnDestroy {
   }
 
   loadRanking(): void {
-    const state = this.normalizedState();
+    const stateAbbreviation = this.normalizedState();
+    const state = this.selectedStateName();
     const city = this.normalizedCity();
 
-    if (state.length !== 2 || city.length < 2) {
+    if (stateAbbreviation.length !== 2 || city.length < 2) {
       this.errorMessage.set('Selecione um estado e uma cidade para consultar o desempenho.');
       this.rankingRows.set([]);
       this.hasLoaded.set(true);
@@ -115,7 +121,21 @@ export class InfluencerRegionalRankingComponent implements OnInit, OnDestroy {
   private registerStateChanges(): void {
     this.stateControl.valueChanges
       .pipe(distinctUntilChanged(), takeUntil(this.destroy$))
-      .subscribe((state) => this.loadCityOptions(state));
+      .subscribe((state) => {
+        this.loadCityOptions(state);
+        this.emitLocationFilter();
+      });
+
+    this.cityControl.valueChanges
+      .pipe(distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(() => this.emitLocationFilter());
+  }
+
+  private emitLocationFilter(): void {
+    this.locationFilterChange.emit({
+      state: this.normalizedState() || undefined,
+      city: this.normalizedCity() || undefined,
+    });
   }
 
   private loadStateOptions(): void {
@@ -186,5 +206,13 @@ export class InfluencerRegionalRankingComponent implements OnInit, OnDestroy {
 
   private normalizedCity(): string {
     return this.cityControl.value.trim();
+  }
+
+  private selectedStateName(): string {
+    const stateAbbreviation = this.normalizedState();
+    return (
+      this.stateOptions().find((state) => state.abbreviation === stateAbbreviation)?.name ??
+      stateAbbreviation
+    );
   }
 }

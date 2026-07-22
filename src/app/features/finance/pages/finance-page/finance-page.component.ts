@@ -9,6 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -22,7 +23,6 @@ import {
   CreatePlanPayload,
   FinanceInfluencerCommission,
   Plan,
-  PlanInterval,
   PlatformSettings,
   ServiceCategoryFinance,
   UpdatePlanPayload,
@@ -32,10 +32,21 @@ type FeedbackModalState = {
   title: string;
   description: string;
   icon: string;
-  variant: 'success';
+  variant: 'success' | 'error';
 };
 
 type PlanSegmentMode = 'all' | 'specific';
+type PlanBillingCycle = 'monthly' | 'quarterly' | 'semiannual' | 'annual';
+
+const PLAN_BILLING_CYCLES: Record<
+  PlanBillingCycle,
+  { interval: 'Month' | 'Year'; intervalCount: number; label: string }
+> = {
+  monthly: { interval: 'Month', intervalCount: 1, label: 'Mensal' },
+  quarterly: { interval: 'Month', intervalCount: 3, label: 'Trimestral' },
+  semiannual: { interval: 'Month', intervalCount: 6, label: 'Semestral' },
+  annual: { interval: 'Year', intervalCount: 1, label: 'Anual' },
+};
 
 type PlatformForm = FormGroup<{
   influencerCommissionRate: FormControl<number | null>;
@@ -55,7 +66,7 @@ type PlanForm = FormGroup<{
   slug: FormControl<string | null>;
   description: FormControl<string | null>;
   price: FormControl<number | null>;
-  interval: FormControl<'Month' | 'Year' | null>;
+  billingCycle: FormControl<PlanBillingCycle | null>;
   bonusMonths: FormControl<number | null>;
   categoryId: FormControl<number | null>;
   isActive: FormControl<boolean | null>;
@@ -386,6 +397,13 @@ export class FinancePageComponent implements OnInit, OnDestroy {
 
     const selectedPlan = this.selectedPlan();
     const payload = this.buildPlanPayload();
+    const planName = payload.name ?? this.planForm.controls.name.value?.trim() ?? '';
+    const duplicatePlan = this.findPlanWithSameName(planName, selectedPlan?.id);
+
+    if (duplicatePlan) {
+      this.showDuplicatePlanModal(duplicatePlan.name);
+      return;
+    }
 
     if (!selectedPlan) {
       this.pendingPlanPayload.set(payload as CreatePlanPayload);
@@ -443,7 +461,7 @@ export class FinancePageComponent implements OnInit, OnDestroy {
           });
           this.loadPlans();
         },
-        error: () => this.isSavingPlan.set(false),
+        error: (error: unknown) => this.handleCreatePlanError(error, payload.name),
       });
   }
 
@@ -517,6 +535,76 @@ export class FinancePageComponent implements OnInit, OnDestroy {
     void this.feedbackModalRef.result.finally(() => this.feedbackModal.set(null));
   }
 
+  private findPlanWithSameName(name: string, ignoredPlanId?: number): Plan | undefined {
+    const normalizedName = this.normalizeSearch(name);
+    return this.plans().find(
+      (plan) => plan.id !== ignoredPlanId && this.normalizeSearch(plan.name) === normalizedName
+    );
+  }
+
+  private handleCreatePlanError(error: unknown, requestedName: string): void {
+    this.isSavingPlan.set(false);
+    this.pendingPlanPayload.set(null);
+    this.confirmationModalRef?.close();
+
+    if (this.isDuplicatePlanError(error)) {
+      this.showDuplicatePlanModal(requestedName);
+      return;
+    }
+
+    this.showFeedbackModal({
+      title: 'Não foi possível cadastrar o plano',
+      description:
+        'O plano não foi cadastrado. Revise as informações e tente novamente em alguns instantes.',
+      icon: 'bi-exclamation-triangle',
+      variant: 'error',
+    });
+  }
+
+  private showDuplicatePlanModal(planName: string): void {
+    this.pendingPlanPayload.set(null);
+    this.confirmationModalRef?.close();
+    this.showFeedbackModal({
+      title: 'Plano já cadastrado',
+      description: `Já existe um plano chamado “${planName}”. Escolha outro nome para continuar.`,
+      icon: 'bi-exclamation-circle',
+      variant: 'error',
+    });
+  }
+
+  private isDuplicatePlanError(error: unknown): boolean {
+    if (!(error instanceof HttpErrorResponse)) {
+      return false;
+    }
+
+    if (error.status === 409) {
+      return true;
+    }
+
+    const normalizedMessage = this.normalizeSearch(this.extractErrorMessage(error.error));
+    return ['already exists', 'ja existe', 'duplicate', 'duplicado', 'mesmo nome'].some((term) =>
+      normalizedMessage.includes(term)
+    );
+  }
+
+  private extractErrorMessage(errorBody: unknown): string {
+    if (typeof errorBody === 'string') {
+      return errorBody;
+    }
+
+    if (errorBody && typeof errorBody === 'object') {
+      const body = errorBody as Record<string, unknown>;
+      for (const key of ['message', 'detail', 'title', 'error']) {
+        const value = body[key];
+        if (typeof value === 'string') {
+          return value;
+        }
+      }
+    }
+
+    return '';
+  }
+
   formatPercent(value: number | null | undefined): string {
     if (value == null) {
       return 'Não informado';
@@ -539,9 +627,14 @@ export class FinancePageComponent implements OnInit, OnDestroy {
     this.planForm.controls.categoryId.markAsTouched();
   }
 
-  selectPlanInterval(interval: PlanInterval): void {
-    this.planForm.controls.interval.setValue(interval);
-    this.planForm.controls.interval.markAsTouched();
+  selectPlanBillingCycle(billingCycle: PlanBillingCycle): void {
+    this.planForm.controls.billingCycle.setValue(billingCycle);
+    this.planForm.controls.billingCycle.markAsTouched();
+  }
+
+  selectedPlanBillingCycleLabel(): string {
+    const billingCycle = this.planForm.controls.billingCycle.value ?? 'monthly';
+    return PLAN_BILLING_CYCLES[billingCycle].label;
   }
 
   selectPlanSegmentMode(mode: PlanSegmentMode): void {
@@ -614,8 +707,7 @@ export class FinancePageComponent implements OnInit, OnDestroy {
   }
 
   formatInterval(plan: Plan): string {
-    const intervalLabel = plan.interval === 'Year' ? 'ano' : 'mês';
-    const base = `A cada ${intervalLabel}`;
+    const base = this.formatBillingCycle(plan.interval, plan.intervalCount);
     return plan.bonusMonths ? `${base} + ${plan.bonusMonths} mês(es) bônus` : base;
   }
 
@@ -639,8 +731,7 @@ export class FinancePageComponent implements OnInit, OnDestroy {
       return 'Não informado';
     }
 
-    const intervalLabel = payload.interval === 'Year' ? 'ano' : 'mês';
-    const base = `A cada ${intervalLabel}`;
+    const base = this.formatBillingCycle(payload.interval, payload.intervalCount);
     return payload.bonusMonths ? `${base} + ${payload.bonusMonths} mês(es) bônus` : base;
   }
 
@@ -653,7 +744,10 @@ export class FinancePageComponent implements OnInit, OnDestroy {
         Validators.required,
         Validators.min(0),
       ]),
-      interval: new FormControl<PlanInterval>(plan?.interval ?? 'Month', [Validators.required]),
+      billingCycle: new FormControl<PlanBillingCycle>(
+        plan ? this.resolvePlanBillingCycle(plan.interval, plan.intervalCount) : 'monthly',
+        [Validators.required]
+      ),
       bonusMonths: new FormControl(plan?.bonusMonths ?? 0, [Validators.min(0)]),
       categoryId: new FormControl(plan?.categoryId ?? null),
       isActive: new FormControl(plan?.isActive ?? true),
@@ -666,19 +760,52 @@ export class FinancePageComponent implements OnInit, OnDestroy {
     const name = String(value.name ?? '').trim();
     const description = String(value.description ?? '').trim();
     const slug = String(value.slug ?? '').trim() || this.createPlanSlug(name);
+    const billingCycle = PLAN_BILLING_CYCLES[value.billingCycle ?? 'monthly'];
 
     return {
       name,
       slug,
       ...(description ? { description } : {}),
       price: Number(value.price),
-      interval: value.interval ?? 'Month',
-      intervalCount: 1,
+      interval: billingCycle.interval,
+      intervalCount: billingCycle.intervalCount,
       bonusMonths: Number(value.bonusMonths ?? 0),
       categoryId: value.categoryId != null ? Number(value.categoryId) : null,
       isActive: Boolean(value.isActive),
       sortOrder: Number(value.sortOrder ?? 0),
     };
+  }
+
+  private resolvePlanBillingCycle(
+    interval: 'Month' | 'Year',
+    intervalCount: number
+  ): PlanBillingCycle {
+    if (interval === 'Year') {
+      return 'annual';
+    }
+
+    if (intervalCount === 3) {
+      return 'quarterly';
+    }
+
+    if (intervalCount === 6) {
+      return 'semiannual';
+    }
+
+    return 'monthly';
+  }
+
+  private formatBillingCycle(interval: 'Month' | 'Year', intervalCount: number): string {
+    const billingCycle = this.resolvePlanBillingCycle(interval, intervalCount);
+    const knownCycle = PLAN_BILLING_CYCLES[billingCycle];
+
+    if (knownCycle.interval === interval && knownCycle.intervalCount === intervalCount) {
+      return knownCycle.label;
+    }
+
+    return interval === 'Year'
+      ? `A cada ${intervalCount} ano(s)`
+      : `A cada ${intervalCount} mês(es)`;
   }
 
   private configureCategoryValidation(): void {

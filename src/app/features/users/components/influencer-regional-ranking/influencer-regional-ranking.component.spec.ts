@@ -43,8 +43,11 @@ describe('InfluencerRegionalRankingComponent IBGE filters', () => {
     ]);
     expect(component.cityControl.disabled).toBe(true);
 
+    const locationFilterChange = jest.fn();
+    component.locationFilterChange.subscribe(locationFilterChange);
     component.stateControl.setValue('RJ');
 
+    expect(locationFilterChange).toHaveBeenCalledWith({ state: 'RJ', city: undefined });
     expect(getCities).toHaveBeenCalledWith('RJ');
     expect(component.cityControl.disabled).toBe(true);
     expect(component.isLoadingCities()).toBe(true);
@@ -56,10 +59,13 @@ describe('InfluencerRegionalRankingComponent IBGE filters', () => {
     expect(component.cityControl.enabled).toBe(true);
     expect(component.isLoadingCities()).toBe(false);
 
+    component.cityControl.setValue('Niterói');
+    expect(locationFilterChange).toHaveBeenLastCalledWith({ state: 'RJ', city: 'Niterói' });
+
     component.ngOnDestroy();
   });
 
-  it('loads the ranking with the selected IBGE state abbreviation and municipality', fakeAsync(() => {
+  it('loads the ranking with the persisted state name and selected municipality', fakeAsync(() => {
     getCities.mockReturnValue(of(['Rio de Janeiro']));
     const component = TestBed.runInInjectionContext(() => new InfluencerRegionalRankingComponent());
     component.ngOnInit();
@@ -69,7 +75,7 @@ describe('InfluencerRegionalRankingComponent IBGE filters', () => {
     tick(300);
 
     expect(getRegionalRanking).toHaveBeenCalledWith({
-      state: 'RJ',
+      state: 'Rio de Janeiro',
       city: 'Rio de Janeiro',
     });
 

@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { FinanceService } from '../../services/finance.service';
 import {
   CreatePlanPayload,
@@ -19,6 +20,7 @@ type FinanceServiceMock = {
   getPlans: jest.Mock;
   getServiceCategories: jest.Mock;
   updateInfluencerCommission: jest.Mock;
+  createPlan: jest.Mock;
 };
 
 type FinancePagePrivate = {
@@ -78,6 +80,7 @@ describe('FinancePageComponent partner commissions', () => {
       getPlans: jest.fn().mockReturnValue(of({ plans: [], totalRecords: 0 })),
       getServiceCategories: jest.fn().mockReturnValue(of([serviceCategory])),
       updateInfluencerCommission: jest.fn().mockReturnValue(of(undefined)),
+      createPlan: jest.fn().mockReturnValue(of(plan)),
     };
 
     await TestBed.configureTestingModule({
@@ -132,15 +135,40 @@ describe('FinancePageComponent partner commissions', () => {
     expect(component.planSegmentLabel(plan)).toBe('Advogados');
   });
 
-  it('keeps the cycle count out of the form and sends the backend-required value as 1', () => {
+  it.each([
+    ['monthly', 'Month', 1, 'Mensal'],
+    ['quarterly', 'Month', 3, 'Trimestral'],
+    ['semiannual', 'Month', 6, 'Semestral'],
+    ['annual', 'Year', 1, 'Anual'],
+  ] as const)(
+    'maps the %s business period to the backend contract',
+    (billingCycle, interval, intervalCount, label) => {
+      const privateComponent = component as unknown as FinancePagePrivate;
+      component.planForm = privateComponent.createPlanForm();
+
+      component.selectPlanBillingCycle(billingCycle);
+      const payload = privateComponent.buildPlanPayload();
+
+      expect(component.planForm.contains('intervalCount')).toBe(false);
+      expect(payload.interval).toBe(interval);
+      expect(payload.intervalCount).toBe(intervalCount);
+      expect(component.selectedPlanBillingCycleLabel()).toBe(label);
+    }
+  );
+
+  it.each([
+    [{ interval: 'Month', intervalCount: 1 }, 'monthly', 'Mensal'],
+    [{ interval: 'Month', intervalCount: 3 }, 'quarterly', 'Trimestral'],
+    [{ interval: 'Month', intervalCount: 6 }, 'semiannual', 'Semestral'],
+    [{ interval: 'Year', intervalCount: 1 }, 'annual', 'Anual'],
+  ] as const)('restores an existing plan period when editing', (cycle, billingCycle, label) => {
     const privateComponent = component as unknown as FinancePagePrivate;
-    component.planForm = privateComponent.createPlanForm({ ...plan, intervalCount: 6 });
+    const existingPlan = { ...plan, ...cycle };
 
-    const payload = privateComponent.buildPlanPayload();
+    component.planForm = privateComponent.createPlanForm(existingPlan);
 
-    expect(component.planForm.contains('intervalCount')).toBe(false);
-    expect(payload.intervalCount).toBe(1);
-    expect(component.formatInterval({ ...plan, intervalCount: 6 })).toBe('A cada mês');
+    expect(component.planForm.controls.billingCycle.value).toBe(billingCycle);
+    expect(component.formatInterval(existingPlan)).toBe(label);
   });
 
   it('generates the internal plan code from the name when creating a plan', () => {
@@ -166,5 +194,51 @@ describe('FinancePageComponent partner commissions', () => {
     component.selectPlanSegmentMode('all');
     expect(component.planForm.controls.categoryId.value).toBeNull();
     expect(component.planForm.controls.categoryId.valid).toBe(true);
+  });
+
+  it('shows a specific modal before submitting a plan whose name already exists', () => {
+    const privateComponent = component as unknown as FinancePagePrivate;
+    component.plans.set([plan]);
+    component.planForm = privateComponent.createPlanForm();
+    component.planForm.patchValue({ name: '  PLANO ADVOGADOS  ', price: 99.9 });
+
+    component.savePlan();
+
+    expect(component.feedbackModal()).toEqual(
+      expect.objectContaining({
+        title: 'Plano já cadastrado',
+        variant: 'error',
+      })
+    );
+    expect(component.feedbackModal()?.description).toContain('Plano Advogados');
+    expect(component.pendingPlanPayload()).toBeNull();
+    expect(financeService.createPlan).not.toHaveBeenCalled();
+  });
+
+  it('shows the duplicate-plan modal when the API reports that the name already exists', () => {
+    const privateComponent = component as unknown as FinancePagePrivate;
+    component.planForm = privateComponent.createPlanForm();
+    component.planForm.patchValue({ name: 'Plano repetido', price: 140 });
+    component.pendingPlanPayload.set(privateComponent.buildPlanPayload());
+    financeService.createPlan.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 500,
+            error: { message: 'A plan with this name already exists.' },
+          })
+      )
+    );
+
+    component.confirmCreatePlan();
+
+    expect(component.feedbackModal()).toEqual(
+      expect.objectContaining({
+        title: 'Plano já cadastrado',
+        variant: 'error',
+      })
+    );
+    expect(component.pendingPlanPayload()).toBeNull();
+    expect(component.isSavingPlan()).toBe(false);
   });
 });

@@ -2,20 +2,33 @@ import { TestBed } from '@angular/core/testing';
 import { of, firstValueFrom } from 'rxjs';
 import { ApiService } from '@core/services/api.service';
 import { InfluencersService } from './influencers.service';
+import { UsersService } from './users.service';
 
 type ApiServiceMock = {
   get: jest.Mock;
 };
 
+type UsersServiceMock = {
+  getUsers: jest.Mock;
+};
+
 describe('InfluencersService', () => {
   let service: InfluencersService;
   let apiService: ApiServiceMock;
+  let usersService: UsersServiceMock;
 
   beforeEach(() => {
     apiService = { get: jest.fn() };
+    usersService = {
+      getUsers: jest.fn().mockReturnValue(of({ users: [], pages: 1, count: 0 })),
+    };
 
     TestBed.configureTestingModule({
-      providers: [InfluencersService, { provide: ApiService, useValue: apiService }],
+      providers: [
+        InfluencersService,
+        { provide: ApiService, useValue: apiService },
+        { provide: UsersService, useValue: usersService },
+      ],
     });
 
     service = TestBed.inject(InfluencersService);
@@ -132,6 +145,107 @@ describe('InfluencersService', () => {
       state: 'Rio de Janeiro',
     });
     expect(result.influencers[1].stats.totalReferrals).toBe(0);
+  });
+
+  it('uses the matching admin user address when the influencers endpoint omits it', async () => {
+    apiService.get.mockReturnValue(
+      of({
+        influencers: [
+          {
+            id: 25,
+            name: 'Felipe Silva',
+            email: 'felipe@email.com',
+            phone: null,
+            fileUrl: null,
+            ranking: 1,
+            totalReferrals: 2,
+            status: 'Active',
+          },
+        ],
+        currentPage: 1,
+        totalPages: 1,
+        totalRecords: 1,
+      })
+    );
+    usersService.getUsers.mockReturnValue(
+      of({
+        users: [
+          {
+            id: 25,
+            email: 'felipe@email.com',
+            address: { city: 'São Paulo', state: 'SP' },
+          },
+        ],
+        pages: 1,
+        count: 1,
+      })
+    );
+
+    const result = await firstValueFrom(service.getInfluencers({ take: 10, skip: 1 }));
+
+    expect(result.influencers[0].address).toEqual({ city: 'São Paulo', state: 'SP' });
+    expect(usersService.getUsers).toHaveBeenCalledWith(
+      expect.objectContaining({ profileType: 'Influencer', take: 10, skip: 1 })
+    );
+  });
+
+  it('returns only influencers from the selected state abbreviation using the admin users location filter', async () => {
+    apiService.get.mockReturnValue(
+      of({
+        influencers: [
+          {
+            id: 25,
+            name: 'Felipe Silva',
+            email: 'felipe@email.com',
+            phone: null,
+            fileUrl: null,
+            ranking: 1,
+            totalReferrals: 2,
+            status: 'Active',
+          },
+          {
+            id: 26,
+            name: 'Ana Souza',
+            email: 'ana@email.com',
+            phone: null,
+            fileUrl: null,
+            ranking: 2,
+            totalReferrals: 1,
+            status: 'Active',
+          },
+        ],
+        currentPage: 1,
+        totalPages: 1,
+        totalRecords: 2,
+      })
+    );
+    usersService.getUsers.mockReturnValue(
+      of({
+        users: [
+          {
+            id: 25,
+            email: 'felipe@email.com',
+            address: { city: 'São Paulo', state: 'SP' },
+          },
+        ],
+        pages: 1,
+        count: 1,
+      })
+    );
+
+    const result = await firstValueFrom(
+      service.getInfluencers({
+        take: 10,
+        skip: 1,
+        state: 'SP',
+      })
+    );
+
+    expect(usersService.getUsers).toHaveBeenCalledWith(
+      expect.objectContaining({ profileType: 'Influencer', state: 'SP' })
+    );
+    expect(result.influencers.map((influencer) => influencer.id)).toEqual([25]);
+    expect(result.count).toBe(1);
   });
 
   it('loads influencer regional ranking with required city and state filters', async () => {

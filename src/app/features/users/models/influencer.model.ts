@@ -82,9 +82,16 @@ export interface AdminInfluencerListResponse {
   count: number;
 }
 
+export interface InfluencerListLocationFilter {
+  state?: string;
+  city?: string;
+}
+
 export interface AdminInfluencerListParams {
   search?: string;
   status?: AdminInfluencerStatus;
+  city?: string;
+  state?: string;
   take?: number;
   skip?: number;
   sortBy?: 'name' | 'email' | 'status' | 'createdAt';

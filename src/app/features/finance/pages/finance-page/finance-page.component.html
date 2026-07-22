@@ -500,9 +500,9 @@
             class="renewal-option"
             type="button"
             role="radio"
-            [class.renewal-option--active]="planForm.controls.interval.value === 'Month'"
-            [attr.aria-checked]="planForm.controls.interval.value === 'Month'"
-            (click)="selectPlanInterval('Month')"
+            [class.renewal-option--active]="planForm.controls.billingCycle.value === 'monthly'"
+            [attr.aria-checked]="planForm.controls.billingCycle.value === 'monthly'"
+            (click)="selectPlanBillingCycle('monthly')"
           >
             <i class="bi bi-calendar-month" aria-hidden="true"></i>
             <span><strong>Mensal</strong><small>Renovação a cada mês</small></span>
@@ -511,9 +511,31 @@
             class="renewal-option"
             type="button"
             role="radio"
-            [class.renewal-option--active]="planForm.controls.interval.value === 'Year'"
-            [attr.aria-checked]="planForm.controls.interval.value === 'Year'"
-            (click)="selectPlanInterval('Year')"
+            [class.renewal-option--active]="planForm.controls.billingCycle.value === 'quarterly'"
+            [attr.aria-checked]="planForm.controls.billingCycle.value === 'quarterly'"
+            (click)="selectPlanBillingCycle('quarterly')"
+          >
+            <i class="bi bi-calendar2-range" aria-hidden="true"></i>
+            <span><strong>Trimestral</strong><small>Renovação a cada 3 meses</small></span>
+          </button>
+          <button
+            class="renewal-option"
+            type="button"
+            role="radio"
+            [class.renewal-option--active]="planForm.controls.billingCycle.value === 'semiannual'"
+            [attr.aria-checked]="planForm.controls.billingCycle.value === 'semiannual'"
+            (click)="selectPlanBillingCycle('semiannual')"
+          >
+            <i class="bi bi-calendar2-week" aria-hidden="true"></i>
+            <span><strong>Semestral</strong><small>Renovação a cada 6 meses</small></span>
+          </button>
+          <button
+            class="renewal-option"
+            type="button"
+            role="radio"
+            [class.renewal-option--active]="planForm.controls.billingCycle.value === 'annual'"
+            [attr.aria-checked]="planForm.controls.billingCycle.value === 'annual'"
+            (click)="selectPlanBillingCycle('annual')"
           >
             <i class="bi bi-calendar3" aria-hidden="true"></i>
             <span><strong>Anual</strong><small>Renovação a cada ano</small></span>
@@ -733,13 +755,24 @@
 </ng-template>
 
 <ng-template #feedbackModalTpl>
-  <div class="modal-card confirmation-modal">
-    <div class="confirmation-icon confirmation-icon--success" aria-hidden="true">
+  <div
+    class="modal-card confirmation-modal feedback-modal"
+    [class.feedback-modal--error]="feedbackModal()?.variant === 'error'"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="feedback-modal-title"
+  >
+    <div
+      class="confirmation-icon"
+      [class.confirmation-icon--success]="feedbackModal()?.variant === 'success'"
+      [class.confirmation-icon--danger]="feedbackModal()?.variant === 'error'"
+      aria-hidden="true"
+    >
       <i class="bi" [ngClass]="feedbackModal()?.icon || 'bi-check2-circle'"></i>
     </div>
 
     <div class="modal-card-header confirmation-header">
-      <h4 class="modal-title">{{ feedbackModal()?.title }}</h4>
+      <h4 id="feedback-modal-title" class="modal-title">{{ feedbackModal()?.title }}</h4>
       <button
         class="modal-close"
         type="button"
@@ -750,8 +783,11 @@
       </button>
     </div>
 
-    <div class="modal-card-body confirmation-body">
-      <p class="confirmation-text confirmation-text--success">
+    <div
+      class="modal-card-body confirmation-body feedback-message"
+      [class.feedback-message--error]="feedbackModal()?.variant === 'error'"
+    >
+      <p class="confirmation-text">
         {{ feedbackModal()?.description }}
       </p>
     </div>

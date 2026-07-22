@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { of, firstValueFrom } from 'rxjs';
 import { ApiService } from '@core/services/api.service';
+import { SUPPRESS_GLOBAL_ERROR_TOAST } from '@core/tokens/http-context.tokens';
 import { CreatePlanPayload, Plan } from '../models/finance.model';
 import { FinanceService } from './finance.service';
 
@@ -59,7 +60,9 @@ describe('FinanceService plan contract', () => {
 
     const response = await firstValueFrom(service.createPlan(payload));
 
-    expect(apiService.post).toHaveBeenCalledWith('/v1/plans', payload);
+    expect(apiService.post).toHaveBeenCalledWith('/v1/plans', payload, expect.any(Object));
+    const requestOptions = apiService.post.mock.calls[0][2];
+    expect(requestOptions.context.get(SUPPRESS_GLOBAL_ERROR_TOAST)).toBe(true);
     expect(response.categoryId).toBe(3);
   });
 });
