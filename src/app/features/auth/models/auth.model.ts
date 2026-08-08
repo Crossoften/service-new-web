@@ -29,8 +29,11 @@ export interface MessageResponse {
   message: string;
 }
 
+export type PasswordRecoveryChannel = 'email' | 'sms';
+
 export interface ForgotPasswordRequest {
-  email: string;
+  channel: PasswordRecoveryChannel;
+  identifier: string;
 }
 
 export interface VerifyCodeRequest {

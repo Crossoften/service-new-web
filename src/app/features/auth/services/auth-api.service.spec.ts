@@ -76,6 +76,22 @@ describe('AuthApiService profile contract', () => {
     service = TestBed.inject(AuthApiService);
   });
 
+  it('envia o identificador e o canal pelo endpoint unificado de recuperação', async () => {
+    apiService.post.mockReturnValue(of({ message: 'SMS enviado com sucesso!' }));
+    const identifier = '+5511' + '987654321';
+
+    await firstValueFrom(service.forgotPassword({ channel: 'sms', identifier }));
+
+    expect(apiService.post).toHaveBeenCalledWith(
+      '/v1/forgot',
+      {
+        channel: 'sms',
+        identifier,
+      },
+      expect.objectContaining({ context: expect.anything() })
+    );
+  });
+
   it('loads the expanded authenticated profile from /v1/profile/me', async () => {
     apiService.get.mockReturnValue(of(profileResponse));
 

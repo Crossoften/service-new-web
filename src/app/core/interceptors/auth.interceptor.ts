@@ -11,7 +11,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
-  if (req.url.includes('/v1/login') || req.url.includes('/v1/no-auth')) {
+  if (
+    req.url.includes('/v1/login') ||
+    req.url.includes('/v1/forgot') ||
+    req.url.includes('/v1/no-auth')
+  ) {
     return next(req);
   }
 

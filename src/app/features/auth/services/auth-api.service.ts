@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map, tap } from 'rxjs';
 import { ApiService } from '@core/services/api.service';
 import { SessionService } from '@core/services/session.service';
+import { SUPPRESS_GLOBAL_ERROR_TOAST } from '@core/tokens/http-context.tokens';
 import { environment } from '@environments/environment';
 import {
   ContactUsRequest,
@@ -42,7 +43,8 @@ export class AuthApiService {
   }
 
   forgotPassword(payload: ForgotPasswordRequest): Observable<MessageResponse> {
-    return this.apiService.post<MessageResponse>('/v1/no-auth/forgot', payload);
+    const context = new HttpContext().set(SUPPRESS_GLOBAL_ERROR_TOAST, true);
+    return this.apiService.post<MessageResponse>('/v1/forgot', payload, { context });
   }
 
   verifyCode(payload: VerifyCodeRequest): Observable<MessageResponse> {
