@@ -47,23 +47,21 @@ describe('ForgotPasswordPageComponent', () => {
     );
   });
 
-  it('mostra e-mail e SMS como canais de recuperação', () => {
+  it('exibe somente recuperação por e-mail', () => {
     const element = fixture.nativeElement as HTMLElement;
 
-    expect(element.querySelector<HTMLInputElement>('input[value="email"]')).toBeTruthy();
-    expect(element.querySelector<HTMLInputElement>('input[value="sms"]')).toBeTruthy();
-    expect(element.textContent).toContain('E-mail');
-    expect(element.textContent).toContain('SMS');
+    expect(element.querySelector('input[value="sms"]')).toBeNull();
+    expect(element.querySelector('input[type="radio"]')).toBeNull();
+    expect(element.textContent).not.toContain('SMS');
+    expect(element.textContent).toContain(
+      'Informe seu e-mail para receber o código de redefinição.'
+    );
   });
 
-  it('envia o telefone normalizado ao selecionar SMS', () => {
+  it('envia o e-mail normalizado como único canal de recuperação', () => {
     const element = fixture.nativeElement as HTMLElement;
-    const sms = element.querySelector<HTMLInputElement>('input[value="sms"]')!;
-    sms.click();
-    fixture.detectChanges();
-
     const identifier = element.querySelector<HTMLInputElement>('#identifier')!;
-    identifier.value = '+55 (11) 98765-4321';
+    identifier.value = '  ADMIN@EXEMPLO.COM  ';
     identifier.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
@@ -71,8 +69,8 @@ describe('ForgotPasswordPageComponent', () => {
     fixture.detectChanges();
 
     expect(authApiService.forgotPassword).toHaveBeenCalledWith({
-      channel: 'sms',
-      identifier: '+5511' + '987654321',
+      channel: 'email',
+      identifier: 'admin@exemplo.com',
     });
   });
 });
