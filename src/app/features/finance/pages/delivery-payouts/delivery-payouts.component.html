@@ -1,0 +1,202 @@
+<div class="app-shell">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="page-wrapper">
+      <p class="breadcrumb-label">FINANCEIRO</p>
+      <h1 class="page-title">Repasses a entregadores</h1>
+
+      <div class="payouts-toolbar">
+        <button class="btn-link-back" type="button" (click)="voltar()">
+          <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+          Voltar ao financeiro
+        </button>
+
+        @if (!isLoading() && !hasError() && pendentes().length) {
+          <p class="total-devido">
+            Total em aberto: <strong>{{ formatarMoeda(totalDevido()) }}</strong>
+          </p>
+        }
+      </div>
+
+      @if (isLoading()) {
+        <app-loading-skeleton [variant]="'table'" [count]="6"></app-loading-skeleton>
+      } @else if (hasError()) {
+        <app-error-state
+          [title]="'Erro ao carregar os saldos'"
+          [description]="'Não foi possível buscar os repasses em aberto. Tente novamente.'"
+          (retry)="carregar()"
+        ></app-error-state>
+      } @else if (!pendentes().length) {
+        <app-empty-state
+          [title]="'Nenhum repasse em aberto'"
+          [description]="'Todos os entregadores estão em dia.'"
+          [icon]="'bi-check-circle'"
+        ></app-empty-state>
+      } @else {
+        <div class="table-wrapper">
+          <table class="payouts-table" aria-label="Repasses em aberto">
+            <thead>
+              <tr>
+                <th scope="col">Entregador</th>
+                <th scope="col">Entregas</th>
+                <th scope="col">Mais antiga</th>
+                <th scope="col">Dados para pagamento</th>
+                <th scope="col" class="col-amount">Valor</th>
+                <th scope="col" class="col-actions"><span class="visually-hidden">Ações</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (pendente of pendentes(); track pendente.courierId) {
+                <tr>
+                  <td>
+                    <span class="td-name">{{ pendente.courierName }}</span>
+                    @if (pendente.courierPhone) {
+                      <span class="td-sub">{{ pendente.courierPhone }}</span>
+                    }
+                  </td>
+
+                  <td>
+                    {{ pendente.deliveries }}
+                    @if (temEstorno(pendente)) {
+                      <span
+                        class="badge-estorno"
+                        [title]="
+                          pendente.refundedDeliveries +
+                          ' entrega(s) de pedidos estornados, somando ' +
+                          formatarMoeda(pendente.refundedAmount)
+                        "
+                      >
+                        {{ pendente.refundedDeliveries }} estornada(s)
+                      </span>
+                    }
+                  </td>
+
+                  <td>{{ pendente.oldestAt | date: 'dd/MM/yyyy' }}</td>
+
+                  <td>
+                    @if (pendente.bankAccount; as conta) {
+                      @if (conta.pixKey) {
+                        <span class="td-name">Pix: {{ conta.pixKey }}</span>
+                      }
+                      <span class="td-sub">
+                        {{ conta.bankName }} · ag. {{ conta.agency }} · c/ {{ conta.account }}
+                      </span>
+                    } @else {
+                      <span class="sem-conta">
+                        <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
+                        Sem conta cadastrada
+                      </span>
+                    }
+                  </td>
+
+                  <td class="col-amount">
+                    <strong>{{ formatarMoeda(pendente.amount) }}</strong>
+                  </td>
+
+                  <td class="col-actions">
+                    <button
+                      class="btn-pagar"
+                      type="button"
+                      (click)="abrirRepasse(pendente, repasseModalTpl)"
+                    >
+                      Registrar repasse
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </main>
+</div>
+
+<ng-template #repasseModalTpl>
+  @if (selecionado(); as pendente) {
+    <div class="modal-header">
+      <h2 class="modal-title">Registrar repasse</h2>
+      <button
+        type="button"
+        class="btn-close"
+        aria-label="Fechar"
+        [disabled]="isSaving()"
+        (click)="fecharModal()"
+      ></button>
+    </div>
+
+    <div class="modal-body">
+      <p class="modal-lead">
+        Confirmando o repasse de <strong>{{ formatarMoeda(pendente.amount) }}</strong> para
+        <strong>{{ pendente.courierName }}</strong
+        >, referente a {{ pendente.deliveries }} entrega(s).
+      </p>
+
+      <div class="aviso aviso--info">
+        O pagamento acontece fora do sistema. Faça o Pix ou a transferência primeiro e registre aqui
+        — isto <strong>liquida todo o saldo em aberto</strong> deste entregador.
+      </div>
+
+      @if (temEstorno(pendente)) {
+        <div class="aviso aviso--alerta">
+          <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
+          {{ pendente.refundedDeliveries }} entrega(s) deste saldo pertencem a pedidos
+          <strong>estornados</strong>, somando {{ formatarMoeda(pendente.refundedAmount) }}. Confira
+          antes de pagar.
+        </div>
+      }
+
+      @if (!pendente.bankAccount) {
+        <div class="aviso aviso--alerta">
+          <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
+          Este entregador não tem conta cadastrada. Confirme por onde o pagamento foi feito.
+        </div>
+      }
+
+      <form [formGroup]="form" class="modal-form" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="payout-method">Forma de pagamento</label>
+          <select id="payout-method" class="form-control" formControlName="method">
+            @for (metodo of metodos; track metodo.valor) {
+              <option [value]="metodo.valor">{{ metodo.rotulo }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="payout-reference">Comprovante</label>
+          <input
+            id="payout-reference"
+            type="text"
+            class="form-control"
+            formControlName="reference"
+            placeholder="End-to-end do Pix, número da TED…"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="payout-notes">Observação</label>
+          <textarea
+            id="payout-notes"
+            class="form-control"
+            formControlName="notes"
+            rows="2"
+          ></textarea>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-cancel" [disabled]="isSaving()" (click)="fecharModal()">
+        CANCELAR
+      </button>
+      <button type="button" class="btn-save" [disabled]="isSaving()" (click)="confirmarRepasse()">
+        @if (isSaving()) {
+          <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+        }
+        CONFIRMAR REPASSE
+      </button>
+    </div>
+  }
+</ng-template>

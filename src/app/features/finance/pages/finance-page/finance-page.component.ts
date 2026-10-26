@@ -11,6 +11,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -89,6 +90,7 @@ type PlanForm = FormGroup<{
 })
 export class FinancePageComponent implements OnInit, OnDestroy {
   private readonly modal = inject(NgbModal);
+  private readonly router = inject(Router);
   private readonly financeService = inject(FinanceService);
   private readonly destroy$ = new Subject<void>();
 
@@ -141,6 +143,10 @@ export class FinancePageComponent implements OnInit, OnDestroy {
   private activeModalRef: NgbModalRef | null = null;
   private confirmationModalRef: NgbModalRef | null = null;
   private feedbackModalRef: NgbModalRef | null = null;
+
+  goToDeliveryPayouts(): void {
+    this.router.navigate(['/finance/repasses']);
+  }
 
   ngOnInit(): void {
     this.loadPlatformSettings();
