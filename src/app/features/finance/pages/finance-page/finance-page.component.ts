@@ -152,6 +152,10 @@ export class FinancePageComponent implements OnInit, OnDestroy {
     this.router.navigate(['/finance/taxas-entrega']);
   }
 
+  goToCoupons(): void {
+    this.router.navigate(['/finance/cupons']);
+  }
+
   ngOnInit(): void {
     this.loadPlatformSettings();
     this.loadServiceCategories();

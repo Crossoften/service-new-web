@@ -1,0 +1,294 @@
+<div class="app-shell">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="page-wrapper">
+      <p class="breadcrumb-label">FINANCEIRO</p>
+      <h1 class="page-title">Cupons de desconto</h1>
+
+      <div class="cupons-toolbar">
+        <button class="btn-link-back" type="button" (click)="voltar()">
+          <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+          Voltar ao financeiro
+        </button>
+
+        <button class="btn-novo" type="button" (click)="abrirNovo(formModalTpl)">Novo cupom</button>
+      </div>
+
+      <div class="aviso aviso--info">
+        <strong>Quem paga o desconto é a plataforma.</strong> O restaurante recebe os itens
+        integrais e o entregador recebe frete e gorjeta normalmente. Por isso o desconto de um
+        pedido nunca passa da comissão dele — use <strong>valor mínimo do pedido</strong> e
+        <strong>teto de desconto</strong> para manter o cupom dentro desse limite. Sem eles, o cupom
+        é recusado nos pedidos menores.
+      </div>
+
+      @if (isLoading()) {
+        <app-loading-skeleton [variant]="'table'" [count]="6"></app-loading-skeleton>
+      } @else if (hasError()) {
+        <app-error-state
+          [title]="'Erro ao carregar os cupons'"
+          [description]="'Não foi possível buscar a lista. Tente novamente.'"
+          (retry)="carregar()"
+        ></app-error-state>
+      } @else if (!cupons().length) {
+        <app-empty-state
+          [title]="'Nenhum cupom cadastrado'"
+          [description]="'Crie o primeiro cupom de desconto da plataforma.'"
+          [icon]="'bi-ticket-perforated'"
+        ></app-empty-state>
+      } @else {
+        <div class="table-wrapper">
+          <table class="cupons-table" aria-label="Cupons de desconto">
+            <thead>
+              <tr>
+                <th scope="col">Código</th>
+                <th scope="col">Desconto</th>
+                <th scope="col">Restaurante</th>
+                <th scope="col">Vigência</th>
+                <th scope="col">Usos</th>
+                <th scope="col">Situação</th>
+                <th scope="col" class="col-actions"><span class="visually-hidden">Ações</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (cupom of cupons(); track cupom.id) {
+                <tr [class.linha-inativa]="!cupom.isActive">
+                  <td>
+                    <span class="td-code">{{ cupom.code }}</span>
+                    @if (cupom.description) {
+                      <span class="td-sub">{{ cupom.description }}</span>
+                    }
+                  </td>
+
+                  <td>
+                    <strong>{{ rotuloValor(cupom) }}</strong>
+                    @if (cupom.minOrderValue) {
+                      <span class="td-sub">mín. {{ formatarMoeda(cupom.minOrderValue) }}</span>
+                    }
+                    @if (cupom.maxDiscountValue) {
+                      <span class="td-sub">teto {{ formatarMoeda(cupom.maxDiscountValue) }}</span>
+                    }
+                  </td>
+
+                  <td>{{ nomeDoRestaurante(cupom.restaurantId) }}</td>
+
+                  <td class="td-vigencia">
+                    @if (cupom.startsAt || cupom.endsAt) {
+                      <span>{{ (cupom.startsAt | date: 'dd/MM/yy HH:mm') || 'sem início' }}</span>
+                      <span class="td-sub">
+                        até {{ (cupom.endsAt | date: 'dd/MM/yy HH:mm') || 'sem fim' }}
+                      </span>
+                    } @else {
+                      <span class="td-sub">Sem prazo</span>
+                    }
+                  </td>
+
+                  <td>{{ rotuloUsos(cupom) }}</td>
+
+                  <td>
+                    <span class="status-badge" [class.status-badge--off]="!cupom.isActive">
+                      {{ cupom.isActive ? 'Ativo' : 'Inativo' }}
+                    </span>
+                  </td>
+
+                  <td class="col-actions">
+                    <button
+                      class="btn-acao"
+                      type="button"
+                      (click)="abrirEdicao(cupom, formModalTpl)"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      class="btn-acao"
+                      [class.btn-acao--perigo]="cupom.isActive"
+                      type="button"
+                      [disabled]="alternandoId() === cupom.id"
+                      (click)="alternarAtivo(cupom)"
+                    >
+                      {{ cupom.isActive ? 'Desativar' : 'Reativar' }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </main>
+</div>
+
+<ng-template #formModalTpl>
+  <div class="modal-header">
+    <h2 class="modal-title">{{ estaEditando ? 'Editar cupom' : 'Novo cupom' }}</h2>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Fechar"
+      [disabled]="isSaving()"
+      (click)="fecharModal()"
+    ></button>
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="form" class="modal-form" novalidate>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label" for="cup-code">Código</label>
+          <input
+            id="cup-code"
+            type="text"
+            class="form-control form-control--code"
+            formControlName="code"
+            placeholder="BEMVINDO10"
+          />
+          <p class="helper-text">Gravado e comparado em maiúsculas.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cup-desc">Descrição</label>
+          <input
+            id="cup-desc"
+            type="text"
+            class="form-control"
+            formControlName="description"
+            placeholder="Exibida na sacola do cliente"
+          />
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label" for="cup-type">Tipo</label>
+          <select id="cup-type" class="form-control" formControlName="type">
+            @for (tipo of tipos; track tipo.valor) {
+              <option [value]="tipo.valor">{{ tipo.rotulo }}</option>
+            }
+          </select>
+        </div>
+
+        @if (exigeValor) {
+          <div class="form-group">
+            <label class="form-label" for="cup-value">
+              {{ ehPercentual ? 'Percentual (%)' : 'Valor (R$)' }}
+            </label>
+            <input
+              id="cup-value"
+              type="number"
+              min="0"
+              [max]="ehPercentual ? 100 : null"
+              step="0.01"
+              class="form-control"
+              formControlName="value"
+            />
+          </div>
+        }
+      </div>
+
+      <div class="section-label">Limites que protegem a comissão</div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label" for="cup-min">Valor mínimo do pedido (R$)</label>
+          <input
+            id="cup-min"
+            type="number"
+            min="0"
+            step="0.01"
+            class="form-control"
+            formControlName="minOrderValue"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cup-max">Teto do desconto (R$)</label>
+          <input
+            id="cup-max"
+            type="number"
+            min="0"
+            step="0.01"
+            class="form-control"
+            formControlName="maxDiscountValue"
+          />
+          <p class="helper-text">Vale para cupom percentual.</p>
+        </div>
+      </div>
+
+      <div class="section-label">Vigência e limites de uso</div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label" for="cup-start">Início</label>
+          <input
+            id="cup-start"
+            type="datetime-local"
+            class="form-control"
+            formControlName="startsAt"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cup-end">Fim</label>
+          <input id="cup-end" type="datetime-local" class="form-control" formControlName="endsAt" />
+        </div>
+      </div>
+
+      <div class="form-row-3">
+        <div class="form-group">
+          <label class="form-label" for="cup-uses">Usos no total</label>
+          <input
+            id="cup-uses"
+            type="number"
+            min="1"
+            step="1"
+            class="form-control"
+            formControlName="maxUses"
+            placeholder="Sem limite"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cup-uses-cli">Usos por cliente</label>
+          <input
+            id="cup-uses-cli"
+            type="number"
+            min="1"
+            step="1"
+            class="form-control"
+            formControlName="maxUsesPerCustomer"
+            placeholder="Sem limite"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cup-rest">Restaurante</label>
+          <select id="cup-rest" class="form-control" formControlName="restaurantId">
+            <option [ngValue]="null">Todos</option>
+            @for (restaurante of restaurantes(); track restaurante.id) {
+              <option [ngValue]="restaurante.id">{{ restaurante.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <label class="toggle-linha">
+        <input type="checkbox" formControlName="isActive" />
+        <span>Cupom ativo</span>
+      </label>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn-cancel" [disabled]="isSaving()" (click)="fecharModal()">
+      CANCELAR
+    </button>
+    <button type="button" class="btn-save" [disabled]="isSaving()" (click)="salvar()">
+      @if (isSaving()) {
+        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+      }
+      SALVAR
+    </button>
+  </div>
+</ng-template>

@@ -1,3 +1,16 @@
+// Fuso fixo para os testes.
+//
+// Sem isto, o fuso é o da máquina e um teste de data passa ou falha conforme
+// quem roda. Em UTC, código que confunde hora local com UTC parece correto —
+// os dois coincidem. A conversão das datas do cupom foi reescrita com erro de
+// fuso de propósito, num teste de mutação, e a suíte não acusou nada rodando
+// em UTC; com este fuso, acusa.
+//
+// Vai aqui porque o `jest.config.js` é avaliado antes de os workers subirem, e
+// eles herdam o ambiente. Em `setup-jest.ts` seria tarde: o V8 já teria
+// resolvido o fuso.
+process.env.TZ = 'America/Sao_Paulo';
+
 module.exports = {
   preset: 'jest-preset-angular',
   setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
