@@ -35,8 +35,14 @@ export class ApiService {
     return this.http.put<T>(`${this.baseUrl}${endpoint}`, data);
   }
 
-  patch<T>(endpoint: string, data: unknown): Observable<T> {
-    return this.http.patch<T>(`${this.baseUrl}${endpoint}`, data);
+  /**
+   * O `options` existe aqui pelo mesmo motivo que no `post`: permitir que a
+   * chamada desligue o toast global e trate o erro por conta própria. Rotas
+   * que validam corpo devolvem `400` com mensagem específica, e o
+   * `errorInterceptor` a substituiria por um texto genérico.
+   */
+  patch<T>(endpoint: string, data: unknown, options?: { context?: HttpContext }): Observable<T> {
+    return this.http.patch<T>(`${this.baseUrl}${endpoint}`, data, options);
   }
 
   delete<T>(endpoint: string): Observable<T> {

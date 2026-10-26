@@ -1,0 +1,240 @@
+<div class="app-shell">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="page-wrapper">
+      <p class="breadcrumb-label">FINANCEIRO</p>
+      <h1 class="page-title">Taxas de entrega</h1>
+
+      <div class="fees-toolbar">
+        <button class="btn-link-back" type="button" (click)="voltar()">
+          <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+          Voltar ao financeiro
+        </button>
+
+        <button class="btn-nova" type="button" (click)="abrirNova(formModalTpl)">Nova faixa</button>
+      </div>
+
+      <p class="explicacao">
+        O servidor aplica a faixa que contém a distância entre o restaurante e o cliente. O início é
+        inclusivo e o fim é exclusivo. <strong>Sem nenhuma faixa ativa</strong>, os pedidos usam a
+        taxa padrão do servidor.
+      </p>
+
+      @if (faltaComecoEmZero()) {
+        <div class="aviso aviso--alerta">
+          <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
+          Nenhuma faixa ativa começa em <strong>0 km</strong>. Entregas curtas não vão casar com
+          faixa nenhuma e cairão na taxa padrão do servidor.
+        </div>
+      }
+
+      @for (problema of inconsistencias(); track problema.de + '-' + problema.ate) {
+        <div class="aviso aviso--alerta">
+          <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
+          @if (problema.tipo === 'buraco') {
+            Há um <strong>vão</strong> entre {{ formatarKm(problema.de) }} e
+            {{ formatarKm(problema.ate) }} km, sem faixa ativa cobrindo.
+          } @else {
+            Duas faixas ativas <strong>se sobrepõem</strong> entre {{ formatarKm(problema.de) }} e
+            {{ formatarKm(problema.ate) }} km.
+          }
+        </div>
+      }
+
+      @if (isLoading()) {
+        <app-loading-skeleton [variant]="'table'" [count]="5"></app-loading-skeleton>
+      } @else if (hasError()) {
+        <app-error-state
+          [title]="'Erro ao carregar as faixas'"
+          [description]="'Não foi possível buscar as taxas de entrega. Tente novamente.'"
+          (retry)="carregar()"
+        ></app-error-state>
+      } @else if (!faixas().length) {
+        <app-empty-state
+          [title]="'Nenhuma faixa cadastrada'"
+          [description]="'Os pedidos estão usando a taxa padrão do servidor.'"
+          [icon]="'bi-truck'"
+        ></app-empty-state>
+      } @else {
+        <div class="table-wrapper">
+          <table class="fees-table" aria-label="Faixas de taxa de entrega">
+            <thead>
+              <tr>
+                <th scope="col">Faixa</th>
+                <th scope="col">Cobrança</th>
+                <th scope="col">Valor</th>
+                <th scope="col">Situação</th>
+                <th scope="col" class="col-actions"><span class="visually-hidden">Ações</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (regra of faixas(); track regra.id) {
+                <tr [class.linha-inativa]="!regra.isActive">
+                  <td class="td-faixa">{{ rotuloFaixa(regra) }}</td>
+                  <td>{{ regra.type === 'Fixed' ? 'Valor fixo' : 'Percentual' }}</td>
+                  <td>
+                    <strong>{{ rotuloValor(regra) }}</strong>
+                  </td>
+                  <td>
+                    <span class="status-badge" [class.status-badge--off]="!regra.isActive">
+                      {{ regra.isActive ? 'Ativa' : 'Inativa' }}
+                    </span>
+                  </td>
+                  <td class="col-actions">
+                    <button
+                      class="btn-acao"
+                      type="button"
+                      (click)="abrirEdicao(regra, formModalTpl)"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      class="btn-acao"
+                      type="button"
+                      [disabled]="alternandoId() === regra.id"
+                      (click)="alternarAtiva(regra)"
+                    >
+                      {{ regra.isActive ? 'Desativar' : 'Ativar' }}
+                    </button>
+                    <button
+                      class="btn-acao btn-acao--perigo"
+                      type="button"
+                      (click)="confirmarRemocao(regra, removeModalTpl)"
+                    >
+                      Excluir
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </main>
+</div>
+
+<ng-template #formModalTpl>
+  <div class="modal-header">
+    <h2 class="modal-title">{{ estaEditando ? 'Editar faixa' : 'Nova faixa' }}</h2>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Fechar"
+      [disabled]="isSaving()"
+      (click)="fecharModal()"
+    ></button>
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="form" class="modal-form" novalidate>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label" for="fee-min">De (km)</label>
+          <input
+            id="fee-min"
+            type="number"
+            min="0"
+            step="0.01"
+            class="form-control"
+            formControlName="minKm"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fee-max">Até (km)</label>
+          <input
+            id="fee-max"
+            type="number"
+            min="0"
+            step="0.01"
+            class="form-control"
+            formControlName="maxKm"
+            placeholder="Em branco = sem limite"
+          />
+          <p class="helper-text">Deixe vazio para "daqui em diante".</p>
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label" for="fee-type">Cobrança</label>
+          <select id="fee-type" class="form-control" formControlName="type">
+            @for (tipo of tipos; track tipo.valor) {
+              <option [value]="tipo.valor">{{ tipo.rotulo }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fee-value">
+            {{ form.controls.type.value === 'Fixed' ? 'Valor (R$)' : 'Percentual (%)' }}
+          </label>
+          <input
+            id="fee-value"
+            type="number"
+            min="0"
+            step="0.01"
+            class="form-control"
+            formControlName="value"
+          />
+        </div>
+      </div>
+
+      @if (form.controls.type.value === 'Percent') {
+        <div class="aviso aviso--info">
+          O percentual incide sobre o <strong>valor dos itens</strong> do pedido, nunca sobre o
+          total — que já inclui a própria taxa.
+        </div>
+      }
+
+      <label class="toggle-linha">
+        <input type="checkbox" formControlName="isActive" />
+        <span>Faixa ativa</span>
+      </label>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn-cancel" [disabled]="isSaving()" (click)="fecharModal()">
+      CANCELAR
+    </button>
+    <button type="button" class="btn-save" [disabled]="isSaving()" (click)="salvar()">
+      @if (isSaving()) {
+        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+      }
+      SALVAR
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #removeModalTpl>
+  @if (emEdicao(); as regra) {
+    <div class="modal-header">
+      <h2 class="modal-title">Excluir faixa</h2>
+    </div>
+
+    <div class="modal-body">
+      <p class="modal-lead">
+        Excluir a faixa de <strong>{{ rotuloFaixa(regra) }}</strong
+        >, que cobra <strong>{{ rotuloValor(regra) }}</strong
+        >?
+      </p>
+
+      <div class="aviso aviso--info">
+        Para tirar a faixa de circulação temporariamente, <strong>desativar é melhor</strong> — a
+        configuração fica guardada e volta com um clique. A exclusão é definitiva.
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-cancel" [disabled]="isSaving()" (click)="fecharModal()">
+        CANCELAR
+      </button>
+      <button type="button" class="btn-excluir" [disabled]="isSaving()" (click)="remover()">
+        EXCLUIR
+      </button>
+    </div>
+  }
+</ng-template>

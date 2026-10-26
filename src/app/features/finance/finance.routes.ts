@@ -15,4 +15,10 @@ export const FINANCE_ROUTES: Routes = [
       ),
     data: { title: 'Repasses a entregadores' },
   },
+  {
+    path: 'taxas-entrega',
+    loadComponent: () =>
+      import('./pages/delivery-fees/delivery-fees.component').then((m) => m.DeliveryFeesComponent),
+    data: { title: 'Taxas de entrega' },
+  },
 ];
