@@ -1,0 +1,212 @@
+<div class="subscriptions-section">
+  <div class="section-header">
+    <h3 class="section-title">Assinatura</h3>
+    <button
+      type="button"
+      class="btn-novo"
+      [disabled]="!podeConceder || isLoading()"
+      (click)="abrirConcessao(concessaoTpl)"
+    >
+      Conceder assinatura
+    </button>
+  </div>
+
+  @if (!isLoading() && !podeConceder) {
+    <p class="helper-text">
+      Este fornecedor já tem a concessão #{{ concessaoVigenteId() }} vigente. Para estender a
+      validade, use <strong>Bonificar</strong> na linha dela.
+    </p>
+  }
+
+  @if (isLoading()) {
+    <app-loading-skeleton [variant]="'table'" [count]="3"></app-loading-skeleton>
+  } @else if (hasError()) {
+    <app-error-state
+      [title]="'Erro ao carregar as assinaturas'"
+      [description]="'Não foi possível buscar as assinaturas deste fornecedor. Tente novamente.'"
+      (retry)="carregar()"
+    ></app-error-state>
+  } @else if (!assinaturas().length) {
+    <app-empty-state
+      [title]="'Nenhuma assinatura'"
+      [description]="'Este fornecedor nunca assinou nem recebeu concessão.'"
+      [icon]="'bi-card-checklist'"
+    ></app-empty-state>
+  } @else {
+    <div class="table-wrapper">
+      <table class="subscriptions-table" aria-label="Assinaturas do fornecedor">
+        <thead>
+          <tr>
+            <th scope="col">Plano</th>
+            <th scope="col">Cobertura</th>
+            <th scope="col">Origem</th>
+            <th scope="col">Status</th>
+            <th scope="col">Vigência</th>
+            <th scope="col">Bônus</th>
+            <th scope="col" class="col-acoes">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (assinatura of assinaturas(); track assinatura.subscriptionId) {
+            <tr>
+              <td>
+                <span class="plano-nome">{{ assinatura.planName }}</span>
+                <span class="plano-id">#{{ assinatura.subscriptionId }}</span>
+              </td>
+              <td>{{ rotuloCobertura(assinatura) }}</td>
+              <td>
+                <span class="origem">{{ rotuloOrigem(assinatura) }}</span>
+                @if (assinatura.grantReason) {
+                  <span class="grant-reason">{{ assinatura.grantReason }}</span>
+                }
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="classeStatus(assinatura)">
+                  {{ rotuloStatus(assinatura.status) }}
+                </span>
+                @if (assinatura.cancelAtPeriodEnd) {
+                  <span class="helper-inline">cancela no fim do período</span>
+                }
+              </td>
+              <td>
+                <span class="vigencia">até {{ formatarData(assinatura.currentPeriodEnd) }}</span>
+                @if (assinatura.currentPeriodStart) {
+                  <span class="vigencia-inicio">
+                    desde {{ formatarData(assinatura.currentPeriodStart) }}
+                  </span>
+                }
+              </td>
+              <td>{{ assinatura.bonusMonths }}</td>
+              <td class="col-acoes">
+                <button type="button" class="btn-acao" (click)="abrirBonus(assinatura, bonusTpl)">
+                  Bonificar
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<ng-template #concessaoTpl>
+  <div class="modal-header">
+    <h2 class="modal-title">Conceder assinatura</h2>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Fechar"
+      [disabled]="isSaving()"
+      (click)="fecharModal()"
+    ></button>
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="formConcessao" class="modal-form" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="sub-plan">Plano</label>
+        <select id="sub-plan" class="form-control" formControlName="planId">
+          <option [ngValue]="null" disabled>Selecione um plano</option>
+          @for (plano of planos(); track plano.id) {
+            <option [ngValue]="plano.id">{{ rotuloPlano(plano) }}</option>
+          }
+        </select>
+        @if (!planos().length) {
+          <p class="helper-text">
+            Nenhum plano ativo encontrado. Cadastre um plano em Financeiro antes de conceder.
+          </p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="sub-months">Duração (meses)</label>
+        <input
+          id="sub-months"
+          type="number"
+          class="form-control"
+          formControlName="months"
+          min="1"
+          [max]="mesesMaximoConcessao"
+        />
+        <p class="helper-text">
+          Contada a partir de agora, de 1 a {{ mesesMaximoConcessao }} meses. Não gera cobrança nem
+          lançamento financeiro.
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="sub-reason">Motivo (opcional)</label>
+        <input
+          id="sub-reason"
+          type="text"
+          class="form-control"
+          formControlName="reason"
+          [maxlength]="motivoMaximo"
+          placeholder="Cortesia parceiro X, ambiente de homologação…"
+        />
+        <p class="helper-text">Fica registrado junto de quem concedeu, para auditoria.</p>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn-cancel" [disabled]="isSaving()" (click)="fecharModal()">
+      CANCELAR
+    </button>
+    <button type="button" class="btn-save" [disabled]="isSaving()" (click)="conceder()">
+      @if (isSaving()) {
+        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+      }
+      CONCEDER
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #bonusTpl>
+  <div class="modal-header">
+    <h2 class="modal-title">Bonificar assinatura</h2>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Fechar"
+      [disabled]="isSaving()"
+      (click)="fecharModal()"
+    ></button>
+  </div>
+
+  <div class="modal-body">
+    @if (bonusAlvo(); as alvo) {
+      <p class="bonus-resumo">
+        {{ alvo.planName }} · {{ rotuloCobertura(alvo) }} · válida até
+        <strong>{{ formatarData(alvo.currentPeriodEnd) }}</strong>
+      </p>
+    }
+
+    <form [formGroup]="formBonus" class="modal-form" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="bonus-months">Meses de bônus</label>
+        <input
+          id="bonus-months"
+          type="number"
+          class="form-control"
+          formControlName="months"
+          min="1"
+        />
+        <p class="helper-text">Somados ao fim da vigência atual, não a partir de hoje.</p>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn-cancel" [disabled]="isSaving()" (click)="fecharModal()">
+      CANCELAR
+    </button>
+    <button type="button" class="btn-save" [disabled]="isSaving()" (click)="bonificar()">
+      @if (isSaving()) {
+        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+      }
+      APLICAR BÔNUS
+    </button>
+  </div>
+</ng-template>

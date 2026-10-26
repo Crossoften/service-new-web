@@ -5,13 +5,19 @@ import { Router } from '@angular/router';
 import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar.component';
 import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/loading-skeleton.component';
 import { ToastService } from '@core/services/toast.service';
+import { SupplierSubscriptionsComponent } from '../../components/supplier-subscriptions/supplier-subscriptions.component';
 import { SuppliersService } from '../../services/suppliers.service';
 import { AdminProvider, ProviderServiceHistoryItem } from '../../models/supplier.model';
 
 @Component({
   selector: 'app-supplier-detail',
   standalone: true,
-  imports: [CommonModule, SidebarComponent, LoadingSkeletonComponent],
+  imports: [
+    CommonModule,
+    SidebarComponent,
+    LoadingSkeletonComponent,
+    SupplierSubscriptionsComponent,
+  ],
   templateUrl: './supplier-detail.component.html',
   styleUrls: ['./supplier-detail.component.scss'],
 })
