@@ -108,7 +108,16 @@
           </section>
 
           <div class="form-actions">
-            <button type="button" class="btn-cancel" (click)="onBack()">CANCELAR</button>
+            <button type="button" class="btn-cancel" (click)="onBack()">VOLTAR</button>
+            <button
+              type="button"
+              class="btn-status"
+              [disabled]="isTogglingStatus()"
+              (click)="onToggleStatus()"
+            >
+              {{ rotuloDeStatus() }}
+            </button>
+            <button type="button" class="btn-edit" (click)="onEdit()">EDITAR</button>
           </div>
         </div>
       }

@@ -10,6 +10,7 @@ import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar
 import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/loading-skeleton.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { ErrorStateComponent } from '@shared/components/error-state/error-state.component';
+import { ToastService } from '@core/services/toast.service';
 import { UsersService } from '../../services/users.service';
 import { InfluencersService } from '../../services/influencers.service';
 import { AdminInfluencer } from '../../models/influencer.model';
@@ -55,6 +56,7 @@ interface IbgeCityResponse {
 export class UsersListComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly usersService = inject(UsersService);
+  private readonly toastService = inject(ToastService);
   private readonly influencersService = inject(InfluencersService);
   private readonly destroy$ = new Subject<void>();
   private cityRequestId = 0;
@@ -72,6 +74,8 @@ export class UsersListComponent implements OnInit, OnDestroy {
   readonly minSubscriptionAmountControl = new FormControl('');
   readonly maxSubscriptionAmountControl = new FormControl('');
   readonly users = signal<AdminUser[]>([]);
+  /** Id em alternância, para desabilitar o item e evitar clique duplo. */
+  readonly alternandoStatusDe = signal<number | null>(null);
   readonly total = signal(0);
   readonly currentPage = signal(1);
   readonly pageSize = signal(10);
@@ -320,6 +324,49 @@ export class UsersListComponent implements OnInit, OnDestroy {
     this.router.navigate(['/users', id], {
       state: selectedUser ? { user: selectedUser } : undefined,
     });
+  }
+
+  navigateToEdit(id: number): void {
+    this.router.navigate(['/users', id, 'editar']);
+  }
+
+  /**
+   * Alterna o status pelo servidor.
+   *
+   * A rota não recebe o destino — ela inverte o que está gravado. Por isso a
+   * linha é atualizada com **o usuário devolvido**, e não com uma inversão
+   * calculada aqui: se outra aba tiver mexido no mesmo registro, o que vale é
+   * o que o servidor respondeu.
+   */
+  onToggleStatus(user: AdminUser): void {
+    if (this.alternandoStatusDe() !== null) return;
+
+    this.alternandoStatusDe.set(user.id);
+
+    this.usersService.toggleUserStatus(user.id).subscribe({
+      next: (atualizado) => {
+        this.users.update((lista) =>
+          lista.map((item) =>
+            item.id === atualizado.id ? { ...item, status: atualizado.status } : item
+          )
+        );
+
+        this.toastService.showSuccess(
+          atualizado.status === 'Active' ? 'Usuário ativado.' : 'Usuário inativado.'
+        );
+
+        this.alternandoStatusDe.set(null);
+      },
+      error: () => {
+        // O `errorInterceptor` já avisa; aqui basta liberar o botão.
+        this.alternandoStatusDe.set(null);
+      },
+    });
+  }
+
+  /** Rótulo da ação, derivado do estado atual — nunca fixo. */
+  rotuloDeStatus(user: AdminUser): string {
+    return user.status === 'Active' ? 'Inativar' : 'Ativar';
   }
 
   goToCollaborators(): void {

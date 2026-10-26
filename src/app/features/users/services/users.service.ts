@@ -12,6 +12,7 @@ import {
   AdminUserStatus,
   AdminUserProfileType,
   AdminUserBillingType,
+  UpdateAdminUserPayload,
 } from '../models/user.model';
 
 @Injectable({ providedIn: 'root' })
@@ -61,12 +62,43 @@ export class UsersService {
       .pipe(map((u) => this.mapUserFromDetail(u)));
   }
 
+  /**
+   * Atualiza o cadastro. A API devolve o usuário já gravado, então a tela não
+   * precisa recarregar nem confiar no que mandou.
+   */
+  updateUser(id: number, payload: UpdateAdminUserPayload): Observable<AdminUser> {
+    return this.apiService
+      .patch<AdminUserApiDetail>(`/v1/admin-users/${id}`, payload)
+      .pipe(map((u) => this.mapUserFromDetail(u)));
+  }
+
+  /**
+   * Alterna entre `Active` e `Inactive`. A rota **não recebe o destino** — ela
+   * inverte o estado atual no servidor. Duas consequências para quem chama:
+   *
+   * - o botão precisa ser rotulado pelo estado carregado, não por um valor fixo;
+   * - um usuário `Pending` vira `Active`, porque a regra do back-end é
+   *   `status === 'Active' ? 'Inactive' : 'Active'`.
+   *
+   * O retorno traz o estado resultante — é ele que a tela deve exibir, e não
+   * uma inversão calculada aqui, que divergiria em caso de corrida.
+   */
+  toggleUserStatus(id: number): Observable<AdminUser> {
+    return this.apiService
+      .patch<AdminUserApiDetail>(`/v1/admin-users/${id}/status-active`, {})
+      .pipe(map((u) => this.mapUserFromDetail(u)));
+  }
+
   private mapUserFromList(item: AdminUserApiListItem): AdminUser {
     return {
       id: item.id,
       name: item.name,
       email: item.email,
       phone: item.phone || null,
+      // A listagem não traz nenhum dos dois; quem precisa deles é a tela de
+      // edição, que carrega pelo detalhe.
+      document: null,
+      biography: null,
       code: `#${String(item.id).padStart(3, '0')}`,
       role: 'User' as AdminUserRole,
       profileType: this.mapProfileType(item.profileType),
@@ -90,6 +122,8 @@ export class UsersService {
       name: item.name,
       email: item.email,
       phone: item.phone || null,
+      document: item.document ?? null,
+      biography: item.biography ?? null,
       code: `#${String(item.id).padStart(3, '0')}`,
       role: 'User' as AdminUserRole,
       profileType: this.mapProfileType(item.profileType),

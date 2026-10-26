@@ -298,6 +298,24 @@
                           <i class="bi bi-eye me-2" aria-hidden="true"></i>
                           Ver detalhes
                         </button>
+                        <button ngbDropdownItem type="button" (click)="navigateToEdit(user.id)">
+                          <i class="bi bi-pencil me-2" aria-hidden="true"></i>
+                          Editar
+                        </button>
+                        <button
+                          ngbDropdownItem
+                          type="button"
+                          [disabled]="alternandoStatusDe() === user.id"
+                          (click)="onToggleStatus(user)"
+                        >
+                          <i
+                            class="bi me-2"
+                            [class.bi-person-check]="user.status !== 'Active'"
+                            [class.bi-person-slash]="user.status === 'Active'"
+                            aria-hidden="true"
+                          ></i>
+                          {{ rotuloDeStatus(user) }}
+                        </button>
                       </div>
                     </div>
                   </td>

@@ -33,6 +33,7 @@ export class UserDetailComponent implements OnInit {
 
   readonly user = signal<AdminUser | undefined>(undefined);
   readonly isLoading = signal(false);
+  readonly isTogglingStatus = signal(false);
 
   ngOnInit(): void {
     const navigationState = history.state as { user?: AdminUser };
@@ -127,5 +128,45 @@ export class UserDetailComponent implements OnInit {
 
   onBack(): void {
     this.router.navigate(['/users']);
+  }
+
+  onEdit(): void {
+    this.router.navigate(['/users', this.id, 'editar']);
+  }
+
+  /** Rótulo derivado do estado carregado — a rota do back-end é um alternador. */
+  rotuloDeStatus(): string {
+    return this.user()?.status === 'Active' ? 'INATIVAR' : 'ATIVAR';
+  }
+
+  /**
+   * O servidor decide o destino; a tela exibe o que ele devolveu.
+   *
+   * Inverter o status localmente pareceria equivalente e não é: se o registro
+   * tiver mudado por outra via, a tela passaria a mostrar o oposto do que está
+   * gravado, sem nada indicar o desencontro.
+   */
+  onToggleStatus(): void {
+    const atual = this.user();
+
+    if (!atual || this.isTogglingStatus()) return;
+
+    this.isTogglingStatus.set(true);
+
+    this.usersService.toggleUserStatus(atual.id).subscribe({
+      next: (atualizado) => {
+        this.user.set({ ...atual, status: atualizado.status });
+
+        this.toastService.showSuccess(
+          atualizado.status === 'Active' ? 'Usuário ativado.' : 'Usuário inativado.'
+        );
+
+        this.isTogglingStatus.set(false);
+      },
+      error: () => {
+        // O `errorInterceptor` já exibe a mensagem.
+        this.isTogglingStatus.set(false);
+      },
+    });
   }
 }

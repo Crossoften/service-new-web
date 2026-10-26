@@ -24,6 +24,12 @@ export const USERS_ROUTES: Routes = [
     data: { title: 'Detalhes do Influencer' },
   },
   {
+    path: ':id/editar',
+    loadComponent: () =>
+      import('./pages/user-form/user-form.component').then((m) => m.UserFormComponent),
+    data: { title: 'Editar usuário' },
+  },
+  {
     path: ':id',
     loadComponent: () =>
       import('./pages/user-detail/user-detail.component').then((m) => m.UserDetailComponent),

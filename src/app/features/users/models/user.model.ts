@@ -42,6 +42,10 @@ export interface AdminUser {
   name: string;
   email: string;
   phone: string | null;
+  /** Só vem no detalhe (`GET /v1/admin-users/:id`); na listagem é sempre `null`. */
+  document: string | null;
+  /** Idem `document`: a listagem não traz, para não carregar `LongText` por linha. */
+  biography: string | null;
   code: string;
   role: AdminUserRole;
   profileType: AdminUserProfileType;
@@ -109,6 +113,7 @@ export interface AdminUserApiDetail {
   email: string;
   phone: string | null;
   document: string | null;
+  biography?: string | null;
   status: string;
   openServices?: number | null;
   fileUrl: string | null;
@@ -140,4 +145,20 @@ export interface PagedResult<T> {
   total: number;
   page: number;
   pageSize: number;
+}
+
+/**
+ * Corpo do `PATCH /v1/admin-users/:id`.
+ *
+ * Todos os campos são opcionais no contrato, mas a tela envia o formulário
+ * inteiro: enviar só o que mudou exigiria comparar com o estado carregado, e
+ * um campo esquecido no diff vira perda silenciosa de dado.
+ */
+export interface UpdateAdminUserPayload {
+  name: string;
+  email: string;
+  document: string | null;
+  phone: string | null;
+  birthDate: string | null;
+  biography: string | null;
 }
