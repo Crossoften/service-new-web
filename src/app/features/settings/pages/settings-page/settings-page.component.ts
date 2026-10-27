@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastService } from '@core/services/toast.service';
 import { AuthApiService } from '@features/auth/services/auth-api.service';
 import { MySelfResponse, BillingType } from '@features/auth/models/auth.model';
@@ -46,7 +46,10 @@ export class SettingsPageComponent implements OnInit {
   readonly isSavingBillingType = signal(false);
 
   readonly toolsForm = this.fb.nonNullable.group({
-    fileId: ['', Validators.required],
+    // Guarda o **id** do arquivo, não a `fileKey`: é o que as rotas
+    // `/v1/one-file/*` aceitam. Era `string` preenchida com a chave, e as três
+    // ferramentas respondiam 400.
+    fileId: new FormControl<number | null>(null, { validators: [Validators.required] }),
     profileFileKey: [''],
   });
 
@@ -89,7 +92,7 @@ export class SettingsPageComponent implements OnInit {
     this.uploadsService.uploadOne(file).subscribe({
       next: (response) => {
         this.singleUploadResult.set(response);
-        this.toolsForm.controls.fileId.setValue(response.fileKey);
+        this.toolsForm.controls.fileId.setValue(response.id);
         this.deletedFileResult.set(null);
         this.toastService.showSuccess('Arquivo enviado com sucesso.');
         this.isUploadingSingle.set(false);
@@ -113,7 +116,7 @@ export class SettingsPageComponent implements OnInit {
       next: (response) => {
         this.manyUploadResults.set(response);
         if (response[0]) {
-          this.toolsForm.controls.fileId.setValue(response[0].fileKey);
+          this.toolsForm.controls.fileId.setValue(response[0].id);
         }
         this.toastService.showSuccess('Arquivos enviados com sucesso.');
         this.isUploadingMany.set(false);
@@ -125,9 +128,9 @@ export class SettingsPageComponent implements OnInit {
   }
 
   lookupFile(): void {
-    const fileId = this.toolsForm.controls.fileId.value.trim();
+    const fileId = this.toolsForm.controls.fileId.value;
 
-    if (!fileId) {
+    if (fileId === null) {
       this.toolsForm.controls.fileId.markAsTouched();
       return;
     }
@@ -147,9 +150,9 @@ export class SettingsPageComponent implements OnInit {
   }
 
   downloadFile(): void {
-    const fileId = this.toolsForm.controls.fileId.value.trim();
+    const fileId = this.toolsForm.controls.fileId.value;
 
-    if (!fileId) {
+    if (fileId === null) {
       this.toolsForm.controls.fileId.markAsTouched();
       return;
     }
@@ -167,9 +170,9 @@ export class SettingsPageComponent implements OnInit {
   }
 
   deleteFile(): void {
-    const fileId = this.toolsForm.controls.fileId.value.trim();
+    const fileId = this.toolsForm.controls.fileId.value;
 
-    if (!fileId) {
+    if (fileId === null) {
       this.toolsForm.controls.fileId.markAsTouched();
       return;
     }
@@ -180,6 +183,7 @@ export class SettingsPageComponent implements OnInit {
       next: (response) => {
         this.deletedFileResult.set(response);
         this.fileLookupResult.set(null);
+        this.toolsForm.controls.fileId.reset();
         this.toastService.showSuccess('Arquivo removido com sucesso.');
         this.isDeletingFile.set(false);
       },

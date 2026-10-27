@@ -4,15 +4,25 @@ import { Observable, map } from 'rxjs';
 import { environment } from '@environments/environment';
 
 export interface UploadedFileResponse {
+  /**
+   * Identificador numérico do arquivo. É **ele** que as rotas `/v1/one-file/*`
+   * aceitam — não a `fileKey`. O back-end documenta isso no próprio DTO:
+   * "Identificador do arquivo, usado em /one-file/{id} e no download."
+   */
+  id: number;
   fileUrl: string;
   fileKey: string;
 }
 
+/**
+ * O que `DELETE /v1/one-file/{id}` devolve de verdade: só uma mensagem.
+ *
+ * Antes esta interface declarava `{ id, name, fileUrl, fileKey }`, campos que a
+ * rota nunca enviou — a tela lia `undefined` e mostrava a caixa de confirmação
+ * em branco.
+ */
 export interface DeletedFileResponse {
-  id: number;
-  name: string;
-  fileUrl: string;
-  fileKey: string;
+  message: string;
 }
 
 type ManyFilesResponse =
@@ -46,20 +56,23 @@ export class UploadsService {
       .pipe(map((response) => this.normalizeManyFiles(response)));
   }
 
-  getFile(fileId: string): Observable<UploadedFileResponse> {
-    return this.http.get<UploadedFileResponse>(
-      `${this.baseUrl}/v1/one-file/${encodeURIComponent(fileId)}`
-    );
+  /**
+   * As três rotas abaixo recebem `number`, não `string`.
+   *
+   * Eram tipadas como `string` e a tela passava uma `fileKey`; as rotas usam
+   * `ParseIntPipe`, então consultar, baixar e remover respondiam `400`. O tipo
+   * é o que impede o erro de voltar — com `string` qualquer coisa compilava.
+   */
+  getFile(fileId: number): Observable<UploadedFileResponse> {
+    return this.http.get<UploadedFileResponse>(`${this.baseUrl}/v1/one-file/${fileId}`);
   }
 
-  deleteFile(fileId: string): Observable<DeletedFileResponse> {
-    return this.http.delete<DeletedFileResponse>(
-      `${this.baseUrl}/v1/one-file/${encodeURIComponent(fileId)}`
-    );
+  deleteFile(fileId: number): Observable<DeletedFileResponse> {
+    return this.http.delete<DeletedFileResponse>(`${this.baseUrl}/v1/one-file/${fileId}`);
   }
 
-  downloadFile(fileId: string): Observable<Blob> {
-    return this.http.get(`${this.baseUrl}/v1/one-file/download/${encodeURIComponent(fileId)}`, {
+  downloadFile(fileId: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/v1/one-file/download/${fileId}`, {
       responseType: 'blob',
     });
   }

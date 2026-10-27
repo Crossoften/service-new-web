@@ -179,7 +179,8 @@
 
             @if (singleUploadResult()) {
               <div class="result-box">
-                <p><strong>Referência:</strong> {{ singleUploadResult()?.fileKey }}</p>
+                <p><strong>Id:</strong> {{ singleUploadResult()?.id }}</p>
+                <p><strong>Chave no storage:</strong> {{ singleUploadResult()?.fileKey }}</p>
                 <a [href]="singleUploadResult()?.fileUrl" target="_blank" rel="noreferrer">
                   Abrir arquivo
                 </a>
@@ -211,9 +212,10 @@
 
             @if (manyUploadResults().length) {
               <div class="result-list">
-                @for (file of manyUploadResults(); track file.fileKey) {
+                @for (file of manyUploadResults(); track file.id) {
                   <div class="result-box">
-                    <p><strong>Referência:</strong> {{ file.fileKey }}</p>
+                    <p><strong>Id:</strong> {{ file.id }}</p>
+                    <p><strong>Chave no storage:</strong> {{ file.fileKey }}</p>
                     <a [href]="file.fileUrl" target="_blank" rel="noreferrer">Abrir arquivo</a>
                   </div>
                 }
@@ -231,7 +233,8 @@
           <div>
             <h2 class="card-title">Localizar, baixar ou remover arquivo</h2>
             <p class="card-description">
-              Informe a referência exibida após o envio para localizar o arquivo desejado.
+              Informe o id numérico exibido após o envio. É ele que as rotas de arquivo aceitam — a
+              chave do storage não serve aqui.
             </p>
           </div>
         </div>
@@ -239,10 +242,12 @@
         <div class="card-content">
           <div class="inline-actions">
             <input
-              type="text"
+              type="number"
               class="form-control"
-              placeholder="Informe a referência do arquivo"
-              aria-label="Referência do arquivo"
+              min="1"
+              step="1"
+              placeholder="id do arquivo"
+              aria-label="Id do arquivo"
               [formControl]="toolsForm.controls.fileId"
             />
             <button
@@ -276,7 +281,8 @@
 
           @if (fileLookupResult()) {
             <div class="result-box">
-              <p><strong>Referência:</strong> {{ fileLookupResult()?.fileKey }}</p>
+              <p><strong>Id:</strong> {{ fileLookupResult()?.id }}</p>
+              <p><strong>Chave no storage:</strong> {{ fileLookupResult()?.fileKey }}</p>
               <a [href]="fileLookupResult()?.fileUrl" target="_blank" rel="noreferrer">
                 Abrir arquivo
               </a>
@@ -285,8 +291,7 @@
 
           @if (deletedFileResult()) {
             <div class="result-box deleted">
-              <p><strong>Arquivo removido:</strong> {{ deletedFileResult()?.name }}</p>
-              <p><strong>Referência:</strong> {{ deletedFileResult()?.fileKey }}</p>
+              <p>{{ deletedFileResult()?.message }}</p>
             </div>
           }
         </div>
