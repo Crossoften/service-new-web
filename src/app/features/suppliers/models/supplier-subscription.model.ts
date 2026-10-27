@@ -105,3 +105,99 @@ export interface PlanOption {
   price: string;
   interval: SubscriptionInterval;
 }
+
+/** Origem da assinatura, como o `GET /v1/admin-subscriptions` filtra. */
+export type SubscriptionOrigin = 'Granted' | 'Paid';
+
+export const SUBSCRIPTION_ORIGINS: ReadonlyArray<{ valor: SubscriptionOrigin; rotulo: string }> = [
+  { valor: 'Granted', rotulo: 'Concedidas' },
+  { valor: 'Paid', rotulo: 'Pagas' },
+];
+
+export const SUBSCRIPTION_STATUSES: ReadonlyArray<{
+  valor: SubscriptionStatus;
+  rotulo: string;
+}> = [
+  { valor: 'Active', rotulo: 'Ativa' },
+  { valor: 'Pending', rotulo: 'Pendente' },
+  { valor: 'Cancelled', rotulo: 'Cancelada' },
+  { valor: 'Expired', rotulo: 'Expirada' },
+];
+
+export interface SubscriptionPerson {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+}
+
+/** Uma linha do painel: a assinatura mais o fornecedor a que pertence. */
+export interface AdminSubscriptionListItem {
+  subscriptionId: number;
+  provider: SubscriptionPerson;
+  planName: string;
+  planInterval: SubscriptionInterval;
+  amount: number;
+  status: SubscriptionStatus;
+  categoryId: number | null;
+  categoryName: string | null;
+  isGranted: boolean;
+  /** Quem concedeu. Nulo nas assinaturas pagas. */
+  grantedBy: SubscriptionPerson | null;
+  grantReason: string | null;
+  bonusMonths: number;
+  cancelAtPeriodEnd: boolean;
+  currentPeriodStart: string | null;
+  currentPeriodEnd: string | null;
+  isCurrent: boolean;
+  createdAt: string;
+}
+
+export interface AdminSubscriptionListParams {
+  search?: string;
+  origin?: SubscriptionOrigin;
+  status?: SubscriptionStatus;
+  providerId?: number;
+  take?: number;
+  skip?: number;
+}
+
+export interface AdminSubscriptionListResponse {
+  subscriptions: AdminSubscriptionListItem[];
+  pages: number;
+  count: number;
+}
+
+interface SubscriptionPersonApi {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string | null;
+}
+
+export interface AdminSubscriptionApiItem {
+  subscriptionId: number;
+  provider: SubscriptionPersonApi;
+  planName: string;
+  planInterval: SubscriptionInterval;
+  amount: number;
+  status: SubscriptionStatus;
+  categoryId?: number | null;
+  categoryName?: string | null;
+  isGranted: boolean;
+  grantedBy?: SubscriptionPersonApi | null;
+  grantReason?: string | null;
+  bonusMonths: number;
+  cancelAtPeriodEnd: boolean;
+  currentPeriodStart?: string | null;
+  currentPeriodEnd?: string | null;
+  isCurrent: boolean;
+  createdAt: string;
+}
+
+export interface AdminSubscriptionApiResponse {
+  subscriptions?: AdminSubscriptionApiItem[];
+  currentPage: number;
+  totalPages: number;
+  totalRecords: number;
+}

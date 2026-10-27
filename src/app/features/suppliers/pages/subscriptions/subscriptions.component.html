@@ -1,0 +1,347 @@
+<div class="app-shell">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="page-wrapper">
+      <button class="btn-link-back" type="button" (click)="voltar()">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        Fornecedores
+      </button>
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Liberar assinatura</h1>
+          <p class="page-subtitle">
+            Libera a assinatura de um fornecedor <strong>sem cobrança</strong>, para cortesia
+            comercial ou para testes. Não gera lançamento financeiro, e fica registrado quem liberou
+            e por quê.
+          </p>
+        </div>
+
+        <button class="btn-liberar" type="button" (click)="abrirConcessao(concessaoTpl)">
+          <i class="bi bi-unlock" aria-hidden="true"></i>
+          LIBERAR ASSINATURA
+        </button>
+      </div>
+
+      <div class="filtros">
+        <div class="search-box">
+          <i class="bi bi-search search-icon" aria-hidden="true"></i>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar por nome ou email do fornecedor"
+            aria-label="Buscar fornecedor"
+            [formControl]="buscaControl"
+          />
+        </div>
+
+        <div class="filtro">
+          <label class="filtro-label" for="assin-origem">Origem</label>
+          <select
+            id="assin-origem"
+            class="form-control"
+            [value]="origem() ?? ''"
+            [disabled]="isLoading()"
+            (change)="filtrarPorOrigem($any($event.target).value)"
+          >
+            <option value="">Todas</option>
+            @for (opcao of origens; track opcao.valor) {
+              <option [value]="opcao.valor">{{ opcao.rotulo }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="filtro">
+          <label class="filtro-label" for="assin-status">Status</label>
+          <select
+            id="assin-status"
+            class="form-control"
+            [value]="situacao() ?? ''"
+            [disabled]="isLoading()"
+            (change)="filtrarPorSituacao($any($event.target).value)"
+          >
+            <option value="">Todos</option>
+            @for (opcao of situacoes; track opcao.valor) {
+              <option [value]="opcao.valor">{{ opcao.rotulo }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      @if (isLoading()) {
+        <app-loading-skeleton [variant]="'table'" [count]="6"></app-loading-skeleton>
+      } @else if (hasError()) {
+        <app-error-state
+          [title]="'Erro ao carregar as assinaturas'"
+          [description]="'Não foi possível buscar a lista. Tente novamente.'"
+          (retry)="carregar()"
+        ></app-error-state>
+      } @else if (!assinaturas().length) {
+        <app-empty-state
+          [title]="'Nenhuma assinatura encontrada'"
+          [description]="
+            buscaControl.value || origem() || situacao()
+              ? 'Nenhuma assinatura para os filtros selecionados.'
+              : 'Use LIBERAR ASSINATURA para dar acesso a um fornecedor.'
+          "
+          [icon]="'bi-unlock'"
+        ></app-empty-state>
+      } @else {
+        <div class="table-wrapper">
+          <table class="assin-table" aria-label="Assinaturas dos fornecedores">
+            <thead>
+              <tr>
+                <th scope="col">Fornecedor</th>
+                <th scope="col">Plano</th>
+                <th scope="col">Cobertura</th>
+                <th scope="col">Origem</th>
+                <th scope="col">Status</th>
+                <th scope="col">Vigência</th>
+                <th scope="col">Bônus</th>
+                <th scope="col" class="col-acoes">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (assinatura of assinaturas(); track assinatura.subscriptionId) {
+                <tr>
+                  <td data-label="Fornecedor">
+                    <button
+                      class="btn-fornecedor"
+                      type="button"
+                      (click)="irParaFornecedor(assinatura)"
+                    >
+                      {{ assinatura.provider.name }}
+                    </button>
+                    <span class="fornecedor-email">{{ assinatura.provider.email }}</span>
+                  </td>
+                  <td data-label="Plano">
+                    <span class="plano-nome">{{ assinatura.planName }}</span>
+                    <span class="assin-id">#{{ assinatura.subscriptionId }}</span>
+                  </td>
+                  <td data-label="Cobertura">{{ rotuloCobertura(assinatura) }}</td>
+                  <td data-label="Origem">
+                    <span class="origem" [class.origem--concedida]="assinatura.isGranted">
+                      {{ rotuloOrigem(assinatura) }}
+                    </span>
+                    @if (assinatura.grantedBy) {
+                      <span class="origem-detalhe">por {{ assinatura.grantedBy.name }}</span>
+                    }
+                    @if (assinatura.grantReason) {
+                      <span class="origem-detalhe">{{ assinatura.grantReason }}</span>
+                    }
+                  </td>
+                  <td data-label="Status">
+                    <span class="status-badge" [ngClass]="classeStatus(assinatura)">
+                      {{ rotuloStatus(assinatura.status) }}
+                    </span>
+                    @if (assinatura.cancelAtPeriodEnd) {
+                      <span class="helper-inline">cancela no fim do período</span>
+                    }
+                  </td>
+                  <td data-label="Vigência">
+                    <span class="vigencia"
+                      >até {{ formatarData(assinatura.currentPeriodEnd) }}</span
+                    >
+                  </td>
+                  <td data-label="Bônus">{{ assinatura.bonusMonths }}</td>
+                  <td class="col-acoes" data-label="Ações">
+                    <button
+                      class="btn-acao"
+                      type="button"
+                      (click)="abrirBonus(assinatura, bonusTpl)"
+                    >
+                      Bonificar
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <span class="pagination-info">
+            {{ resumoDaPaginacao() }}
+            @if (concedidasNaPagina()) {
+              · {{ concedidasNaPagina() }} concedida(s) nesta página
+            }
+          </span>
+          <div class="pagination-controls">
+            <button
+              class="btn-page"
+              type="button"
+              [disabled]="pagina() === 1"
+              (click)="irParaPagina(pagina() - 1)"
+              aria-label="Anterior"
+            >
+              <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </button>
+            <button
+              class="btn-page"
+              type="button"
+              [disabled]="pagina() >= totalDePaginas()"
+              (click)="irParaPagina(pagina() + 1)"
+              aria-label="Próxima"
+            >
+              <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </main>
+</div>
+
+<ng-template #concessaoTpl>
+  <div class="modal-header">
+    <h2 class="modal-title">Liberar assinatura</h2>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Fechar"
+      [disabled]="isSaving()"
+      (click)="fecharModal()"
+    ></button>
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="formConcessao" class="modal-form" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="conc-busca">Fornecedor</label>
+        <input
+          id="conc-busca"
+          type="text"
+          class="form-control"
+          placeholder="Digite nome ou email para buscar"
+          [formControl]="fornecedorControl"
+        />
+
+        @if (isBuscandoFornecedor()) {
+          <p class="helper-text">Buscando…</p>
+        } @else if (fornecedores().length) {
+          <select
+            class="form-control"
+            size="4"
+            [value]="formConcessao.controls.providerId.value ?? ''"
+            (change)="escolherFornecedor($any($event.target).value)"
+          >
+            @for (fornecedor of fornecedores(); track fornecedor.id) {
+              <option [value]="fornecedor.id">
+                {{ fornecedor.name }} — {{ fornecedor.email }}
+              </option>
+            }
+          </select>
+        } @else if (fornecedorControl.value.trim().length >= 2) {
+          <p class="helper-text">Nenhum fornecedor encontrado para esse termo.</p>
+        } @else {
+          <p class="helper-text">Digite ao menos 2 caracteres para buscar.</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="conc-plano">Plano</label>
+        <select id="conc-plano" class="form-control" formControlName="planId">
+          <option [ngValue]="null" disabled>Selecione um plano</option>
+          @for (plano of planos(); track plano.id) {
+            <option [ngValue]="plano.id">{{ rotuloPlano(plano) }}</option>
+          }
+        </select>
+        @if (!planos().length) {
+          <p class="helper-text">
+            Nenhum plano ativo encontrado. Cadastre um plano em Financeiro antes de liberar.
+          </p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="conc-meses">Duração (meses)</label>
+        <input
+          id="conc-meses"
+          type="number"
+          class="form-control"
+          formControlName="months"
+          min="1"
+          [max]="mesesMaximo"
+        />
+        <p class="helper-text">
+          Contada a partir de agora, de 1 a {{ mesesMaximo }} meses. Não gera cobrança nem
+          lançamento financeiro.
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="conc-motivo">Motivo (opcional)</label>
+        <input
+          id="conc-motivo"
+          type="text"
+          class="form-control"
+          formControlName="reason"
+          [maxlength]="motivoMaximo"
+          placeholder="Ambiente de testes, cortesia parceiro X…"
+        />
+        <p class="helper-text">Fica registrado junto de quem liberou, para auditoria.</p>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn-cancel" [disabled]="isSaving()" (click)="fecharModal()">
+      CANCELAR
+    </button>
+    <button type="button" class="btn-save" [disabled]="isSaving()" (click)="conceder()">
+      @if (isSaving()) {
+        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+      }
+      LIBERAR
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #bonusTpl>
+  <div class="modal-header">
+    <h2 class="modal-title">Bonificar assinatura</h2>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Fechar"
+      [disabled]="isSaving()"
+      (click)="fecharModal()"
+    ></button>
+  </div>
+
+  <div class="modal-body">
+    @if (bonusAlvo(); as alvo) {
+      <p class="bonus-resumo">
+        {{ alvo.provider.name }} · {{ alvo.planName }} · {{ rotuloCobertura(alvo) }} · válida até
+        <strong>{{ formatarData(alvo.currentPeriodEnd) }}</strong>
+      </p>
+    }
+
+    <form [formGroup]="formBonus" class="modal-form" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="bonus-meses">Meses de bônus</label>
+        <input
+          id="bonus-meses"
+          type="number"
+          class="form-control"
+          formControlName="months"
+          min="1"
+        />
+        <p class="helper-text">Somados ao fim da vigência atual, não a partir de hoje.</p>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn-cancel" [disabled]="isSaving()" (click)="fecharModal()">
+      CANCELAR
+    </button>
+    <button type="button" class="btn-save" [disabled]="isSaving()" (click)="bonificar()">
+      @if (isSaving()) {
+        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+      }
+      APLICAR BÔNUS
+    </button>
+  </div>
+</ng-template>

@@ -24,6 +24,12 @@ import {
 } from '../models/supplier.model';
 import {
   AddSubscriptionBonusInput,
+  AdminSubscriptionApiItem,
+  AdminSubscriptionApiResponse,
+  AdminSubscriptionListItem,
+  AdminSubscriptionListParams,
+  AdminSubscriptionListResponse,
+  SubscriptionPerson,
   GrantSubscriptionInput,
   GrantedSubscription,
   PlanOption,
@@ -102,6 +108,31 @@ export class SuppliersService {
         city: filters.city,
       })
       .pipe(map((response) => this.mapRegionalRankingResponse(response)));
+  }
+
+  /**
+   * Painel de assinaturas de todos os fornecedores.
+   *
+   * As outras rotas administrativas de assinatura são **por fornecedor**: para
+   * saber o que já foi concedido era preciso abrir um por vez. Esta existe para
+   * a tela de liberar assinatura mostrar o conjunto.
+   */
+  getSubscriptions(params: AdminSubscriptionListParams): Observable<AdminSubscriptionListResponse> {
+    const query: Record<string, string | number> = { take: params.take ?? 10 };
+
+    if (params.skip && params.skip > 0) query['skip'] = params.skip;
+    if (params.search) query['search'] = params.search;
+    if (params.origin) query['origin'] = params.origin;
+    if (params.status) query['status'] = params.status;
+    if (params.providerId) query['providerId'] = params.providerId;
+
+    return this.apiService.get<AdminSubscriptionApiResponse>('/v1/admin-subscriptions', query).pipe(
+      map((res) => ({
+        subscriptions: (res.subscriptions ?? []).map((item) => this.mapSubscriptionListItem(item)),
+        pages: res.totalPages,
+        count: res.totalRecords,
+      }))
+    );
   }
 
   getSupplierSubscriptions(id: number): Observable<ProviderSubscriptions> {
@@ -248,6 +279,42 @@ export class SuppliersService {
       totalProviders: item.totalProviders ?? item.providersCount ?? item.totalSuppliers ?? null,
       totalActiveServices:
         item.totalActiveServices ?? item.activeServices ?? item.totalServices ?? null,
+    };
+  }
+
+  private mapSubscriptionListItem(item: AdminSubscriptionApiItem): AdminSubscriptionListItem {
+    return {
+      subscriptionId: item.subscriptionId,
+      provider: this.mapPerson(item.provider),
+      planName: item.planName,
+      planInterval: item.planInterval,
+      amount: item.amount,
+      status: item.status,
+      categoryId: item.categoryId ?? null,
+      categoryName: item.categoryName ?? null,
+      isGranted: item.isGranted,
+      grantedBy: item.grantedBy ? this.mapPerson(item.grantedBy) : null,
+      grantReason: item.grantReason ?? null,
+      bonusMonths: item.bonusMonths,
+      cancelAtPeriodEnd: item.cancelAtPeriodEnd,
+      currentPeriodStart: item.currentPeriodStart ?? null,
+      currentPeriodEnd: item.currentPeriodEnd ?? null,
+      isCurrent: item.isCurrent,
+      createdAt: item.createdAt,
+    };
+  }
+
+  private mapPerson(pessoa: {
+    id: number;
+    name: string;
+    email: string;
+    phone?: string | null;
+  }): SubscriptionPerson {
+    return {
+      id: pessoa.id,
+      name: pessoa.name,
+      email: pessoa.email,
+      phone: pessoa.phone ?? null,
     };
   }
 

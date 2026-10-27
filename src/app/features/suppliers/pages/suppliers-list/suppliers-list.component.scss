@@ -153,6 +153,35 @@
   }
 }
 
+.toolbar-spacer {
+  flex: 1;
+}
+
+.btn-liberar-assinatura {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.25rem;
+  background: #8308d2;
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+
+  i {
+    font-size: 0.9rem;
+  }
+
+  &:hover {
+    background: #6906a8;
+  }
+}
+
 .btn-filter {
   display: flex;
   align-items: center;

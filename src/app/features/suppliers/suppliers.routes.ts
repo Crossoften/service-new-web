@@ -10,6 +10,14 @@ export const SUPPLIERS_ROUTES: Routes = [
     data: { title: 'Fornecedores' },
   },
   {
+    path: 'assinaturas',
+    loadComponent: () =>
+      import('./pages/subscriptions/subscriptions.component').then(
+        (m) => m.SupplierSubscriptionsPanelComponent
+      ),
+    data: { title: 'Liberar assinatura' },
+  },
+  {
     path: ':id',
     loadComponent: () =>
       import('./pages/supplier-detail/supplier-detail.component').then(

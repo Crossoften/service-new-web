@@ -30,6 +30,10 @@ import { AdminProvider, AdminProviderStatus } from '../../models/supplier.model'
 })
 export class SuppliersListComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
+
+  goToSubscriptions(): void {
+    this.router.navigate(['/suppliers', 'assinaturas']);
+  }
   private readonly suppliersService = inject(SuppliersService);
   private readonly destroy$ = new Subject<void>();
 
