@@ -54,7 +54,6 @@ describe('FinancePageComponent partner commissions', () => {
   const serviceCategory: ServiceCategoryFinance = {
     id: 3,
     name: 'Advogados',
-    platformFeeRate: 10,
   };
 
   const plan: Plan = {

@@ -53,10 +53,6 @@ type PlatformForm = FormGroup<{
   influencerCommissionRate: FormControl<number | null>;
 }>;
 
-type ServiceCategoryRateForm = FormGroup<{
-  platformFeeRate: FormControl<number | null>;
-}>;
-
 type PartnerCommissionForm = FormGroup<{
   commissionRate: FormControl<number | null>;
   useGlobalRate: FormControl<boolean | null>;
@@ -116,8 +112,6 @@ export class FinancePageComponent implements OnInit, OnDestroy {
   });
   readonly isLoadingServiceCategories = signal(false);
   readonly hasServiceCategoriesError = signal(false);
-  readonly selectedServiceCategory = signal<ServiceCategoryFinance | null>(null);
-  readonly isSavingServiceCategory = signal(false);
 
   readonly partnerCommissions = signal<FinanceInfluencerCommission[]>([]);
   readonly isLoadingPartnerCommissions = signal(false);
@@ -137,7 +131,6 @@ export class FinancePageComponent implements OnInit, OnDestroy {
   readonly feedbackModal = signal<FeedbackModalState | null>(null);
 
   platformForm!: PlatformForm;
-  serviceCategoryRateForm!: ServiceCategoryRateForm;
   partnerCommissionForm!: PartnerCommissionForm;
   planForm!: PlanForm;
   private activeModalRef: NgbModalRef | null = null;
@@ -217,12 +210,6 @@ export class FinancePageComponent implements OnInit, OnDestroy {
     this.activeModalRef = this.modal.open(templateRef, { centered: true, size: 'md' });
   }
 
-  openProviderPercentageModal(templateRef: TemplateRef<unknown>): void {
-    this.selectedServiceCategory.set(null);
-    this.loadServiceCategories();
-    this.activeModalRef = this.modal.open(templateRef, { centered: true, size: 'lg' });
-  }
-
   loadServiceCategories(): void {
     this.isLoadingServiceCategories.set(true);
     this.hasServiceCategoriesError.set(false);
@@ -239,52 +226,6 @@ export class FinancePageComponent implements OnInit, OnDestroy {
           this.hasServiceCategoriesError.set(true);
           this.isLoadingServiceCategories.set(false);
         },
-      });
-  }
-
-  selectServiceCategory(category: ServiceCategoryFinance): void {
-    this.selectedServiceCategory.set(category);
-    this.serviceCategoryRateForm = new FormGroup({
-      platformFeeRate: new FormControl(category.platformFeeRate, [
-        Validators.required,
-        Validators.min(0),
-        Validators.max(100),
-      ]),
-    });
-  }
-
-  saveServiceCategoryRate(): void {
-    const category = this.selectedServiceCategory();
-    if (!category) {
-      return;
-    }
-
-    if (this.serviceCategoryRateForm.invalid) {
-      this.serviceCategoryRateForm.markAllAsTouched();
-      return;
-    }
-
-    this.isSavingServiceCategory.set(true);
-    this.financeService
-      .updateServiceCategoryPlatformFeeRate(category.id, {
-        platformFeeRate: Number(this.serviceCategoryRateForm.controls.platformFeeRate.value),
-      })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (updatedCategory) => {
-          this.serviceCategories.update((categories) =>
-            categories.map((item) => (item.id === updatedCategory.id ? updatedCategory : item))
-          );
-          this.selectedServiceCategory.set(updatedCategory);
-          this.isSavingServiceCategory.set(false);
-          this.showFeedbackModal({
-            title: 'Porcentagem atualizada',
-            description: 'A taxa da plataforma para esta categoria foi salva com sucesso.',
-            icon: 'bi-check2-circle',
-            variant: 'success',
-          });
-        },
-        error: () => this.isSavingServiceCategory.set(false),
       });
   }
 
@@ -625,10 +566,6 @@ export class FinancePageComponent implements OnInit, OnDestroy {
     }
 
     return `${value.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`;
-  }
-
-  providerNetValueLabel(): string {
-    return 'Valor líquido ainda não disponível';
   }
 
   updatePlanCategorySearch(value: Event): void {

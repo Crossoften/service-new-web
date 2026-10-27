@@ -11,13 +11,6 @@
           <button
             class="btn-modal"
             type="button"
-            (click)="openProviderPercentageModal(providerPercentageModalTpl)"
-          >
-            Porcentagem de fornecedores
-          </button>
-          <button
-            class="btn-modal"
-            type="button"
             (click)="openPartnerCommissionModal(partnerCommissionModalTpl)"
           >
             Comissões de parceiros
@@ -113,98 +106,6 @@
     </div>
   </main>
 </div>
-
-<ng-template #providerPercentageModalTpl>
-  <div class="modal-card finance-rates-modal">
-    <div class="modal-card-header">
-      <div>
-        <h4 class="modal-title">Porcentagem de fornecedores</h4>
-        <p class="modal-subtitle">
-          Consulte e ajuste a porcentagem destinada à plataforma em cada categoria.
-        </p>
-      </div>
-      <button class="modal-close" type="button" (click)="dismissModal()" aria-label="Fechar">
-        <i class="bi bi-x-lg" aria-hidden="true"></i>
-      </button>
-    </div>
-
-    <div class="modal-card-body">
-      @if (isLoadingServiceCategories()) {
-        <app-loading-skeleton [variant]="'table'" [count]="4"></app-loading-skeleton>
-      } @else if (hasServiceCategoriesError()) {
-        <app-error-state
-          [title]="'Erro ao carregar categorias'"
-          [description]="'Não foi possível carregar as taxas por categoria. Tente novamente.'"
-          (retry)="loadServiceCategories()"
-        ></app-error-state>
-      } @else if (serviceCategories().length > 0) {
-        <div class="rates-layout">
-          <div class="rates-list" aria-label="Categorias de serviço">
-            @for (category of serviceCategories(); track category.id) {
-              <button
-                class="rate-card"
-                type="button"
-                [class.rate-card--active]="selectedServiceCategory()?.id === category.id"
-                (click)="selectServiceCategory(category)"
-              >
-                <span>
-                  <strong>{{ category.name }}</strong>
-                  <small>{{ providerNetValueLabel() }}</small>
-                </span>
-                <span class="rate-pill"
-                  >Plataforma: {{ formatPercent(category.platformFeeRate) }}</span
-                >
-              </button>
-            }
-          </div>
-
-          @if (selectedServiceCategory()) {
-            <form class="rate-editor" [formGroup]="serviceCategoryRateForm">
-              <h5>{{ selectedServiceCategory()?.name }}</h5>
-              <p>Informe a porcentagem que fica com a plataforma nesta categoria.</p>
-              <div class="form-group">
-                <label class="form-label" for="category-platform-rate"
-                  >Taxa da plataforma (%)</label
-                >
-                <input
-                  id="category-platform-rate"
-                  class="form-control"
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.01"
-                  formControlName="platformFeeRate"
-                />
-              </div>
-              <button
-                class="btn-save"
-                type="button"
-                [disabled]="isSavingServiceCategory()"
-                (click)="saveServiceCategoryRate()"
-              >
-                @if (isSavingServiceCategory()) {
-                  <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-                }
-                SALVAR PORCENTAGEM
-              </button>
-            </form>
-          } @else {
-            <div class="rate-editor rate-editor--empty">
-              <i class="bi bi-percent" aria-hidden="true"></i>
-              <p>Selecione uma categoria para alterar a taxa da plataforma.</p>
-            </div>
-          }
-        </div>
-      } @else {
-        <app-empty-state
-          [title]="'Nenhuma categoria encontrada'"
-          [description]="'Cadastre categorias de serviço para configurar o repasse por categoria.'"
-          [icon]="'bi-percent'"
-        ></app-empty-state>
-      }
-    </div>
-  </div>
-</ng-template>
 
 <ng-template #partnerCommissionModalTpl>
   <div class="modal-card finance-rates-modal">

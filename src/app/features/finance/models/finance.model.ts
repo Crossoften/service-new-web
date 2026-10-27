@@ -58,14 +58,9 @@ export type UpdatePlanPayload = Partial<CreatePlanPayload>;
 export interface ServiceCategoryFinance {
   id: number;
   name: string;
-  platformFeeRate: number;
   isActive?: boolean;
   sortOrder?: number;
   updatedAt?: string;
-}
-
-export interface UpdateServiceCategoryPlatformFeePayload {
-  platformFeeRate: number;
 }
 
 export interface FinanceInfluencerCommission {

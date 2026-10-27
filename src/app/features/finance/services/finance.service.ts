@@ -17,7 +17,6 @@ import {
   UpdateInfluencerCommissionPayload,
   UpdatePlanPayload,
   UpdatePlatformSettingsPayload,
-  UpdateServiceCategoryPlatformFeePayload,
 } from '../models/finance.model';
 
 @Injectable({ providedIn: 'root' })
@@ -34,16 +33,6 @@ export class FinanceService {
 
   getServiceCategories(): Observable<ServiceCategoryFinance[]> {
     return this.apiService.get<ServiceCategoryFinance[]>('/v1/admin-categories/services');
-  }
-
-  updateServiceCategoryPlatformFeeRate(
-    id: number,
-    payload: UpdateServiceCategoryPlatformFeePayload
-  ): Observable<ServiceCategoryFinance> {
-    return this.apiService.patch<ServiceCategoryFinance>(
-      `/v1/admin-categories/services/${id}/platform-fee-rate`,
-      payload
-    );
   }
 
   getInfluencerCommissions(): Observable<FinanceInfluencerCommission[]> {
