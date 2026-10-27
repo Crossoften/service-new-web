@@ -16,7 +16,6 @@ import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/lo
 import {
   AdminCategory,
   CATEGORY_CONTEXTS,
-  CONTEXTO_COM_TAXA,
   CategoryContext,
   UpsertCategoryInput,
 } from '../../models/category.model';
@@ -26,14 +25,11 @@ import { sugerirSlug } from '../../utils/category-slug';
 /** Mesmos limites do `CreateCategoryDto`. */
 const NOME_MAXIMO = 120;
 const SLUG_MAXIMO = 120;
-const TAXA_MINIMA = 0;
-const TAXA_MAXIMA = 100;
 
 type FormularioCategoria = FormGroup<{
   name: FormControl<string>;
   slug: FormControl<string>;
   sortOrder: FormControl<number | null>;
-  platformFeeRate: FormControl<number | null>;
   isActive: FormControl<boolean>;
 }>;
 
@@ -63,7 +59,7 @@ export class CategoriesComponent implements OnInit, OnDestroy {
   readonly nomeMaximo = NOME_MAXIMO;
   readonly slugMaximo = SLUG_MAXIMO;
 
-  readonly contexto = signal<CategoryContext>(CONTEXTO_COM_TAXA);
+  readonly contexto = signal<CategoryContext>('services');
   readonly categorias = signal<AdminCategory[]>([]);
   readonly isLoading = signal(false);
   readonly hasError = signal(false);
@@ -92,9 +88,6 @@ export class CategoriesComponent implements OnInit, OnDestroy {
       validators: [Validators.required, Validators.maxLength(SLUG_MAXIMO)],
     }),
     sortOrder: new FormControl<number | null>(0),
-    platformFeeRate: new FormControl<number | null>(null, {
-      validators: [Validators.min(TAXA_MINIMA), Validators.max(TAXA_MAXIMA)],
-    }),
     isActive: new FormControl(true, { nonNullable: true }),
   });
 
@@ -138,11 +131,6 @@ export class CategoriesComponent implements OnInit, OnDestroy {
     this.carregar();
   }
 
-  /** A taxa da plataforma só existe em `services`; nos outros o back-end recusa. */
-  get mostraTaxa(): boolean {
-    return this.contexto() === CONTEXTO_COM_TAXA;
-  }
-
   get estaEditando(): boolean {
     return this.emEdicao() !== undefined;
   }
@@ -157,7 +145,6 @@ export class CategoriesComponent implements OnInit, OnDestroy {
       name: '',
       slug: '',
       sortOrder: 0,
-      platformFeeRate: this.mostraTaxa ? 10 : null,
       isActive: true,
     });
     this.limparEstadoDoIcone(null, null);
@@ -170,7 +157,6 @@ export class CategoriesComponent implements OnInit, OnDestroy {
       name: categoria.name,
       slug: categoria.slug,
       sortOrder: categoria.sortOrder,
-      platformFeeRate: categoria.platformFeeRate,
       isActive: categoria.isActive,
     });
     this.limparEstadoDoIcone(categoria.iconUrl, categoria.iconKey);
@@ -265,11 +251,6 @@ export class CategoriesComponent implements OnInit, OnDestroy {
     });
   }
 
-  formatarTaxa(valor: number | null): string {
-    if (valor === null) return '—';
-    return `${valor.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`;
-  }
-
   voltar(): void {
     this.router.navigate(['/settings']);
   }
@@ -295,7 +276,7 @@ export class CategoriesComponent implements OnInit, OnDestroy {
   }
 
   private montarPayload(icone: { fileUrl: string; fileKey: string } | null): UpsertCategoryInput {
-    const { name, slug, sortOrder, platformFeeRate, isActive } = this.form.getRawValue();
+    const { name, slug, sortOrder, isActive } = this.form.getRawValue();
 
     return {
       name: name.trim(),
@@ -303,10 +284,6 @@ export class CategoriesComponent implements OnInit, OnDestroy {
       ...this.imagemDoPayload(icone),
       ...(sortOrder !== null && { sortOrder }),
       isActive,
-      // Só `services` tem a coluna. Mandar a taxa nos outros contextos faz o
-      // back-end responder 400 — a tela nem oferece o campo, e aqui garante
-      // que uma troca de contexto não arraste o valor antigo no payload.
-      ...(this.mostraTaxa && platformFeeRate !== null && { platformFeeRate }),
     };
   }
 

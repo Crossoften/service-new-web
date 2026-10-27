@@ -13,13 +13,6 @@ export const CATEGORY_CONTEXTS: ReadonlyArray<{ valor: CategoryContext; rotulo: 
   { valor: 'transportations', rotulo: 'Transportes' },
 ];
 
-/**
- * Só `services` tem taxa da plataforma — é o único contexto com a coluna no
- * banco. Nos outros três o back-end recusa o campo com 400, então a tela não
- * pode nem oferecê-lo.
- */
-export const CONTEXTO_COM_TAXA: CategoryContext = 'services';
-
 export interface AdminCategory {
   id: number;
   name: string;
@@ -28,8 +21,6 @@ export interface AdminCategory {
   iconKey: string | null;
   isActive: boolean;
   sortOrder: number;
-  /** Nulo nos contextos que não têm a coluna. */
-  platformFeeRate: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -42,7 +33,6 @@ export interface AdminCategoryApiItem {
   iconKey?: string | null;
   isActive: boolean;
   sortOrder: number;
-  platformFeeRate?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -59,5 +49,4 @@ export interface UpsertCategoryInput {
   iconKey?: string | null;
   isActive?: boolean;
   sortOrder?: number;
-  platformFeeRate?: number;
 }

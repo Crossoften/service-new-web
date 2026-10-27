@@ -27,7 +27,6 @@ function categoria(parcial: Partial<AdminCategory> = {}): AdminCategory {
     iconKey: null,
     isActive: true,
     sortOrder: 2,
-    platformFeeRate: 7.5,
     createdAt: '2026-01-10T08:00:00.000Z',
     updatedAt: '2026-01-10T08:00:00.000Z',
     ...parcial,
@@ -91,7 +90,6 @@ describe('CategoriesComponent', () => {
     expect(getAll).toHaveBeenCalledWith('services');
     expect(component.contexto()).toBe('services');
     expect(component.categorias()).toHaveLength(1);
-    expect(component.mostraTaxa).toBe(true);
   });
 
   it('marca erro quando a busca falha', () => {
@@ -105,7 +103,7 @@ describe('CategoriesComponent', () => {
   });
 
   it.each(['products', 'accommodations', 'transportations'] as const)(
-    'troca para %s e esconde a taxa',
+    'troca para %s e recarrega a lista pelo novo contexto',
     (contexto) => {
       const component = montar();
       component.ngOnInit();
@@ -113,7 +111,6 @@ describe('CategoriesComponent', () => {
       component.trocarContexto(contexto);
 
       expect(getAll).toHaveBeenLastCalledWith(contexto);
-      expect(component.mostraTaxa).toBe(false);
     }
   );
 
@@ -138,32 +135,13 @@ describe('CategoriesComponent', () => {
     expect(component.categorias()).toEqual([]);
   });
 
-  it('sugere a taxa padrão de 10% ao criar em serviços', () => {
-    const component = montar();
-    component.ngOnInit();
-
-    component.abrirNovo(TPL);
-
-    expect(component.form.controls.platformFeeRate.value).toBe(10);
-  });
-
-  it('não sugere taxa ao criar fora de serviços', () => {
-    const component = montar();
-    component.ngOnInit();
-    component.trocarContexto('products');
-
-    component.abrirNovo(TPL);
-
-    expect(component.form.controls.platformFeeRate.value).toBeNull();
-  });
-
-  it('manda a taxa ao criar em serviços', () => {
+  it('monta o payload de criação a partir do formulário', () => {
     create.mockReturnValue(of(categoria()));
 
     const component = montar();
     component.ngOnInit();
     component.abrirNovo(TPL);
-    component.form.patchValue({ name: 'Pintura', slug: 'pintura', platformFeeRate: 12 });
+    component.form.patchValue({ name: 'Pintura', slug: 'pintura' });
 
     component.salvar();
 
@@ -172,47 +150,25 @@ describe('CategoriesComponent', () => {
       slug: 'pintura',
       sortOrder: 0,
       isActive: true,
-      platformFeeRate: 12,
     });
   });
 
-  // Mandar a taxa fora de services faz o back-end responder 400.
   it.each(['products', 'accommodations', 'transportations'] as const)(
-    'não manda a taxa ao criar em %s',
+    'cria no contexto %s que está selecionado',
     (contexto) => {
-      create.mockReturnValue(of(categoria({ platformFeeRate: null })));
+      create.mockReturnValue(of(categoria()));
 
       const component = montar();
       component.ngOnInit();
       component.trocarContexto(contexto);
       component.abrirNovo(TPL);
-      // A taxa é preenchida à força: sem isso o teste passaria só porque
-      // `abrirNovo` já a deixa nula fora de services, sem exercer a guarda.
-      component.form.patchValue({ name: 'Bebidas', slug: 'bebidas', platformFeeRate: 12 });
+      component.form.patchValue({ name: 'Bebidas', slug: 'bebidas' });
 
       component.salvar();
 
-      expect('platformFeeRate' in create.mock.calls[0][1]).toBe(false);
       expect(create.mock.calls[0][0]).toBe(contexto);
     }
   );
-
-  // Abrir o formulário em serviços e trocar o contexto antes de salvar não pode
-  // arrastar a taxa antiga para um contexto que a recusa.
-  it('não arrasta a taxa quando o contexto muda com o formulário aberto', () => {
-    create.mockReturnValue(of(categoria({ platformFeeRate: null })));
-
-    const component = montar();
-    component.ngOnInit();
-    component.abrirNovo(TPL);
-    expect(component.form.controls.platformFeeRate.value).toBe(10);
-
-    component.trocarContexto('products');
-    component.form.patchValue({ name: 'Bebidas', slug: 'bebidas' });
-    component.salvar();
-
-    expect('platformFeeRate' in create.mock.calls[0][1]).toBe(false);
-  });
 
   it('edita pelo id da categoria aberta', () => {
     update.mockReturnValue(of(categoria()));
@@ -255,17 +211,6 @@ describe('CategoriesComponent', () => {
 
     expect(create).not.toHaveBeenCalled();
     expect(component.form.controls.name.touched).toBe(true);
-  });
-
-  it('recusa taxa acima de 100', () => {
-    const component = montar();
-    component.ngOnInit();
-    component.abrirNovo(TPL);
-    component.form.patchValue({ name: 'Pintura', slug: 'pintura', platformFeeRate: 101 });
-
-    component.salvar();
-
-    expect(create).not.toHaveBeenCalled();
   });
 
   it('mostra a mensagem do back-end quando o slug já existe', () => {
@@ -372,13 +317,6 @@ describe('CategoriesComponent', () => {
     component.alternarAtivo(categoria({ id: 1, isActive: true }));
 
     expect(inactivate).not.toHaveBeenCalled();
-  });
-
-  it('mostra travessão quando o contexto não tem taxa', () => {
-    const component = montar();
-
-    expect(component.formatarTaxa(null)).toBe('—');
-    expect(component.formatarTaxa(7.5)).toBe('7,5%');
   });
 
   it('carrega a imagem gravada ao abrir a edição', () => {

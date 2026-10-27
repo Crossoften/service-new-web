@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, relative, resolve } from 'path';
 
 /**
- * O Financeiro não oferece porcentagem da plataforma sobre serviço.
+ * Nenhuma tela do admin oferece porcentagem da plataforma sobre serviço.
  *
  * Regra do produto: o fornecedor paga a assinatura — mensal ou anual — e o
  * único que tem percentual **além** dela é o delivery, por
@@ -15,14 +15,21 @@ import { join, relative, resolve } from 'path';
  * quando a categoria estava em zero, então uma categoria exibindo
  * "Plataforma: 0%" retinha 10% de verdade.
  *
- * O campo segue existindo em Configurações > Categorias, de propósito: lá é
- * cadastro, e o backend continua aceitando o valor para um uso futuro. O que
- * não pode voltar é o Financeiro apresentar isso como receita.
+ * O campo saiu também de Configurações > Categorias: enquanto estava lá, era o
+ * único lugar do admin que ainda exibia e editava um percentual inerte — uma
+ * coluna "Taxa" mostrando 10% que não afetava pagamento nenhum.
+ *
+ * O backend **continua** aceitando `platformFeeRate` em
+ * `/v1/admin-categories/services` e guardando a coluna, para um uso futuro. O
+ * que não pode voltar é o admin apresentar isso como receita.
+ *
+ * Isto NÃO vale para o delivery: `deliveryCommissionRate` é outro campo, de
+ * outro domínio, e é configurado em Usuários > editar fornecedor.
  */
 const RAIZ = resolve(__dirname, '..', '..');
-const FINANCEIRO = join(RAIZ, 'features', 'finance');
+const FEATURES = join(RAIZ, 'features');
 
-/** Pelo que o Financeiro não pode voltar a falar de retenção em serviço. */
+/** Pelo que nenhuma tela pode voltar a falar de retenção em serviço. */
 const PROIBIDOS = [/platformFeeRate/, /Porcentagem de fornecedores/, /platformValueReceived/];
 
 function templates(pasta: string): string[] {
@@ -35,14 +42,14 @@ function templates(pasta: string): string[] {
   });
 }
 
-describe('porcentagem da plataforma no Financeiro', () => {
-  const encontrados = templates(FINANCEIRO);
+describe('porcentagem da plataforma no admin', () => {
+  const encontrados = templates(FEATURES);
 
-  it('existe template de Financeiro para o teste ter o que guardar', () => {
+  it('existe template para o teste ter o que guardar', () => {
     expect(encontrados.length).toBeGreaterThan(0);
   });
 
-  it('nenhum template do Financeiro edita ou exibe retenção de serviço', () => {
+  it('nenhum template edita ou exibe retenção de serviço', () => {
     const comRetencao = encontrados
       .filter((caminho) => {
         const html = readFileSync(caminho, 'utf8');

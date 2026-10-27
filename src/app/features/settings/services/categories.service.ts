@@ -80,7 +80,6 @@ export class CategoriesService {
       iconKey: item.iconKey ?? null,
       isActive: item.isActive,
       sortOrder: item.sortOrder,
-      platformFeeRate: item.platformFeeRate ?? null,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
     };

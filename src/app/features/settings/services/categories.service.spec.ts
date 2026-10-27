@@ -14,7 +14,6 @@ const COMPLETA = {
   iconKey: 'icones/limpeza.png',
   isActive: true,
   sortOrder: 2,
-  platformFeeRate: 7.5,
   createdAt: '2026-01-10T08:00:00.000Z',
   updatedAt: '2026-01-11T08:00:00.000Z',
 };
@@ -49,7 +48,7 @@ describe('CategoriesService', () => {
     const categorias = await firstValueFrom(service.getAll('services'));
 
     expect(apiService.get).toHaveBeenCalledWith('/v1/admin-categories/services');
-    expect(categorias[0].platformFeeRate).toBe(7.5);
+    expect(categorias[0].name).toBe('Limpeza');
   });
 
   it.each(['products', 'accommodations', 'transportations'] as const)(
@@ -63,14 +62,13 @@ describe('CategoriesService', () => {
     }
   );
 
-  // Os contextos sem a coluna não mandam o campo. Sem o `?? null` a tela
-  // receberia `undefined` e a coluna de taxa mostraria vazio em vez de "—".
+  // Sem o `?? null` a tela receberia `undefined` e a coluna de imagem
+  // mostraria vazio em vez do estado de "sem ícone".
   it('normaliza os campos ausentes para null', async () => {
     apiService.get.mockReturnValue(of([SEM_OPCIONAIS]));
 
     const [categoria] = await firstValueFrom(service.getAll('products'));
 
-    expect(categoria.platformFeeRate).toBeNull();
     expect(categoria.iconUrl).toBeNull();
     expect(categoria.iconKey).toBeNull();
   });
@@ -95,13 +93,11 @@ describe('CategoriesService', () => {
   it('cria suprimindo o toast global, para o 409 chegar à tela', async () => {
     apiService.post.mockReturnValue(of(COMPLETA));
 
-    await firstValueFrom(
-      service.create('services', { name: 'Limpeza', slug: 'limpeza', platformFeeRate: 7.5 })
-    );
+    await firstValueFrom(service.create('services', { name: 'Limpeza', slug: 'limpeza' }));
 
     const [rota, corpo, opcoes] = apiService.post.mock.calls[0];
     expect(rota).toBe('/v1/admin-categories/services');
-    expect(corpo).toEqual({ name: 'Limpeza', slug: 'limpeza', platformFeeRate: 7.5 });
+    expect(corpo).toEqual({ name: 'Limpeza', slug: 'limpeza' });
     expect(opcoes?.context?.get(SUPPRESS_GLOBAL_ERROR_TOAST)).toBe(true);
   });
 
