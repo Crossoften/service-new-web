@@ -1,0 +1,237 @@
+<div class="app-shell">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="page-wrapper">
+      <button class="btn-link-back" type="button" (click)="voltar()">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        Configuração
+      </button>
+
+      <h1 class="page-title">Categorias</h1>
+      <p class="page-subtitle">
+        Cada contexto tem a sua própria lista. Categorias de cardápio de restaurante não ficam aqui
+        — têm rotas próprias.
+      </p>
+
+      <div class="context-tabs" role="tablist" aria-label="Contexto das categorias">
+        @for (ctx of contextos; track ctx.valor) {
+          <button
+            type="button"
+            role="tab"
+            class="context-tab"
+            [class.ativa]="contexto() === ctx.valor"
+            [attr.aria-selected]="contexto() === ctx.valor"
+            [disabled]="isLoading()"
+            (click)="trocarContexto(ctx.valor)"
+          >
+            {{ ctx.rotulo }}
+          </button>
+        }
+      </div>
+
+      <div class="toolbar">
+        <span class="toolbar-spacer"></span>
+        <button
+          class="btn-add"
+          type="button"
+          [disabled]="isLoading()"
+          (click)="abrirNovo(formModalTpl)"
+        >
+          <i class="bi bi-plus-lg" aria-hidden="true"></i>
+          NOVA CATEGORIA
+        </button>
+      </div>
+
+      @if (isLoading()) {
+        <app-loading-skeleton [variant]="'table'" [count]="6"></app-loading-skeleton>
+      } @else if (hasError()) {
+        <app-error-state
+          [title]="'Erro ao carregar as categorias'"
+          [description]="'Não foi possível buscar a lista deste contexto. Tente novamente.'"
+          (retry)="carregar()"
+        ></app-error-state>
+      } @else if (!categorias().length) {
+        <app-empty-state
+          [title]="'Nenhuma categoria cadastrada'"
+          [description]="'Crie a primeira categoria deste contexto.'"
+          [icon]="'bi-tags'"
+        ></app-empty-state>
+      } @else {
+        <div class="table-wrapper">
+          <table class="cat-table" aria-label="Categorias">
+            <thead>
+              <tr>
+                <th scope="col">Ordem</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Slug</th>
+                @if (mostraTaxa) {
+                  <th scope="col">Taxa</th>
+                }
+                <th scope="col">Status</th>
+                <th scope="col" class="col-acoes">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (categoria of categorias(); track categoria.id) {
+                <tr>
+                  <td data-label="Ordem">{{ categoria.sortOrder }}</td>
+                  <td data-label="Nome">
+                    <span class="cat-nome">
+                      @if (categoria.iconUrl) {
+                        <img class="cat-icone" [src]="categoria.iconUrl" alt="" />
+                      }
+                      {{ categoria.name }}
+                    </span>
+                  </td>
+                  <td data-label="Slug">
+                    <code class="cat-slug">{{ categoria.slug }}</code>
+                  </td>
+                  @if (mostraTaxa) {
+                    <td data-label="Taxa">{{ formatarTaxa(categoria.platformFeeRate) }}</td>
+                  }
+                  <td data-label="Status">
+                    <span
+                      class="status-badge"
+                      [class.active]="categoria.isActive"
+                      [class.inactive]="!categoria.isActive"
+                    >
+                      {{ categoria.isActive ? 'Ativa' : 'Inativa' }}
+                    </span>
+                  </td>
+                  <td class="col-acoes" data-label="Ações">
+                    <button
+                      type="button"
+                      class="btn-acao"
+                      [disabled]="alternandoId() !== null"
+                      (click)="abrirEdicao(categoria, formModalTpl)"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-acao"
+                      [class.btn-acao--perigo]="categoria.isActive"
+                      [disabled]="alternandoId() !== null"
+                      (click)="alternarAtivo(categoria)"
+                    >
+                      {{ categoria.isActive ? 'Inativar' : 'Reativar' }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </main>
+</div>
+
+<ng-template #formModalTpl>
+  <div class="modal-header">
+    <h2 class="modal-title">
+      {{ estaEditando ? 'Editar categoria' : 'Nova categoria' }} · {{ rotuloDoContexto }}
+    </h2>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Fechar"
+      [disabled]="isSaving()"
+      (click)="fecharModal()"
+    ></button>
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="form" class="modal-form" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="cat-name">Nome</label>
+        <input
+          id="cat-name"
+          type="text"
+          class="form-control"
+          formControlName="name"
+          [maxlength]="nomeMaximo"
+          placeholder="Limpeza"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="cat-slug">Slug</label>
+        <input
+          id="cat-slug"
+          type="text"
+          class="form-control form-control--slug"
+          formControlName="slug"
+          [maxlength]="slugMaximo"
+          placeholder="limpeza"
+        />
+        <p class="helper-text">
+          Sugerido a partir do nome enquanto você não editar este campo. Precisa ser único dentro do
+          contexto.
+        </p>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label" for="cat-order">Ordem de exibição</label>
+          <input
+            id="cat-order"
+            type="number"
+            class="form-control"
+            formControlName="sortOrder"
+            step="1"
+          />
+        </div>
+
+        @if (mostraTaxa) {
+          <div class="form-group">
+            <label class="form-label" for="cat-fee">Taxa da plataforma (%)</label>
+            <input
+              id="cat-fee"
+              type="number"
+              class="form-control"
+              formControlName="platformFeeRate"
+              min="0"
+              max="100"
+              step="0.01"
+            />
+            <p class="helper-text">Entre 0 e 100. Existe apenas nas categorias de serviço.</p>
+          </div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="cat-icon">URL do ícone (opcional)</label>
+        <input
+          id="cat-icon"
+          type="text"
+          class="form-control"
+          formControlName="iconUrl"
+          [maxlength]="iconeMaximo"
+          placeholder="https://..."
+        />
+        <p class="helper-text">
+          Envie a imagem em Configuração › Arquivos e perfil e cole aqui a URL devolvida.
+        </p>
+      </div>
+
+      <label class="toggle-linha">
+        <input type="checkbox" formControlName="isActive" />
+        <span>Categoria ativa</span>
+      </label>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn-cancel" [disabled]="isSaving()" (click)="fecharModal()">
+      CANCELAR
+    </button>
+    <button type="button" class="btn-save" [disabled]="isSaving()" (click)="salvar()">
+      @if (isSaving()) {
+        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+      }
+      SALVAR
+    </button>
+  </div>
+</ng-template>

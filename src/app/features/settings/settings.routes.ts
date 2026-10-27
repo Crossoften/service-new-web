@@ -16,6 +16,12 @@ export const SETTINGS_ROUTES: Routes = [
     data: { title: 'Arquivos e perfil' },
   },
   {
+    path: 'categorias',
+    loadComponent: () =>
+      import('./pages/categories/categories.component').then((m) => m.CategoriesComponent),
+    data: { title: 'Categorias' },
+  },
+  {
     path: 'new',
     loadComponent: () =>
       import('./pages/collaborator-form/collaborator-form.component').then(

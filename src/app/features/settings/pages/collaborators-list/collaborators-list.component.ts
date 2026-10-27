@@ -48,6 +48,10 @@ export class CollaboratorsListComponent implements OnInit, OnDestroy {
     return `${start}-${end} de ${this.total()} itens`;
   });
 
+  goToCategories(): void {
+    this.router.navigate(['/settings/categorias']);
+  }
+
   ngOnInit(): void {
     this.loadCollaborators();
     this.searchControl.valueChanges
