@@ -1,3 +1,4 @@
+import { TemplateRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -15,8 +16,11 @@ import {
 } from '../../models/finance.model';
 import { FinancePageComponent } from './finance-page.component';
 
+const TPL = {} as TemplateRef<unknown>;
+
 type FinanceServiceMock = {
   getPlatformSettings: jest.Mock;
+  updatePlatformSettings: jest.Mock;
   getPlans: jest.Mock;
   getServiceCategories: jest.Mock;
   updateInfluencerCommission: jest.Mock;
@@ -34,6 +38,7 @@ describe('FinancePageComponent partner commissions', () => {
   let financeService: FinanceServiceMock;
 
   const platformSettings: PlatformSettings = {
+    deliveryCommissionRate: 17,
     influencerCommissionRate: 12.5,
     updatedAt: '2026-05-01T10:00:00.000Z',
   };
@@ -79,6 +84,7 @@ describe('FinancePageComponent partner commissions', () => {
       getPlans: jest.fn().mockReturnValue(of({ plans: [], totalRecords: 0 })),
       getServiceCategories: jest.fn().mockReturnValue(of([serviceCategory])),
       updateInfluencerCommission: jest.fn().mockReturnValue(of(undefined)),
+      updatePlatformSettings: jest.fn().mockReturnValue(of(platformSettings)),
       createPlan: jest.fn().mockReturnValue(of(plan)),
     };
 
@@ -239,5 +245,82 @@ describe('FinancePageComponent partner commissions', () => {
     );
     expect(component.pendingPlanPayload()).toBeNull();
     expect(component.isSavingPlan()).toBe(false);
+  });
+
+  // A taxa do delivery é global e vive em `PlatformSettings`. A taxa própria de
+  // cada fornecedor continua em Usuários > editar, e prevalece sobre esta.
+  it('abre o formulário de taxas com os valores já configurados', () => {
+    component.ngOnInit();
+
+    component.openPlatformModal(TPL);
+
+    expect(component.platformForm.controls.deliveryCommissionRate.value).toBe(17);
+    expect(component.platformForm.controls.influencerCommissionRate.value).toBe(12.5);
+  });
+
+  it('manda os dois percentuais como número, que é o que o back-end aceita', () => {
+    // O `UpdatePlatformSettingsDto` usa `@Type(() => Number)` com `@IsNumber`:
+    // texto também passa, mas número é a forma natural e evita a conversão.
+    component.ngOnInit();
+    component.openPlatformModal(TPL);
+    component.platformForm.patchValue({
+      deliveryCommissionRate: 18.5,
+      influencerCommissionRate: 10,
+    });
+
+    component.savePlatformSettings();
+
+    expect(financeService.updatePlatformSettings).toHaveBeenCalledWith({
+      deliveryCommissionRate: 18.5,
+      influencerCommissionRate: 10,
+    });
+  });
+
+  it('converte texto do input numérico antes de enviar', () => {
+    // `<input type="number">` entrega string quando o valor é digitado; sem o
+    // `Number(...)` o back-end receberia "18.5" e dependeria da conversão dele.
+    component.ngOnInit();
+    component.openPlatformModal(TPL);
+    component.platformForm.controls.deliveryCommissionRate.setValue('18.5' as never);
+
+    component.savePlatformSettings();
+
+    const payload = (financeService.updatePlatformSettings as jest.Mock).mock.calls[0][0];
+    expect(payload.deliveryCommissionRate).toBe(18.5);
+  });
+
+  it.each([-1, 101])('recusa percentual fora da faixa (%s) sem chamar a API', (valor) => {
+    // Mesma faixa do `@Min(0)`/`@Max(100)` do DTO: barrar aqui evita um 400.
+    component.ngOnInit();
+    component.openPlatformModal(TPL);
+    component.platformForm.patchValue({ deliveryCommissionRate: valor });
+
+    component.savePlatformSettings();
+
+    expect(financeService.updatePlatformSettings).not.toHaveBeenCalled();
+    expect(component.platformForm.controls.deliveryCommissionRate.touched).toBe(true);
+  });
+
+  it('marca o campo como inválido só depois de o admin tocar nele', () => {
+    component.ngOnInit();
+    component.openPlatformModal(TPL);
+    component.platformForm.controls.deliveryCommissionRate.setValue(101);
+
+    expect(component.isPlatformControlInvalid('deliveryCommissionRate')).toBe(false);
+
+    component.platformForm.controls.deliveryCommissionRate.markAsTouched();
+
+    expect(component.isPlatformControlInvalid('deliveryCommissionRate')).toBe(true);
+  });
+
+  it('guarda a resposta do back-end, para reabrir com o valor salvo', () => {
+    component.ngOnInit();
+    component.openPlatformModal(TPL);
+    component.platformForm.patchValue({ deliveryCommissionRate: 18.5 });
+
+    component.savePlatformSettings();
+
+    expect(component.platformSettings()?.deliveryCommissionRate).toBe(17);
+    expect(component.isSavingPlatform()).toBe(false);
   });
 });

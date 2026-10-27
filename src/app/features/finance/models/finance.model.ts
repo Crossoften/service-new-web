@@ -2,11 +2,18 @@ export type PlanInterval = 'Month' | 'Year';
 
 export interface PlatformSettings {
   influencerCommissionRate: number;
+  /**
+   * Percentual que a plataforma retém sobre os itens de cada pedido do
+   * delivery. Vale para o fornecedor que não tem taxa própria cadastrada em
+   * Usuários — a taxa individual, quando existe, prevalece sobre esta.
+   */
+  deliveryCommissionRate: number;
   updatedAt: string;
 }
 
 export interface UpdatePlatformSettingsPayload {
   influencerCommissionRate?: number;
+  deliveryCommissionRate?: number;
 }
 
 export interface Plan {

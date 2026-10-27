@@ -51,6 +51,7 @@ const PLAN_BILLING_CYCLES: Record<
 
 type PlatformForm = FormGroup<{
   influencerCommissionRate: FormControl<number | null>;
+  deliveryCommissionRate: FormControl<number | null>;
 }>;
 
 type PartnerCommissionForm = FormGroup<{
@@ -200,10 +201,17 @@ export class FinancePageComponent implements OnInit, OnDestroy {
   }
 
   openPlatformModal(templateRef: TemplateRef<unknown>): void {
+    // Mesma faixa do back-end: `@Min(0)` e `@Max(100)` no `UpdatePlatformSettingsDto`.
+    const percentual = [Validators.required, Validators.min(0), Validators.max(100)];
+
     this.platformForm = new FormGroup({
       influencerCommissionRate: new FormControl(
         this.platformSettings()?.influencerCommissionRate ?? 0,
-        [Validators.required, Validators.min(0), Validators.max(100)]
+        percentual
+      ),
+      deliveryCommissionRate: new FormControl(
+        this.platformSettings()?.deliveryCommissionRate ?? 0,
+        percentual
       ),
     });
 
@@ -310,6 +318,7 @@ export class FinancePageComponent implements OnInit, OnDestroy {
     this.financeService
       .updatePlatformSettings({
         influencerCommissionRate: Number(this.platformForm.controls.influencerCommissionRate.value),
+        deliveryCommissionRate: Number(this.platformForm.controls.deliveryCommissionRate.value),
       })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -318,8 +327,8 @@ export class FinancePageComponent implements OnInit, OnDestroy {
           this.isSavingPlatform.set(false);
           this.activeModalRef?.close();
           this.showFeedbackModal({
-            title: 'Comissão atualizada',
-            description: 'A comissão global de influenciadores foi salva com sucesso.',
+            title: 'Taxas atualizadas',
+            description: 'As taxas da plataforma foram salvas com sucesso.',
             icon: 'bi-check2-circle',
             variant: 'success',
           });
@@ -608,6 +617,11 @@ export class FinancePageComponent implements OnInit, OnDestroy {
 
   isPlanControlInvalid(controlName: keyof PlanForm['controls']): boolean {
     const control = this.planForm.controls[controlName];
+    return control.invalid && (control.dirty || control.touched);
+  }
+
+  isPlatformControlInvalid(controlName: keyof PlatformForm['controls']): boolean {
+    const control = this.platformForm.controls[controlName];
     return control.invalid && (control.dirty || control.touched);
   }
 
