@@ -50,7 +50,13 @@ export interface AdminCategoryApiItem {
 export interface UpsertCategoryInput {
   name: string;
   slug: string;
-  iconUrl?: string;
+  /**
+   * A imagem vai em par: `iconUrl` é o que renderiza, `iconKey` é a chave no
+   * storage. `null` nos dois é o caminho para **remover** a imagem — omitir
+   * deixaria a atual no lugar, que é outra coisa.
+   */
+  iconUrl?: string | null;
+  iconKey?: string | null;
   isActive?: boolean;
   sortOrder?: number;
   platformFeeRate?: number;

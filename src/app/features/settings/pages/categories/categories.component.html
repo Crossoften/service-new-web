@@ -202,18 +202,55 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="cat-icon">URL do ícone (opcional)</label>
-        <input
-          id="cat-icon"
-          type="text"
-          class="form-control"
-          formControlName="iconUrl"
-          [maxlength]="iconeMaximo"
-          placeholder="https://..."
-        />
-        <p class="helper-text">
-          Envie a imagem em Configuração › Arquivos e perfil e cole aqui a URL devolvida.
-        </p>
+        <span class="form-label">Imagem (opcional)</span>
+
+        <div class="icone-bloco">
+          <div class="icone-preview">
+            @if (iconeEmExibicao) {
+              <img [src]="iconeEmExibicao" alt="Imagem da categoria" />
+            } @else {
+              <i class="bi bi-image icone-vazio" aria-hidden="true"></i>
+            }
+          </div>
+
+          <div class="icone-acoes">
+            <label class="btn-icone" for="cat-icon">
+              <i class="bi bi-upload" aria-hidden="true"></i>
+              ESCOLHER IMAGEM
+            </label>
+            <input
+              id="cat-icon"
+              class="icone-input"
+              type="file"
+              accept="image/*"
+              [disabled]="isSaving()"
+              (change)="onSelecionarIcone($event)"
+            />
+
+            @if (novoIcone()) {
+              <p class="helper-text">
+                <strong>{{ novoIcone()!.name }}</strong> será enviada ao salvar.
+                <button type="button" class="btn-link" (click)="onDesfazerIcone()">desfazer</button>
+              </p>
+            } @else if (iconeMarcadoParaRemover()) {
+              <p class="helper-text">
+                A imagem será removida ao salvar.
+                <button type="button" class="btn-link" (click)="onDesfazerIcone()">desfazer</button>
+              </p>
+            } @else if (iconeUrl()) {
+              <button
+                type="button"
+                class="btn-link btn-link--perigo"
+                [disabled]="isSaving()"
+                (click)="onRemoverIcone()"
+              >
+                Remover imagem
+              </button>
+            } @else {
+              <p class="helper-text">Aparece no painel e no app, na lista de categorias.</p>
+            }
+          </div>
+        </div>
       </div>
 
       <label class="toggle-linha">

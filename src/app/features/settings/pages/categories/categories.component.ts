@@ -4,9 +4,10 @@ import { Component, OnDestroy, OnInit, TemplateRef, inject, signal } from '@angu
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { Subject, takeUntil } from 'rxjs';
+import { Observable, Subject, of, switchMap, takeUntil } from 'rxjs';
 
 import { ToastService } from '@core/services/toast.service';
+import { UploadsService } from '@core/services/uploads.service';
 import { SidebarComponent } from '@features/dashboard/components/sidebar/sidebar.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { ErrorStateComponent } from '@shared/components/error-state/error-state.component';
@@ -25,14 +26,12 @@ import { sugerirSlug } from '../../utils/category-slug';
 /** Mesmos limites do `CreateCategoryDto`. */
 const NOME_MAXIMO = 120;
 const SLUG_MAXIMO = 120;
-const ICONE_MAXIMO = 1500;
 const TAXA_MINIMA = 0;
 const TAXA_MAXIMA = 100;
 
 type FormularioCategoria = FormGroup<{
   name: FormControl<string>;
   slug: FormControl<string>;
-  iconUrl: FormControl<string>;
   sortOrder: FormControl<number | null>;
   platformFeeRate: FormControl<number | null>;
   isActive: FormControl<boolean>;
@@ -56,13 +55,13 @@ export class CategoriesComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly modal = inject(NgbModal);
   private readonly categoriesService = inject(CategoriesService);
+  private readonly uploadsService = inject(UploadsService);
   private readonly toastService = inject(ToastService);
   private readonly destroy$ = new Subject<void>();
 
   readonly contextos = CATEGORY_CONTEXTS;
   readonly nomeMaximo = NOME_MAXIMO;
   readonly slugMaximo = SLUG_MAXIMO;
-  readonly iconeMaximo = ICONE_MAXIMO;
 
   readonly contexto = signal<CategoryContext>(CONTEXTO_COM_TAXA);
   readonly categorias = signal<AdminCategory[]>([]);
@@ -71,6 +70,15 @@ export class CategoriesComponent implements OnInit, OnDestroy {
   readonly isSaving = signal(false);
   readonly alternandoId = signal<number | null>(null);
   readonly emEdicao = signal<AdminCategory | undefined>(undefined);
+
+  /**
+   * A imagem fica fora do formulário porque não é texto que o admin digita:
+   * são dois campos que vêm do upload em par (`iconUrl` e `iconKey`).
+   */
+  readonly iconeUrl = signal<string | null>(null);
+  readonly iconeKey = signal<string | null>(null);
+  readonly novoIcone = signal<File | undefined>(undefined);
+  readonly iconeMarcadoParaRemover = signal(false);
 
   private modalRef: NgbModalRef | null = null;
 
@@ -82,10 +90,6 @@ export class CategoriesComponent implements OnInit, OnDestroy {
     slug: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.maxLength(SLUG_MAXIMO)],
-    }),
-    iconUrl: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.maxLength(ICONE_MAXIMO)],
     }),
     sortOrder: new FormControl<number | null>(0),
     platformFeeRate: new FormControl<number | null>(null, {
@@ -152,11 +156,11 @@ export class CategoriesComponent implements OnInit, OnDestroy {
     this.form.reset({
       name: '',
       slug: '',
-      iconUrl: '',
       sortOrder: 0,
       platformFeeRate: this.mostraTaxa ? 10 : null,
       isActive: true,
     });
+    this.limparEstadoDoIcone(null, null);
     this.modalRef = this.modal.open(template, { centered: true, backdrop: 'static' });
   }
 
@@ -165,12 +169,34 @@ export class CategoriesComponent implements OnInit, OnDestroy {
     this.form.reset({
       name: categoria.name,
       slug: categoria.slug,
-      iconUrl: categoria.iconUrl ?? '',
       sortOrder: categoria.sortOrder,
       platformFeeRate: categoria.platformFeeRate,
       isActive: categoria.isActive,
     });
+    this.limparEstadoDoIcone(categoria.iconUrl, categoria.iconKey);
     this.modalRef = this.modal.open(template, { centered: true, backdrop: 'static' });
+  }
+
+  onSelecionarIcone(event: Event): void {
+    const arquivo = (event.target as HTMLInputElement).files?.[0];
+    if (!arquivo) return;
+
+    this.novoIcone.set(arquivo);
+    this.iconeMarcadoParaRemover.set(false);
+  }
+
+  onRemoverIcone(): void {
+    this.iconeMarcadoParaRemover.set(true);
+    this.novoIcone.set(undefined);
+  }
+
+  onDesfazerIcone(): void {
+    this.iconeMarcadoParaRemover.set(false);
+    this.novoIcone.set(undefined);
+  }
+
+  get iconeEmExibicao(): string | null {
+    return this.iconeMarcadoParaRemover() ? null : this.iconeUrl();
   }
 
   fecharModal(): void {
@@ -186,13 +212,18 @@ export class CategoriesComponent implements OnInit, OnDestroy {
     }
 
     const emEdicao = this.emEdicao();
-    const payload = this.montarPayload();
 
     this.isSaving.set(true);
 
-    const requisicao = emEdicao
-      ? this.categoriesService.update(this.contexto(), emEdicao.id, payload)
-      : this.categoriesService.create(this.contexto(), payload);
+    const requisicao = this.enviarIconeSeHouver().pipe(
+      switchMap((icone) => {
+        const payload = this.montarPayload(icone);
+
+        return emEdicao
+          ? this.categoriesService.update(this.contexto(), emEdicao.id, payload)
+          : this.categoriesService.create(this.contexto(), payload);
+      })
+    );
 
     requisicao.subscribe({
       next: () => {
@@ -243,14 +274,33 @@ export class CategoriesComponent implements OnInit, OnDestroy {
     this.router.navigate(['/settings']);
   }
 
-  private montarPayload(): UpsertCategoryInput {
-    const { name, slug, iconUrl, sortOrder, platformFeeRate, isActive } = this.form.getRawValue();
-    const icone = iconUrl.trim();
+  /**
+   * O upload só acontece ao salvar.
+   *
+   * Subir no momento da escolha deixaria arquivo órfão no storage toda vez que
+   * o admin desistisse do formulário.
+   */
+  private enviarIconeSeHouver(): Observable<{ fileUrl: string; fileKey: string } | null> {
+    const arquivo = this.novoIcone();
+    if (!arquivo) return of(null);
+
+    return this.uploadsService.uploadOne(arquivo);
+  }
+
+  private limparEstadoDoIcone(url: string | null, key: string | null): void {
+    this.iconeUrl.set(url);
+    this.iconeKey.set(key);
+    this.novoIcone.set(undefined);
+    this.iconeMarcadoParaRemover.set(false);
+  }
+
+  private montarPayload(icone: { fileUrl: string; fileKey: string } | null): UpsertCategoryInput {
+    const { name, slug, sortOrder, platformFeeRate, isActive } = this.form.getRawValue();
 
     return {
       name: name.trim(),
       slug: slug.trim(),
-      ...(icone && { iconUrl: icone }),
+      ...this.imagemDoPayload(icone),
       ...(sortOrder !== null && { sortOrder }),
       isActive,
       // Só `services` tem a coluna. Mandar a taxa nos outros contextos faz o
@@ -258,6 +308,31 @@ export class CategoriesComponent implements OnInit, OnDestroy {
       // que uma troca de contexto não arraste o valor antigo no payload.
       ...(this.mostraTaxa && platformFeeRate !== null && { platformFeeRate }),
     };
+  }
+
+  /**
+   * Três caminhos distintos, e eles não são intercambiáveis:
+   *
+   * - **imagem nova** → os dois campos do upload;
+   * - **remoção** → os dois nulos, que é o que o back-end usa para apagar o
+   *   arquivo anterior do storage;
+   * - **não mexi** → repete o que já estava gravado na edição, e **omite** na
+   *   criação, onde não há nada a repetir.
+   *
+   * Omitir na edição deixaria a imagem atual no lugar — o que é correto para
+   * "não mexi", mas tornaria a remoção impossível. Por isso o par vai
+   * explícito sempre que há categoria em edição.
+   */
+  private imagemDoPayload(
+    icone: { fileUrl: string; fileKey: string } | null
+  ): Partial<UpsertCategoryInput> {
+    if (icone) return { iconUrl: icone.fileUrl, iconKey: icone.fileKey };
+
+    if (this.iconeMarcadoParaRemover()) return { iconUrl: null, iconKey: null };
+
+    if (!this.emEdicao()) return {};
+
+    return { iconUrl: this.iconeUrl(), iconKey: this.iconeKey() };
   }
 
   private mensagemDeErro(erro: HttpErrorResponse): string {
