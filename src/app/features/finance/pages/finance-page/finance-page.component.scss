@@ -1070,6 +1070,29 @@ textarea.form-control {
   padding: 0 1rem 1rem;
 }
 
+/**
+ * Mesmo bloco de `coupons` e `delivery-fees`, para o status de plano ler igual
+ * ao das telas irmãs dentro do Financeiro. Antes era texto puro, sem pílula.
+ *
+ * O padrão do projeto é **verde para ativo e cinza para inativo** — não
+ * vermelho. Vermelho no projeto está reservado para ação destrutiva
+ * (`btn-acao--perigo`), e usá-lo em "Inativo" diria que estar inativo é erro.
+ */
+.status-badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.1);
+  color: #15803d;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.status-badge--off {
+  background: rgba(100, 100, 100, 0.12);
+  color: #666;
+}
+
 .plan-active-card {
   background: #fff;
 }

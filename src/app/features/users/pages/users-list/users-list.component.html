@@ -281,7 +281,12 @@
                     </span>
                   </td>
                   <td class="col-actions" (click)="$event.stopPropagation()">
-                    <div ngbDropdown placement="bottom-end" class="actions-dropdown">
+                    <div
+                      ngbDropdown
+                      placement="bottom-end"
+                      container="body"
+                      class="actions-dropdown"
+                    >
                       <button
                         class="btn-actions"
                         type="button"

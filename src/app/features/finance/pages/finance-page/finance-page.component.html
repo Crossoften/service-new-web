@@ -73,7 +73,11 @@
                     <td data-label="Valor do plano">{{ formatCurrency(plan.price) }}</td>
                     <td data-label="Renovação">{{ formatInterval(plan) }}</td>
                     <td data-label="Equivalente mensal">{{ formatCurrency(plan.monthlyPrice) }}</td>
-                    <td data-label="Status">{{ planStatusLabel(plan) }}</td>
+                    <td data-label="Status">
+                      <span class="status-badge" [class.status-badge--off]="!plan.isActive">
+                        {{ planStatusLabel(plan) }}
+                      </span>
+                    </td>
                     <td class="col-actions">
                       <button
                         class="btn-table-action"
