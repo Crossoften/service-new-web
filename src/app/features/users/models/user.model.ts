@@ -58,6 +58,13 @@ export interface AdminUser {
   birthDate: string | null;
   fileUrl: string | null;
   fileKey: string | null;
+  /**
+   * Comissão do delivery sobre os itens do pedido, em percentual.
+   *
+   * Só vem no detalhe. `null` significa que o usuário não tem valor próprio e
+   * cai no padrão da plataforma; zero é comissão zerada, que é outra coisa.
+   */
+  deliveryCommissionRate: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -114,6 +121,7 @@ export interface AdminUserApiDetail {
   phone: string | null;
   document: string | null;
   biography?: string | null;
+  deliveryCommissionRate?: number | null;
   status: string;
   openServices?: number | null;
   fileUrl: string | null;
@@ -161,4 +169,13 @@ export interface UpdateAdminUserPayload {
   phone: string | null;
   birthDate: string | null;
   biography: string | null;
+  /**
+   * A foto vai no payload porque a tela envia o formulário inteiro. Os dois
+   * campos precisam carregar o valor já gravado quando nada muda — omiti-los
+   * preservaria a foto, mas mandá-los vazios a apagaria.
+   */
+  fileUrl: string | null;
+  fileKey: string | null;
+  /** `null` devolve o usuário ao padrão da plataforma; `0` zera a comissão. */
+  deliveryCommissionRate: number | null;
 }

@@ -111,6 +111,9 @@ describe('UsersService · edição e status', () => {
         phone: '+5534998701109',
         birthDate: '1990-05-20',
         biography: 'Pintor residencial há 12 anos.',
+        fileUrl: 'https://cdn/rafael.png',
+        fileKey: 'perfis/rafael.png',
+        deliveryCommissionRate: 15.5,
       })
     );
 
@@ -121,6 +124,9 @@ describe('UsersService · edição e status', () => {
       phone: '+5534998701109',
       birthDate: '1990-05-20',
       biography: 'Pintor residencial há 12 anos.',
+      fileUrl: 'https://cdn/rafael.png',
+      fileKey: 'perfis/rafael.png',
+      deliveryCommissionRate: 15.5,
     });
   });
 
@@ -140,11 +146,50 @@ describe('UsersService · edição e status', () => {
         phone: null,
         birthDate: null,
         biography: null,
+        fileUrl: null,
+        fileKey: null,
+        deliveryCommissionRate: null,
       })
     );
 
     expect(atualizado.document).toBe('123.456.789-10');
     expect(atualizado.biography).toBe('Pintor residencial há 12 anos.');
+  });
+
+  /**
+   * Terceiro campo que só o detalhe traz. Sem o mapeamento, o formulário
+   * abriria em branco e salvar devolveria o usuário ao padrão da plataforma
+   * sem ninguém pedir.
+   */
+  it('traz deliveryCommissionRate do detalhe', async () => {
+    apiService.get.mockReturnValue(of({ ...DETALHE, deliveryCommissionRate: 15.5 }));
+
+    const usuario = await firstValueFrom(service.getUserById(7));
+
+    expect(usuario.deliveryCommissionRate).toBe(15.5);
+  });
+
+  it('mantém zero como zero na comissão', async () => {
+    apiService.get.mockReturnValue(of({ ...DETALHE, deliveryCommissionRate: 0 }));
+
+    const usuario = await firstValueFrom(service.getUserById(7));
+
+    expect(usuario.deliveryCommissionRate).toBe(0);
+  });
+
+  it('fixa a comissão em null na listagem, que não traz o campo', async () => {
+    apiService.get.mockReturnValue(
+      of({
+        users: [{ id: 7, name: 'Rafael Lima', email: 'rafael@email.com' }],
+        currentPage: 1,
+        totalPages: 1,
+        totalRecords: 1,
+      })
+    );
+
+    const resposta = await firstValueFrom(service.getUsers({ take: 10 }));
+
+    expect(resposta.users[0].deliveryCommissionRate).toBeNull();
   });
 
   it('alterna o status pela rota própria, sem mandar destino no corpo', async () => {

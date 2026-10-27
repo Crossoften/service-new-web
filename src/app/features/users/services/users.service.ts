@@ -95,10 +95,11 @@ export class UsersService {
       name: item.name,
       email: item.email,
       phone: item.phone || null,
-      // A listagem não traz nenhum dos dois; quem precisa deles é a tela de
+      // A listagem não traz nenhum dos três; quem precisa deles é a tela de
       // edição, que carrega pelo detalhe.
       document: null,
       biography: null,
+      deliveryCommissionRate: null,
       code: `#${String(item.id).padStart(3, '0')}`,
       role: 'User' as AdminUserRole,
       profileType: this.mapProfileType(item.profileType),
@@ -136,6 +137,7 @@ export class UsersService {
       birthDate: item.birthDate ?? null,
       fileUrl: item.fileUrl || null,
       fileKey: item.fileKey || null,
+      deliveryCommissionRate: item.deliveryCommissionRate ?? null,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
     };

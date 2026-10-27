@@ -11,6 +11,60 @@
       } @else {
         <div class="form-card">
           <form [formGroup]="form" (ngSubmit)="onSave()" novalidate>
+            <div class="section-label">Foto de perfil</div>
+
+            <div class="foto-bloco">
+              <div class="foto-preview">
+                @if (fotoEmExibicao) {
+                  <img [src]="fotoEmExibicao" alt="Foto de perfil do usuário" />
+                } @else {
+                  <div class="foto-placeholder" aria-hidden="true">{{ iniciais }}</div>
+                }
+              </div>
+
+              <div class="foto-acoes">
+                <label class="btn-foto" for="usr-foto">
+                  <i class="bi bi-upload" aria-hidden="true"></i>
+                  ESCOLHER IMAGEM
+                </label>
+                <input
+                  id="usr-foto"
+                  class="foto-input"
+                  type="file"
+                  accept="image/*"
+                  [disabled]="isSaving()"
+                  (change)="onSelecionarFoto($event)"
+                />
+
+                @if (novaFoto()) {
+                  <p class="foto-aviso">
+                    <strong>{{ novaFoto()!.name }}</strong> será enviada ao salvar.
+                    <button type="button" class="btn-link" (click)="onDesfazerFoto()">
+                      desfazer
+                    </button>
+                  </p>
+                } @else if (fotoMarcadaParaRemover()) {
+                  <p class="foto-aviso">
+                    A foto será removida ao salvar.
+                    <button type="button" class="btn-link" (click)="onDesfazerFoto()">
+                      desfazer
+                    </button>
+                  </p>
+                } @else if (fotoUrl()) {
+                  <button
+                    type="button"
+                    class="btn-link btn-link--perigo"
+                    [disabled]="isSaving()"
+                    (click)="onRemoverFoto()"
+                  >
+                    Remover foto
+                  </button>
+                } @else {
+                  <p class="foto-aviso">Nenhuma foto cadastrada.</p>
+                }
+              </div>
+            </div>
+
             <div class="form-row-3">
               <div class="form-group form-group--small">
                 <label class="form-label" for="usr-code">Código</label>
@@ -101,6 +155,31 @@
               <p class="helper-text">
                 {{ form.controls.biography.value.length }} / {{ tamanhoMaximoBiografia }}
               </p>
+            </div>
+
+            <div class="section-label">Delivery</div>
+
+            <div class="form-group form-group--small">
+              <label class="form-label" for="usr-commission">Comissão do delivery (%)</label>
+              <input
+                id="usr-commission"
+                type="number"
+                class="form-control"
+                formControlName="deliveryCommissionRate"
+                [min]="comissaoMinima"
+                [max]="comissaoMaxima"
+                step="0.01"
+                placeholder="padrão da plataforma"
+                [class.is-invalid]="isFieldInvalid('deliveryCommissionRate')"
+              />
+              @if (erroDaComissao) {
+                <div class="invalid-feedback">{{ erroDaComissao }}</div>
+              } @else {
+                <p class="helper-text">
+                  Em branco, o usuário usa o padrão da plataforma. Zero é comissão zerada, que é
+                  diferente. Vale apenas para quem opera no modelo de comissão.
+                </p>
+              }
             </div>
 
             <div class="form-actions">
