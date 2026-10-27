@@ -1,0 +1,197 @@
+.historico {
+  display: flex;
+  flex-direction: column;
+}
+
+.historico-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filtro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 15rem;
+}
+
+.filtro-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.form-control {
+  padding: 0.5rem 0.875rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #111;
+  background: #fff;
+  font-family: inherit;
+
+  &:focus {
+    outline: none;
+    border-color: #8308d2;
+    box-shadow: 0 0 0 3px rgba(131, 8, 210, 0.08);
+  }
+
+  &:disabled {
+    background: #f7f7f9;
+    cursor: not-allowed;
+  }
+}
+
+.total-pago {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+}
+
+.total-rotulo {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #888;
+}
+
+.total-valor {
+  font-size: 1.1rem;
+  color: #8308d2;
+}
+
+.table-wrapper {
+  background: #fff;
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+  overflow-x: auto;
+}
+
+.hist-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+
+  th,
+  td {
+    padding: 0.8rem 1rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  thead th {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #777;
+    border-bottom: 1px solid #f0f0f0;
+    white-space: nowrap;
+  }
+
+  tbody tr + tr td {
+    border-top: 1px solid #f6f6f6;
+  }
+}
+
+.pago-em {
+  display: block;
+  color: #111;
+  white-space: nowrap;
+}
+
+.repasse-id {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.7rem;
+  color: #999;
+}
+
+.td-valor {
+  font-weight: 700;
+  color: #111;
+  white-space: nowrap;
+}
+
+.referencia {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.76rem;
+  color: #555;
+  background: #f5f6fa;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.25rem;
+}
+
+.vazio {
+  color: #bbb;
+}
+
+.observacao {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+  color: #777;
+  max-width: 18rem;
+}
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+.pagination-info {
+  font-size: 0.8rem;
+  color: #777;
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.btn-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.35rem;
+  background: #fff;
+  color: #444;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
+
+  &:hover:not(:disabled) {
+    background: #8308d2;
+    color: #fff;
+    border-color: #8308d2;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+@media (max-width: 767px) {
+  .historico-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .total-pago {
+    align-items: flex-start;
+  }
+}

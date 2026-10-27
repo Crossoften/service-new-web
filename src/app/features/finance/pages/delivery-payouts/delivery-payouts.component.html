@@ -12,14 +12,39 @@
           Voltar ao financeiro
         </button>
 
-        @if (!isLoading() && !hasError() && pendentes().length) {
+        @if (aba() === 'pendentes' && !isLoading() && !hasError() && pendentes().length) {
           <p class="total-devido">
             Total em aberto: <strong>{{ formatarMoeda(totalDevido()) }}</strong>
           </p>
         }
       </div>
 
-      @if (isLoading()) {
+      <div class="aba-tabs" role="tablist" aria-label="Pendentes ou histórico">
+        <button
+          type="button"
+          role="tab"
+          class="aba-tab"
+          [class.ativa]="aba() === 'pendentes'"
+          [attr.aria-selected]="aba() === 'pendentes'"
+          (click)="trocarAba('pendentes')"
+        >
+          Em aberto
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="aba-tab"
+          [class.ativa]="aba() === 'historico'"
+          [attr.aria-selected]="aba() === 'historico'"
+          (click)="trocarAba('historico')"
+        >
+          Histórico
+        </button>
+      </div>
+
+      @if (aba() === 'historico') {
+        <app-payout-history></app-payout-history>
+      } @else if (isLoading()) {
         <app-loading-skeleton [variant]="'table'" [count]="6"></app-loading-skeleton>
       } @else if (hasError()) {
         <app-error-state

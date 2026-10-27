@@ -11,15 +11,15 @@ import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.
 import { ErrorStateComponent } from '@shared/components/error-state/error-state.component';
 import { LoadingSkeletonComponent } from '@shared/components/loading-skeleton/loading-skeleton.component';
 
-import { DeliveryPayoutMethod, PendingPayout } from '../../models/delivery-payout.model';
+import { PayoutHistoryComponent } from '../../components/payout-history/payout-history.component';
+import {
+  DELIVERY_PAYOUT_METHODS,
+  DeliveryPayoutMethod,
+  PendingPayout,
+} from '../../models/delivery-payout.model';
 import { DeliveryPayoutsService } from '../../services/delivery-payouts.service';
 
-const METODOS: Array<{ valor: DeliveryPayoutMethod; rotulo: string }> = [
-  { valor: 'Pix', rotulo: 'Pix' },
-  { valor: 'BankTransfer', rotulo: 'Transferência bancária' },
-  { valor: 'Cash', rotulo: 'Dinheiro' },
-  { valor: 'Other', rotulo: 'Outro' },
-];
+type AbaDeRepasses = 'pendentes' | 'historico';
 
 type FormularioRepasse = FormGroup<{
   method: FormControl<DeliveryPayoutMethod>;
@@ -37,6 +37,7 @@ type FormularioRepasse = FormGroup<{
     LoadingSkeletonComponent,
     EmptyStateComponent,
     ErrorStateComponent,
+    PayoutHistoryComponent,
   ],
   templateUrl: './delivery-payouts.component.html',
   styleUrls: ['./delivery-payouts.component.scss'],
@@ -53,7 +54,8 @@ export class DeliveryPayoutsComponent implements OnInit {
   readonly isSaving = signal(false);
   readonly selecionado = signal<PendingPayout | undefined>(undefined);
 
-  readonly metodos = METODOS;
+  readonly metodos = DELIVERY_PAYOUT_METHODS;
+  readonly aba = signal<AbaDeRepasses>('pendentes');
 
   private modalRef: NgbModalRef | null = null;
 
@@ -68,6 +70,16 @@ export class DeliveryPayoutsComponent implements OnInit {
 
   ngOnInit(): void {
     this.carregar();
+  }
+
+  /**
+   * As abas usam `@if`, então o histórico é destruído ao sair e remontado ao
+   * voltar. É de propósito: depois de registrar um repasse, abrir o histórico
+   * busca de novo e já mostra o lançamento, sem nenhum aviso entre as duas
+   * telas.
+   */
+  trocarAba(aba: AbaDeRepasses): void {
+    this.aba.set(aba);
   }
 
   carregar(): void {

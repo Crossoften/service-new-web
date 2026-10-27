@@ -76,6 +76,38 @@
   }
 }
 
+.aba-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.aba-tab {
+  padding: 0.45rem 1.1rem;
+  border-radius: 100px;
+  border: 1.5px solid #e0e0e0;
+  background: #fff;
+  color: #555;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+
+  &:hover:not(.ativa) {
+    border-color: rgba(131, 8, 210, 0.35);
+    color: #8308d2;
+  }
+
+  &.ativa {
+    background: #8308d2;
+    border-color: #8308d2;
+    color: #fff;
+  }
+}
+
 .table-wrapper {
   background: #fff;
   border-radius: 1.25rem;

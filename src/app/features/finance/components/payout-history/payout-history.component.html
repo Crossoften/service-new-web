@@ -1,0 +1,109 @@
+<div class="historico">
+  <div class="historico-toolbar">
+    <div class="filtro">
+      <label class="filtro-label" for="hist-courier">Entregador</label>
+      <select
+        id="hist-courier"
+        class="form-control"
+        [value]="entregadorId() ?? ''"
+        [disabled]="isLoading()"
+        (change)="filtrarPor($any($event.target).value)"
+      >
+        <option value="">Todos</option>
+        @for (entregador of entregadores(); track entregador.id) {
+          <option [value]="entregador.id">{{ entregador.name }}</option>
+        }
+      </select>
+    </div>
+
+    @if (!isLoading() && !hasError() && totalDeRegistros()) {
+      <div class="total-pago">
+        <span class="total-rotulo">Total repassado</span>
+        <strong class="total-valor">{{ formatarMoeda(totalPago()) }}</strong>
+      </div>
+    }
+  </div>
+
+  @if (isLoading()) {
+    <app-loading-skeleton [variant]="'table'" [count]="6"></app-loading-skeleton>
+  } @else if (hasError()) {
+    <app-error-state
+      [title]="'Erro ao carregar o histórico'"
+      [description]="'Não foi possível buscar os repasses já pagos. Tente novamente.'"
+      (retry)="carregar()"
+    ></app-error-state>
+  } @else if (!totalDeRegistros()) {
+    <app-empty-state
+      [title]="'Nenhum repasse registrado'"
+      [description]="
+        entregadorId()
+          ? 'Este entregador ainda não recebeu repasses.'
+          : 'Os repasses registrados aparecem aqui.'
+      "
+      [icon]="'bi-clock-history'"
+    ></app-empty-state>
+  } @else {
+    <div class="table-wrapper">
+      <table class="hist-table" aria-label="Histórico de repasses pagos">
+        <thead>
+          <tr>
+            <th scope="col">Pago em</th>
+            <th scope="col">Entregador</th>
+            <th scope="col">Valor</th>
+            <th scope="col">Entregas</th>
+            <th scope="col">Método</th>
+            <th scope="col">Referência</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (repasse of paginaAtual(); track repasse.id) {
+            <tr>
+              <td data-label="Pago em">
+                <span class="pago-em">{{ formatarDataHora(repasse.paidAt) }}</span>
+                <span class="repasse-id">#{{ repasse.id }}</span>
+              </td>
+              <td data-label="Entregador">{{ repasse.courierName }}</td>
+              <td data-label="Valor" class="td-valor">{{ formatarMoeda(repasse.amount) }}</td>
+              <td data-label="Entregas">{{ repasse.transactionsCount }}</td>
+              <td data-label="Método">{{ rotuloDoMetodo(repasse.method) }}</td>
+              <td data-label="Referência">
+                @if (repasse.reference) {
+                  <code class="referencia">{{ repasse.reference }}</code>
+                } @else {
+                  <span class="vazio">—</span>
+                }
+                @if (repasse.notes) {
+                  <span class="observacao">{{ repasse.notes }}</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-bar">
+      <span class="pagination-info">{{ resumoDaPaginacao() }}</span>
+      <div class="pagination-controls">
+        <button
+          class="btn-page"
+          type="button"
+          [disabled]="pagina() === 1"
+          (click)="irParaPagina(pagina() - 1)"
+          aria-label="Anterior"
+        >
+          <i class="bi bi-chevron-left" aria-hidden="true"></i>
+        </button>
+        <button
+          class="btn-page"
+          type="button"
+          [disabled]="pagina() >= totalDePaginas()"
+          (click)="irParaPagina(pagina() + 1)"
+          aria-label="Próxima"
+        >
+          <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+  }
+</div>

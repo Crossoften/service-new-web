@@ -8,6 +8,23 @@
 
 export type DeliveryPayoutMethod = 'Pix' | 'BankTransfer' | 'Cash' | 'Other';
 
+/** Rótulos dos métodos de repasse, compartilhados entre o registro e o histórico. */
+export const DELIVERY_PAYOUT_METHODS: ReadonlyArray<{
+  valor: DeliveryPayoutMethod;
+  rotulo: string;
+}> = [
+  { valor: 'Pix', rotulo: 'Pix' },
+  { valor: 'BankTransfer', rotulo: 'Transferência bancária' },
+  { valor: 'Cash', rotulo: 'Dinheiro' },
+  { valor: 'Other', rotulo: 'Outro' },
+];
+
+/** Opção do filtro por entregador no histórico. */
+export interface PayoutCourierOption {
+  id: number;
+  name: string;
+}
+
 export interface PayoutBankAccount {
   bankName: string;
   accountType: string;
